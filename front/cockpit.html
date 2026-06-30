@@ -803,6 +803,79 @@
     <div style="width:2.5px;height:16px;background:var(--bg);border-radius:2px;transform-origin:center;animation:eqbar 1s ease-in-out infinite;animation-delay:-.14s"></div>
     <div style="width:2.5px;height:7px;background:var(--bg);border-radius:2px;transform-origin:center;animation:eqbar 1s ease-in-out infinite;animation-delay:-.42s"></div>
   </div>
+
+  <!-- ===== CALENDAR POPUP ===== -->
+  <sc-if value="{{ calIsOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeCal }}" style="position:fixed;inset:0;background:oklch(0 0 0/.45);z-index:200;display:flex;align-items:center;justify-content:center">
+      <div onClick="{{ calStopProp }}" style="background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:24px;width:360px;box-shadow:0 12px 48px oklch(0 0 0/.25);max-height:90vh;overflow-y:auto">
+
+        <!-- header: prev · month+year · next -->
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:18px">
+          <button onClick="{{ calPrev }}" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink-2)">‹</button>
+          <button onClick="{{ calHeaderClick }}" style="flex:1;text-align:center;font:700 14px 'JetBrains Mono',monospace;color:var(--ink);letter-spacing:-.01em;padding:6px">{{ calHeaderLabel }}</button>
+          <button onClick="{{ calNext }}" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--ink-2)">›</button>
+        </div>
+
+        <!-- DAYS VIEW -->
+        <sc-if value="{{ calShowDays }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <div style="display:flex;margin-bottom:6px">
+              <sc-for list="{{ calDayLabels }}" as="dl" hint-placeholder-count="7">
+                <div style="flex:1;text-align:center;font:600 10px 'JetBrains Mono',monospace;color:var(--ink-3);letter-spacing:.04em">{{ dl.d }}</div>
+              </sc-for>
+            </div>
+            <sc-for list="{{ calWeeks }}" as="week" hint-placeholder-count="5">
+              <div style="display:flex;margin-bottom:2px">
+                <sc-for list="{{ week.days }}" as="day" hint-placeholder-count="7">
+                  <button onClick="{{ day.onClick }}" style="flex:1;aspect-ratio:1;min-width:0;border-radius:5px;border:{{ day.border }};background:{{ day.bg }};color:{{ day.fg }};font:600 11px 'JetBrains Mono',monospace;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px 0">
+                    {{ day.label }}
+                    <span style="width:3px;height:3px;border-radius:50%;background:{{ day.dotColor }}"></span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <!-- MONTHS VIEW -->
+        <sc-if value="{{ calShowMonths }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+            <sc-for list="{{ calMonthItems }}" as="m" hint-placeholder-count="12">
+              <button onClick="{{ m.sel }}" style="padding:12px 0;border-radius:7px;border:{{ m.border }};background:{{ m.bg }};color:{{ m.fg }};font:600 12px 'JetBrains Mono',monospace;text-align:center">{{ m.name }}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <!-- YEARS VIEW -->
+        <sc-if value="{{ calShowYears }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+            <sc-for list="{{ calYearItems }}" as="y" hint-placeholder-count="10">
+              <button onClick="{{ y.sel }}" style="padding:12px 0;border-radius:7px;border:{{ y.border }};background:{{ y.bg }};color:{{ y.fg }};font:600 11px 'JetBrains Mono',monospace;text-align:center">{{ y.year }}</button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <!-- conversation list -->
+        <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:14px">
+          <div style="font:600 9px 'JetBrains Mono',monospace;letter-spacing:.07em;color:var(--ink-3);margin-bottom:8px">CONVERSATIONS</div>
+          <sc-for list="{{ calConvoItems }}" as="cv" hint-placeholder-count="3">
+            <button onClick="{{ cv.jump }}" style="width:100%;display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;background:{{ cv.bg }};text-align:left;margin-bottom:4px">
+              <span style="width:6px;height:6px;border-radius:50%;background:{{ cv.dot }};flex-shrink:0"></span>
+              <span style="font-size:12.5px;color:{{ cv.fg }}">{{ cv.label }}</span>
+            </button>
+          </sc-for>
+        </div>
+
+        <!-- footer -->
+        <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+          <button onClick="{{ closeCal }}" style="padding:9px 18px;border:1px solid var(--border);border-radius:9px;font-size:13px;font-weight:600;color:var(--ink-2)">{{ calCancelLabel }}</button>
+          <button onClick="{{ calOk }}" style="padding:9px 18px;background:var(--ink);color:var(--bg);border-radius:9px;font-size:13px;font-weight:600">OK</button>
+        </div>
+
+      </div>
+    </div>
+  </sc-if>
+
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
@@ -1541,77 +1614,6 @@ class Component extends DCLogic {
 }
 </script>
 
-<!-- ===== CALENDAR POPUP ===== -->
-<sc-if value="{{ calIsOpen }}" hint-placeholder-val="{{ false }}">
-  <div onClick="{{ closeCal }}" style="position:fixed;inset:0;background:oklch(0 0 0/.45);z-index:200;display:flex;align-items:center;justify-content:center">
-    <div onClick="{{ calStopProp }}" style="background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:24px;width:360px;box-shadow:0 12px 48px oklch(0 0 0/.25);max-height:90vh;overflow-y:auto">
-
-      <!-- header: prev · month+year · next -->
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:18px">
-        <button onClick="{{ calPrev }}" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--ink-2)">‹</button>
-        <button onClick="{{ calHeaderClick }}" style="flex:1;text-align:center;font:700 14px 'JetBrains Mono',monospace;color:var(--ink);letter-spacing:-.01em;padding:6px">{{ calHeaderLabel }}</button>
-        <button onClick="{{ calNext }}" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--ink-2)">›</button>
-      </div>
-
-      <!-- DAYS VIEW -->
-      <sc-if value="{{ calShowDays }}" hint-placeholder-val="{{ true }}">
-        <div>
-          <div style="display:flex;margin-bottom:6px">
-            <sc-for list="{{ calDayLabels }}" as="dl" hint-placeholder-count="7">
-              <div style="flex:1;text-align:center;font:600 10px 'JetBrains Mono',monospace;color:var(--ink-3);letter-spacing:.04em">{{ dl.d }}</div>
-            </sc-for>
-          </div>
-          <sc-for list="{{ calWeeks }}" as="week" hint-placeholder-count="5">
-            <div style="display:flex;margin-bottom:2px">
-              <sc-for list="{{ week.days }}" as="day" hint-placeholder-count="7">
-                <button onClick="{{ day.onClick }}" style="flex:1;aspect-ratio:1;min-width:0;border-radius:5px;border:{{ day.border }};background:{{ day.bg }};color:{{ day.fg }};font:600 11px 'JetBrains Mono',monospace;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px 0">
-                  {{ day.label }}
-                  <span style="width:3px;height:3px;border-radius:50%;background:{{ day.dotColor }}"></span>
-                </button>
-              </sc-for>
-            </div>
-          </sc-for>
-        </div>
-      </sc-if>
-
-      <!-- MONTHS VIEW -->
-      <sc-if value="{{ calShowMonths }}" hint-placeholder-val="{{ false }}">
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
-          <sc-for list="{{ calMonthItems }}" as="m" hint-placeholder-count="12">
-            <button onClick="{{ m.sel }}" style="padding:12px 0;border-radius:7px;border:{{ m.border }};background:{{ m.bg }};color:{{ m.fg }};font:600 12px 'JetBrains Mono',monospace;text-align:center">{{ m.name }}</button>
-          </sc-for>
-        </div>
-      </sc-if>
-
-      <!-- YEARS VIEW -->
-      <sc-if value="{{ calShowYears }}" hint-placeholder-val="{{ false }}">
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
-          <sc-for list="{{ calYearItems }}" as="y" hint-placeholder-count="10">
-            <button onClick="{{ y.sel }}" style="padding:12px 0;border-radius:7px;border:{{ y.border }};background:{{ y.bg }};color:{{ y.fg }};font:600 11px 'JetBrains Mono',monospace;text-align:center">{{ y.year }}</button>
-          </sc-for>
-        </div>
-      </sc-if>
-
-      <!-- conversation list -->
-      <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:14px">
-        <div style="font:600 9px 'JetBrains Mono',monospace;letter-spacing:.07em;color:var(--ink-3);margin-bottom:8px">CONVERSATIONS</div>
-        <sc-for list="{{ calConvoItems }}" as="cv" hint-placeholder-count="3">
-          <button onClick="{{ cv.jump }}" style="width:100%;display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;background:{{ cv.bg }};text-align:left;margin-bottom:4px">
-            <span style="width:6px;height:6px;border-radius:50%;background:{{ cv.dot }};flex-shrink:0"></span>
-            <span style="font-size:12.5px;color:{{ cv.fg }}">{{ cv.label }}</span>
-          </button>
-        </sc-for>
-      </div>
-
-      <!-- footer -->
-      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
-        <button onClick="{{ closeCal }}" style="padding:9px 18px;border:1px solid var(--border);border-radius:9px;font-size:13px;font-weight:600;color:var(--ink-2)">{{ calCancelLabel }}</button>
-        <button onClick="{{ calOk }}" style="padding:9px 18px;background:var(--ink);color:var(--bg);border-radius:9px;font-size:13px;font-weight:600">OK</button>
-      </div>
-
-    </div>
-  </div>
-</sc-if>
 
 </body>
 </html>
