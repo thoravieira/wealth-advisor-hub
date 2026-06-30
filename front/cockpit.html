@@ -463,6 +463,18 @@
                   <!-- audio player: only for call conversations -->
                   <sc-if value="{{ convoIsCall }}" hint-placeholder-val="{{ true }}">
                   <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:13px;padding:15px 16px">
+                    <!-- real audio player when MP3 available -->
+                    <sc-if value="{{ convoHasAudio }}" hint-placeholder-val="{{ false }}">
+                    <div>
+                      <audio id="conv-audio" src="{{ convoAudioSrc }}" style="width:100%;border-radius:8px;accent-color:var(--ink)" controls preload="metadata"></audio>
+                      <div style="display:flex;align-items:center;gap:12px;margin-top:11px;padding-top:11px;border-top:1px solid var(--border)">
+                        <span style="font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ t.autoTranscribed }}</span>
+                      </div>
+                    </div>
+                    </sc-if>
+                    <!-- waveform mock when no real audio -->
+                    <sc-if value="{{ convoNoAudio }}" hint-placeholder-val="{{ true }}">
+                    <div>
                     <div style="display:flex;align-items:center;gap:14px">
                       <div style="width:46px;height:46px;border-radius:50%;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer"><span style="font-size:15px;margin-left:3px">▶</span></div>
                       <div style="flex:1;display:flex;align-items:center;gap:2px;height:46px;min-width:0;overflow:hidden">
@@ -481,6 +493,8 @@
                       <span style="border:1px solid var(--border);border-radius:7px;padding:3px 9px;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">1.0×</span>
                       <span style="margin-left:auto;font:500 11.5px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ t.autoTranscribed }}</span>
                     </div>
+                    </div>
+                    </sc-if>
                   </div>
                   </sc-if>
 
@@ -954,7 +968,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
 class Component extends DCLogic {
-  state = { lang:'en', menuOpen:true, chatOpen:false, route:'overview', prevRoute:'overview', clientId:'ricardo', convoView:'transcript', clientFilter:'all', convFilter:'all', recFilter:'all', query:'', agentStatus:'idle', agentTranscript:[], voicePreviews:[], playingVoice:null, approvalCard:null, approvalClientId:null, toastMsg:null, analyticsClients:{}, memoryFacts:{}, convVipOpen:true, convRegOpen:true, convoDateIdx:0, recMode:'text', calOpen:false, calYear:2026, calMonth:5, calView:'days', calSel:null, allocTab:'allocation', clientTab:'overview', selectedRec:0, recAudioState:{} };
+  state = { lang:'en', menuOpen:true, chatOpen:false, route:'overview', prevRoute:'overview', clientId:'ricardo', convoView:'transcript', clientFilter:'all', convFilter:'all', recFilter:'all', query:'', agentStatus:'idle', agentTranscript:[], voicePreviews:[], playingVoice:null, approvalCard:null, approvalClientId:null, toastMsg:null, analyticsClients:{}, memoryFacts:{}, convVipOpen:true, convRegOpen:true, convoDateIdx:0, convoIdx:0, recMode:'text', calOpen:false, calYear:2026, calMonth:5, calView:'days', calSel:null, allocTab:'allocation', clientTab:'overview', selectedRec:0, recAudioState:{}, clientConvos:{}, activeConvoDetail:null };
 
   async _initData() {
     try {
@@ -975,6 +989,30 @@ class Component extends DCLogic {
       const facts = await r.json();
       this.setState(s => ({ memoryFacts: { ...s.memoryFacts, [clientId]: facts } }));
     } catch(e) { console.warn('Memory fetch failed:', e.message); }
+  }
+
+  _convosInFlight = new Set();
+
+  async _fetchConversations(clientId) {
+    if (this._convosInFlight.has(clientId)) return;
+    this._convosInFlight.add(clientId);
+    try {
+      const r = await fetch(`http://localhost:8001/conversations?client_id=${clientId}`);
+      if (!r.ok) return;
+      const data = await r.json();
+      this.setState(s => ({ clientConvos: { ...s.clientConvos, [clientId]: data } }));
+      if (data.length > 0) this._fetchConvoDetail(data[0].conv_id);
+    } catch(e) { console.warn('fetchConversations failed:', e.message); }
+    finally { this._convosInFlight.delete(clientId); }
+  }
+
+  async _fetchConvoDetail(convId) {
+    try {
+      const r = await fetch(`http://localhost:8001/conversations/${convId}`);
+      if (!r.ok) return;
+      const data = await r.json();
+      this.setState({ activeConvoDetail: data });
+    } catch(e) { console.warn('fetchConvoDetail failed:', e.message); }
   }
 
   async _addVoicePreview(text, clientId) {
@@ -1100,7 +1138,7 @@ class Component extends DCLogic {
         perfilLabel:pick(perfilLbl[c.perfil]), statusLabel:pick(statusLbl[c.status]),
         note:pick(c.note), ago:pick(c.ago), allocLegend:legend(al),
         alloc:{ rv:al[0]+'%', rf:al[1]+'%', fu:al[2]+'%', cx:al[3]+'%' },
-        open:() => this.setState({ route:'client', clientId:c.id, prevRoute:S.route })
+        open:() => { this.setState({ route:'client', clientId:c.id, prevRoute:S.route, convoIdx:0, convoDateIdx:0, activeConvoDetail:null }); if (!this.state.clientConvos[c.id]) this._fetchConversations(c.id); }
       };
       byId[c.id] = o; return o;
     });
@@ -1285,26 +1323,97 @@ class Component extends DCLogic {
       }
     };
     const cv = CONVO[sc0.id];
-    const hasConvo = !!cv;
+    const _fetchedConvos = S.clientConvos[sc0.id] || [];
+    if (!S.clientConvos[sc0.id] && S.route === 'client') {
+      setTimeout(() => this._fetchConversations(sc0.id), 0);
+    }
+    const hasConvo = !!(cv || _fetchedConvos.length > 0);
     const sc = { ...sc0, hasConvo, noConvo: !hasConvo };
     const mfRaw = (S.memoryFacts[sc0.id] || []).filter(f => f.fact);
     const catColor = { risk_signal:C.red, life_event:C.amber, objective:C.blue, preference:C.green, note:C.gray };
     const catBg    = { risk_signal:'oklch(0.52 0.175 27 / .1)', life_event:'oklch(0.56 0.145 65 / .1)', objective:'oklch(0.52 0.145 248 / .1)', preference:'oklch(0.50 0.20 150 / .1)', note:'oklch(0.55 0.005 265 / .1)' };
     sc.hasMemory  = mfRaw.length > 0;
     sc.memoryList = mfRaw.map(f => ({ cat:f.category.replace(/_/g,' '), catColor:catColor[f.category]||C.gray, catBg:catBg[f.category]||'oklch(0.55 0.005 265/.1)', fact:f.fact }));
+
+    // ---- date carousel + calendar popup ----
+    const _MNF = L==='en'
+      ? ['January','February','March','April','May','June','July','August','September','October','November','December']
+      : ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const _MNS = L==='en'
+      ? ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+      : ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+    const _chLabel = { call:pick(R('call','ligação')), whatsapp:'WhatsApp', email:'e-mail' };
+    const _chDot   = { call:'var(--ink-2)', whatsapp:C.green, email:C.blue };
+    const clientConvoList = _fetchedConvos.length > 0
+      ? _fetchedConvos.map(c => {
+          const [yr, mo, dy] = c.conv_date.split('-').map(Number);
+          return { year:yr, month:mo-1, day:dy, dot:_chDot[c.channel]||C.blue, label:`${_MNS[mo-1]} ${dy}  ·  ${_chLabel[c.channel]||c.channel}`, convId:c.conv_id, hasAudio:!!c.has_audio, audioFile:c.audio_file, channel:c.channel };
+        })
+      : [
+          { year:2026, month:5, day:14, dot:'var(--ink-2)', label:pick(R('Jun 14  ·  call','14 jun  ·  ligação')), channel:'call', hasAudio:false, audioFile:null, convId:null },
+          { year:2026, month:5, day:9,  dot:C.green,        label:pick(R('Jun 9  ·  WhatsApp','9 jun  ·  WhatsApp')), channel:'whatsapp', hasAudio:false, audioFile:null, convId:null },
+          { year:2026, month:5, day:2,  dot:C.blue,         label:pick(R('Jun 2  ·  e-mail','2 jun  ·  e-mail')), channel:'email', hasAudio:false, audioFile:null, convId:null }
+        ];
+
+    // carousel: one before + selected + one after
+    const _cIdx  = Math.min(Math.max(S.convoIdx||S.convoDateIdx||0, 0), Math.max(clientConvoList.length-1, 0));
+    const _cSlot = Math.max(0, _cIdx-1);
+    const carouselDates = clientConvoList.slice(_cSlot, _cSlot+3).map((c,i) => {
+      const idx = _cSlot+i, isSel = idx===_cIdx;
+      return {
+        label: _MNS[c.month]+' '+c.day, dot:c.dot,
+        border: isSel?'2px solid var(--ink)':'1px solid transparent',
+        bg:'transparent', fg:isSel?'var(--ink)':'var(--ink-3)',
+        sel:()=>{ this.setState({ convoIdx:idx, convoDateIdx:idx, activeConvoDetail:null }); if(c.convId) setTimeout(()=>this._fetchConvoDetail(c.convId),0); }
+      };
+    });
+
+    // convo object: API data merged with static CONVO
+    const _selectedApiConv = clientConvoList[_cIdx] || null;
+    const _acd = S.activeConvoDetail;
+    const _acdMatches = _acd && _selectedApiConv && _acd.conv_id === _selectedApiConv.convId;
     let convo = null;
-    if (cv) {
+    if (_acdMatches) {
+      const isCallConv = _selectedApiConv.channel === 'call';
+      const _turns = _acd.turns || [];
+      const tr = _turns.map((t, i) => {
+        const txt = L === 'pt' ? (t.text_pt || t.text_en || '') : (t.text_en || t.text_pt || '');
+        const isAdv = t.speaker === 'advisor';
+        const isActive = i === Math.max(0, _turns.length - 3);
+        const o = { who: isAdv ? pick(R('You (advisor)','Você (assessora)')) : sc0.name, whoColor: isAdv ? 'var(--ink)' : 'var(--ink-3)', time: `${String(Math.floor(i*22/60)).padStart(2,'0')}:${String((i*22)%60).padStart(2,'0')}`, active: isActive, inactive: !isActive, text: txt };
+        if (isActive && txt) { const toks = txt.split(' '); const curIdx = Math.max(1, Math.floor(toks.length*0.42)); o.words = toks.map((w,wi) => ({ w, bg:wi===curIdx?'var(--ink)':'transparent', color:wi<curIdx?'var(--ink-2)':(wi===curIdx?'var(--bg)':'var(--ink-muted)'), pad:wi===curIdx?'2px 5px':'0' })); }
+        return o;
+      });
+      const msgs = _turns.map(t => {
+        const txt = L === 'pt' ? (t.text_pt || t.text_en || '') : (t.text_en || t.text_pt || '');
+        return { t: txt, time:'—', justify: t.speaker==='client'?'flex-start':'flex-end', bg: t.speaker==='client'?'var(--surface-3)':'var(--ink)', fg: t.speaker==='client'?'var(--ink)':'var(--bg)' };
+      });
+      const sumText = L === 'pt' ? (_acd.summary_pt || _acd.summary_en || '') : (_acd.summary_en || _acd.summary_pt || '');
+      convo = {
+        pos: isCallConv ? '— / —' : '—', isCall: isCallConv,
+        hasAudio: !!_selectedApiConv.hasAudio,
+        audioSrc: _selectedApiConv.audioFile ? `http://localhost:8001/audio/${_selectedApiConv.audioFile}` : null,
+        date: _selectedApiConv.label, sentLevel:'50%', sentLabel: pick(R('Neutral','Neutro')), sentColor:'var(--ink-3)',
+        summary: sumText, appetite:'', objectives:[], products:[], hasLifeEvent:false, lifeEvent:'', nextActions:[],
+        transcript: tr, messages: msgs, tts: []
+      };
+      if (cv) {
+        convo.sentLevel = cv.sentLevel+'%'; convo.sentLabel = pick(sentLbl[cv.sentKey]); convo.sentColor = sentColor[cv.sentKey];
+        convo.appetite = pick(cv.appetite); convo.objectives = cv.objectives.map(pick); convo.products = cv.products.map(pick);
+        convo.hasLifeEvent = !!cv.lifeEvent; convo.lifeEvent = cv.lifeEvent ? pick(cv.lifeEvent) : '';
+        convo.nextActions = cv.nextActions.map(pick); convo.tts = cv.tts.map(s => ({ text:pick(s.text), voice:s.voice, dur:s.dur }));
+      }
+    } else if (cv) {
       const tr = cv.transcript.map(l => {
         const txt = pick(l.text);
         const o = { who: l.whoKey==='you' ? pick(R('You (advisor)','Você (assessora)')) : sc0.name, whoColor: l.whoKey==='you' ? 'var(--ink)' : 'var(--ink-3)', time:l.time, active:!!l.active, inactive:!l.active, text:txt };
-        if (l.active) {
-          const toks = txt.split(' '); const curIdx = Math.max(1, Math.floor(toks.length*0.42));
-          o.words = toks.map((w,i) => ({ w, bg:i===curIdx?'var(--ink)':'transparent', color:i<curIdx?'var(--ink-2)':(i===curIdx?'var(--bg)':'var(--ink-muted)'), pad:i===curIdx?'2px 5px':'0' }));
-        }
+        if (l.active) { const toks = txt.split(' '); const curIdx = Math.max(1, Math.floor(toks.length*0.42)); o.words = toks.map((w,i) => ({ w, bg:i===curIdx?'var(--ink)':'transparent', color:i<curIdx?'var(--ink-2)':(i===curIdx?'var(--bg)':'var(--ink-muted)'), pad:i===curIdx?'2px 5px':'0' })); }
         return o;
       });
       convo = {
-        pos:cv.pos, isCall:cv.pos !== '—', date:cv.date, sentLevel:cv.sentLevel+'%', sentLabel:pick(sentLbl[cv.sentKey]), sentColor:sentColor[cv.sentKey],
+        pos:cv.pos, isCall:cv.pos !== '—', hasAudio:false, audioSrc:null, date:cv.date,
+        sentLevel:cv.sentLevel+'%', sentLabel:pick(sentLbl[cv.sentKey]), sentColor:sentColor[cv.sentKey],
         summary:pick(cv.summary), appetite:pick(cv.appetite),
         objectives:cv.objectives.map(pick), products:cv.products.map(pick),
         hasLifeEvent:!!cv.lifeEvent, lifeEvent:cv.lifeEvent?pick(cv.lifeEvent):'',
@@ -1313,33 +1422,17 @@ class Component extends DCLogic {
         messages:cv.messages.map(m => ({ t:pick(m.text), time:m.time, justify:m.c?'flex-start':'flex-end', bg:m.c?'var(--surface-3)':'var(--ink)', fg:m.c?'var(--ink)':'var(--bg)' })),
         tts:cv.tts.map(s => ({ text:pick(s.text), voice:s.voice, dur:s.dur }))
       };
-    }
-
-    // ---- date carousel + calendar popup ----
-    const clientConvoList = [
-      { year:2026, month:5, day:14, dot:'var(--ink-2)', label:pick(R('Jun 14  ·  call','14 jun  ·  ligação')) },
-      { year:2026, month:5, day:9,  dot:C.green,        label:pick(R('Jun 9  ·  WhatsApp','9 jun  ·  WhatsApp')) },
-      { year:2026, month:5, day:2,  dot:C.blue,         label:pick(R('Jun 2  ·  e-mail','2 jun  ·  e-mail')) }
-    ];
-    const _MNF = L==='en'
-      ? ['January','February','March','April','May','June','July','August','September','October','November','December']
-      : ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
-    const _MNS = L==='en'
-      ? ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
-      : ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-
-    // carousel: one before + selected + one after
-    const _cIdx  = Math.min(Math.max(S.convoDateIdx||0, 0), clientConvoList.length-1);
-    const _cSlot = Math.max(0, _cIdx-1);
-    const carouselDates = clientConvoList.slice(_cSlot, _cSlot+3).map((c,i) => {
-      const idx = _cSlot+i, isSel = idx===_cIdx;
-      return {
-        label: _MNS[c.month]+' '+c.day, dot:c.dot,
-        border: isSel?'2px solid var(--ink)':'1px solid transparent',
-        bg:'transparent', fg:isSel?'var(--ink)':'var(--ink-3)',
-        sel:()=>this.setState({ convoDateIdx:idx })
+    } else if (_fetchedConvos.length > 0 && _selectedApiConv) {
+      convo = {
+        pos: _selectedApiConv.channel === 'call' ? '— / —' : '—',
+        isCall: _selectedApiConv.channel === 'call', hasAudio: !!_selectedApiConv.hasAudio,
+        audioSrc: _selectedApiConv.audioFile ? `http://localhost:8001/audio/${_selectedApiConv.audioFile}` : null,
+        date: _selectedApiConv.label, sentLevel:'50%', sentLabel:pick(R('Neutral','Neutro')), sentColor:'var(--ink-3)',
+        summary: pick(R('Loading conversation details...','Carregando detalhes...')),
+        appetite:'', objectives:[], products:[], hasLifeEvent:false, lifeEvent:'', nextActions:[],
+        transcript:[], messages:[], tts:[]
       };
-    });
+    }
 
     // calendar popup state aliases
     const _CY=S.calYear||2026, _CM=S.calMonth??5, _CV=S.calView||'days', _CS=S.calSel;
@@ -1405,7 +1498,7 @@ class Component extends DCLogic {
     const openCal=()=>{ const cur=clientConvoList[_cIdx]||clientConvoList[0]; this.setState({calOpen:true,calYear:cur.year,calMonth:cur.month,calView:'days',calSel:{year:cur.year,month:cur.month,day:cur.day}}); };
     const closeCal=()=>this.setState({calOpen:false});
     const calStopProp=e=>{ if(e&&e.stopPropagation)e.stopPropagation(); };
-    const calOk=()=>{ if(!S.calSel){this.setState({calOpen:false});return;} const idx=clientConvoList.findIndex(c=>c.year===S.calSel.year&&c.month===S.calSel.month&&c.day===S.calSel.day); this.setState({calOpen:false,...(idx>=0?{convoDateIdx:idx}:{})}); };
+    const calOk=()=>{ if(!S.calSel){this.setState({calOpen:false});return;} const idx=clientConvoList.findIndex(c=>c.year===S.calSel.year&&c.month===S.calSel.month&&c.day===S.calSel.day); this.setState({calOpen:false,...(idx>=0?{convoDateIdx:idx,convoIdx:idx,activeConvoDetail:null}:{})}); if(idx>=0&&clientConvoList[idx]?.convId) setTimeout(()=>this._fetchConvoDetail(clientConvoList[idx].convId),0); };
     const calIsOpen=!!S.calOpen, calShowDays=_CV==='days', calShowMonths=_CV==='months', calShowYears=_CV==='years';
     const calCancelLabel=pick(R('Cancel','Cancelar'));
 
@@ -1416,8 +1509,11 @@ class Component extends DCLogic {
     const pillInsFg = S.convoView==='insights'?'var(--ink)':'var(--ink-3)';
     const pillConvBg = showConversations?'var(--surface-3)':'transparent';
     const pillConvFg = showConversations?'var(--ink)':'var(--ink-3)';
-    const convoIsCall = !!(convo && convo.isCall);
-    const convoIsMsg  = !!(convo && !convo.isCall);
+    const convoIsCall    = !!(convo && convo.isCall);
+    const convoIsMsg     = !!(convo && !convo.isCall);
+    const convoHasAudio  = !!(convo && convo.hasAudio && convo.audioSrc);
+    const convoAudioSrc  = convoHasAudio ? convo.audioSrc : '';
+    const convoNoAudio   = convoIsCall && !convoHasAudio;
     const setInsights = () => this.setState({ convoView:'insights' });
     const setConversations = () => this.setState({ convoView:'transcript' });
 
@@ -1662,7 +1758,7 @@ class Component extends DCLogic {
       statTiles, groups, priorities, bookStats, activity,
       clientFilters, filteredClients, clientsCount, query:S.query,
       sc, riskSegs, allocList, lastContacts, convo,
-      showConversations, showInsights, convoIsCall, convoIsMsg,
+      showConversations, showInsights, convoIsCall, convoIsMsg, convoHasAudio, convoNoAudio, convoAudioSrc,
       pillConvBg, pillConvFg, pillInsBg, pillInsFg,
       carouselDates, clientRecs, recModeTextBg, recModeTextFg, recModeVoiceBg, recModeVoiceFg,
       setConversations, setInsights, setRecText, setRecVoice,

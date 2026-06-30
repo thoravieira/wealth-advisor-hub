@@ -13,10 +13,13 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
+from fastapi.responses import FileResponse
 from seed import CLIENTS
+from seed_conversations import CONVERSATIONS, TURNS
 
 DATA_DIR = Path("/data")
-DB_PATH = DATA_DIR / "lake.duckdb"
+DB_PATH   = DATA_DIR / "lake.duckdb"
+AUDIO_DIR = Path("/app/audio")
 
 
 def get_db():
@@ -103,6 +106,34 @@ def init_db():
         )
     """)
 
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS conversations (
+            conv_id       VARCHAR PRIMARY KEY,
+            client_id     VARCHAR NOT NULL,
+            channel       VARCHAR NOT NULL,
+            conv_date     DATE NOT NULL,
+            duration_s    INTEGER,
+            sentiment     VARCHAR DEFAULT 'neutral',
+            summary_en    TEXT,
+            summary_pt    TEXT,
+            has_audio     BOOLEAN DEFAULT FALSE,
+            audio_file    VARCHAR,
+            created_at    TIMESTAMPTZ DEFAULT NOW()
+        )
+    """)
+
+    con.execute("""
+        CREATE TABLE IF NOT EXISTS conversation_turns (
+            turn_id       VARCHAR PRIMARY KEY,
+            conv_id       VARCHAR NOT NULL,
+            speaker       VARCHAR NOT NULL,
+            turn_order    INTEGER NOT NULL,
+            text_en       TEXT,
+            text_pt       TEXT,
+            created_at    TIMESTAMPTZ DEFAULT NOW()
+        )
+    """)
+
     # Seed clients if table is empty
     count = con.execute("SELECT COUNT(*) FROM clients").fetchone()[0]
     if count == 0:
@@ -115,6 +146,26 @@ def init_db():
                 c["funds_pct"], c["cash_pct"], c["equity_limit"], c["status"],
                 c["client_since"],
             ])
+
+    # Seed conversations
+    count = con.execute("SELECT COUNT(*) FROM conversations").fetchone()[0]
+    if count == 0:
+        for cv in CONVERSATIONS:
+            con.execute("""
+                INSERT INTO conversations
+                    (conv_id, client_id, channel, conv_date, duration_s, sentiment,
+                     summary_en, summary_pt, has_audio, audio_file)
+                VALUES (?,?,?,?,?,?,?,?,?,?)
+            """, [cv["conv_id"], cv["client_id"], cv["channel"], cv["conv_date"],
+                  cv.get("duration_s"), cv["sentiment"], cv["summary_en"], cv["summary_pt"],
+                  cv.get("has_audio", False), cv.get("audio_file")])
+        for t in TURNS:
+            con.execute("""
+                INSERT INTO conversation_turns
+                    (turn_id, conv_id, speaker, turn_order, text_en, text_pt)
+                VALUES (?,?,?,?,?,?)
+            """, [t["turn_id"], t["conv_id"], t["speaker"], t["turn_order"],
+                  t.get("text_en"), t.get("text_pt")])
 
     con.close()
 
@@ -334,3 +385,61 @@ def list_alerts(status: Optional[str] = None, client_id: Optional[str] = None):
     cols = [d[0] for d in con.description]
     con.close()
     return [dict(zip(cols, r)) for r in rows]
+
+
+# ─── Conversations ────────────────────────────────────────────────────────────
+
+@app.get("/conversations")
+def list_conversations(client_id: Optional[str] = None):
+    con = get_db()
+    query = "SELECT * FROM conversations WHERE 1=1"
+    params = []
+    if client_id:
+        query += " AND client_id = ?"
+        params.append(client_id)
+    query += " ORDER BY conv_date DESC"
+    rows = con.execute(query, params).fetchall()
+    cols = [d[0] for d in con.description]
+    con.close()
+    result = []
+    for r in rows:
+        d = dict(zip(cols, r))
+        if hasattr(d.get("conv_date"), "isoformat"):
+            d["conv_date"] = d["conv_date"].isoformat()
+        result.append(d)
+    return result
+
+
+@app.get("/conversations/{conv_id}")
+def get_conversation(conv_id: str):
+    con = get_db()
+    row = con.execute(
+        "SELECT * FROM conversations WHERE conv_id = ?", [conv_id]
+    ).fetchone()
+    if not row:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    cols = [d[0] for d in con.description]
+    conv = dict(zip(cols, row))
+    if hasattr(conv.get("conv_date"), "isoformat"):
+        conv["conv_date"] = conv["conv_date"].isoformat()
+
+    turn_rows = con.execute(
+        "SELECT * FROM conversation_turns WHERE conv_id = ? ORDER BY turn_order ASC",
+        [conv_id]
+    ).fetchall()
+    turn_cols = [d[0] for d in con.description]
+    conv["turns"] = [dict(zip(turn_cols, t)) for t in turn_rows]
+    con.close()
+    return conv
+
+
+# ─── Audio ────────────────────────────────────────────────────────────────────
+
+@app.get("/audio/{filename}")
+def get_audio(filename: str):
+    if ".." in filename or "/" in filename:
+        raise HTTPException(status_code=400, detail="Invalid filename")
+    path = AUDIO_DIR / filename
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Audio file not found")
+    return FileResponse(str(path), media_type="audio/mpeg", filename=filename)
