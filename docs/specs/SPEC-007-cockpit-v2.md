@@ -293,6 +293,23 @@ cd tests && python3 -m pytest -v
 - [ ] Language toggle switches all strings between EN and PT instantly
 - [ ] Client filter chips narrow the client list correctly
 
+### Conversations
+
+- [ ] VIP clients appear in a dedicated frame above regular clients
+- [ ] Channel filter chips (All / Calls / WhatsApp / E-mail) apply to both frames simultaneously
+- [ ] VIP frame hides when the active filter yields no VIP rows
+- [ ] Regular frame hides when the active filter yields no regular rows
+- [ ] Clicking any row opens the client detail with `prevRoute = conversations`
+
+### Alerts
+
+- [ ] Three severity sections rendered vertically: High → Medium → Low
+- [ ] Each section header shows severity label (colored) + alert count
+- [ ] Alerts within each section scroll horizontally as a card carousel
+- [ ] Each card shows: client initials + name + VIP diamond (if applicable) + time + type badge + description
+- [ ] Clicking a card opens the client detail (no separate Review button)
+- [ ] Sofia live call panel is absent from Conversations; session control is via EQ FAB only
+
 ### Data layer
 
 - [ ] `GET /health` reports postgres and analytics as "ok"

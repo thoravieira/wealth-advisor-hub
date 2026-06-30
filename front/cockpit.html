@@ -61,7 +61,11 @@
   .btn-nav:hover  { background: var(--surface-3) !important; }
   .btn-row:hover  { background: var(--surface-2) !important; }
   .card-cl:hover  { border-color: var(--border-2) !important; box-shadow: 0 2px 12px oklch(0 0 0 / .35) !important; }
-  .opp-card:hover { border-color: var(--border-2) !important; box-shadow: 0 2px 8px oklch(0 0 0 / .3) !important; }
+  .opp-card:hover   { border-color: var(--border-2) !important; box-shadow: 0 2px 8px oklch(0 0 0 / .3) !important; }
+  .alert-card:hover { border-color: var(--border-2) !important; background: var(--surface-2) !important; box-shadow: 0 2px 10px oklch(0 0 0 / .3) !important; }
+  .alert-carousel { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  .alert-carousel::-webkit-scrollbar { height: 4px; }
+  .alert-carousel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
   /* ── Animations ──────────────────────────────────── */
   @keyframes eqbar {
@@ -560,18 +564,33 @@
       <!-- ===== ALERTS ===== -->
       <sc-if value="{{ isAlerts }}" hint-placeholder-val="{{ false }}">
         <div>
-          <div style="margin-bottom:16px"><div style="font-size:22px;font-weight:700;letter-spacing:-.015em">{{ t.alertTitle }}</div><div style="font-size:13px;color:var(--ink-3);margin-top:3px">{{ t.alertSub }}</div></div>
-          <div style="display:flex;flex-direction:column;gap:11px">
-            <sc-for list="{{ alerts }}" as="a" hint-placeholder-count="6">
-              <div style="border:1px solid var(--border);border-radius:13px;padding:15px 16px;display:flex;align-items:center;gap:14px;background:var(--surface)">
-                <div style="width:34px;height:34px;border-radius:9px;background:{{ a.sevTint }};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:{{ a.sevColor }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8v5" stroke-linecap="round"/><circle cx="12" cy="16.5" r="0.4" fill="currentColor" stroke="none"/><path d="M10.3 4.3l-7 12A2 2 0 005 19.3h14a2 2 0 001.7-3l-7-12a2 2 0 00-3.4 0z" stroke-linejoin="round"/></svg></div>
-                <div style="flex:1;min-width:0">
-                  <div style="display:flex;align-items:center;gap:8px"><span style="font-size:13.5px;font-weight:600">{{ a.name }}</span><span style="font:500 10.5px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">{{ a.typeLabel }}</span></div>
-                  <div style="font-size:12.5px;color:var(--ink-2);margin-top:3px">{{ a.desc }}</div>
+          <div style="margin-bottom:20px"><div style="font-size:22px;font-weight:700;letter-spacing:-.015em">{{ t.alertTitle }}</div><div style="font-size:13px;color:var(--ink-3);margin-top:3px">{{ t.alertSub }}</div></div>
+          <div style="display:flex;flex-direction:column;gap:24px">
+            <sc-for list="{{ alertCols }}" as="col" hint-placeholder-count="3">
+              <div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding-bottom:11px;border-bottom:1px solid var(--border)">
+                  <span style="width:7px;height:7px;border-radius:2px;background:{{ col.color }};flex-shrink:0"></span>
+                  <span style="font:700 11px 'JetBrains Mono',monospace;letter-spacing:.07em;color:{{ col.color }}">{{ col.label }}</span>
+                  <span style="font:600 11px 'JetBrains Mono',monospace;color:var(--ink-3);background:var(--surface-3);border-radius:5px;padding:1px 7px">{{ col.count }}</span>
                 </div>
-                <span style="flex-shrink:0;display:inline-flex;align-items:center;gap:6px;color:{{ a.sevColor }};font:600 11px 'JetBrains Mono',monospace">{{ a.sevLabel }}</span>
-                <span style="flex-shrink:0;font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3);width:44px;text-align:right">{{ a.time }}</span>
-                <button onClick="{{ a.open }}" style="flex-shrink:0;border:1px solid var(--border);border-radius:8px;padding:7px 13px;font-size:12px;font-weight:600">{{ t.review }}</button>
+                <div class="alert-carousel" style="display:flex;gap:12px;overflow-x:auto;padding-bottom:4px">
+                  <sc-for list="{{ col.items }}" as="a" hint-placeholder-count="2">
+                    <button onClick="{{ a.open }}" class="alert-card" style="flex-shrink:0;width:252px;text-align:left;border:1px solid var(--border);border-radius:14px;padding:16px;background:var(--surface);cursor:pointer">
+                      <div style="display:flex;align-items:center;gap:10px;margin-bottom:13px">
+                        <div style="width:32px;height:32px;border-radius:50%;background:{{ a.sevTint }};display:flex;align-items:center;justify-content:center;font:600 10px 'JetBrains Mono',monospace;color:{{ a.sevColor }};flex-shrink:0">{{ a.ini }}</div>
+                        <div style="flex:1;min-width:0">
+                          <div style="display:flex;align-items:center;gap:5px;margin-bottom:2px">
+                            <span style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ a.name }}</span>
+                            <sc-if value="{{ a.vip }}" hint-placeholder-val="{{ false }}"><span style="width:6px;height:6px;background:oklch(0.8 0.13 85);transform:rotate(45deg);display:inline-block;flex-shrink:0"></span></sc-if>
+                          </div>
+                          <span style="font:500 10.5px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ a.time }}</span>
+                        </div>
+                      </div>
+                      <div style="margin-bottom:10px"><span style="display:inline-flex;padding:3px 8px;border-radius:6px;background:{{ a.sevTint }};font:600 9.5px 'JetBrains Mono',monospace;letter-spacing:.04em;color:{{ a.sevColor }}">{{ a.typeLabel }}</span></div>
+                      <div style="font-size:12px;color:var(--ink-2);line-height:1.5">{{ a.desc }}</div>
+                    </button>
+                  </sc-for>
+                </div>
               </div>
             </sc-for>
           </div>
@@ -1175,11 +1194,16 @@ class Component extends DCLogic {
       { id:'gustavo', type:'concentration', sev:'med', time:R('1d','1d'), desc:R('68% in equities','68% em RV') },
       { id:'camila', type:'inactivity', sev:'low', time:R('2d','2d'), desc:R('No contact in 30 days','Sem contato há 30 dias') }
     ];
-    const alerts = ALERT.map(a => {
-      const c = byId[a.id];
-      return { name:c.name, typeLabel:pick(alertTypeLbl[a.type]), desc:pick(a.desc), sevColor:sevColor[a.sev], sevTint:sevTint[a.sev], sevLabel:pick(sevLbl[a.sev]), time:pick(a.time), open:c.open };
-    });
-    const alertCount = String(ALERT.filter(a => a.sev==='high').length);
+    const mkAlert = a => { const c = byId[a.id]; return { name:c.name, ini:c.ini, vip:c.vip, typeLabel:pick(alertTypeLbl[a.type]), desc:pick(a.desc), sevColor:sevColor[a.sev], sevTint:sevTint[a.sev], time:pick(a.time), open:c.open }; };
+    const alertsHigh = ALERT.filter(a => a.sev==='high').map(mkAlert);
+    const alertsMed  = ALERT.filter(a => a.sev==='med').map(mkAlert);
+    const alertsLow  = ALERT.filter(a => a.sev==='low').map(mkAlert);
+    const alertCols  = [
+      { label:pick(sevLbl.high), count:String(alertsHigh.length), color:sevColor.high, items:alertsHigh },
+      { label:pick(sevLbl.med),  count:String(alertsMed.length),  color:sevColor.med,  items:alertsMed  },
+      { label:pick(sevLbl.low),  count:String(alertsLow.length),  color:sevColor.low,  items:alertsLow  },
+    ];
+    const alertCount = String(alertsHigh.length);
 
     // ---------- opportunities ----------
     const oppTypeLbl = { crosssell:R('Cross-sell','Cross-sell'), inflow:R('New inflow','Novo aporte'), realloc:R('Reallocation','Realocação'), pension:R('Pension','Previdência'), review:R('Review','Revisão') };
@@ -1260,7 +1284,7 @@ class Component extends DCLogic {
       pillTransBg:S.convoView==='transcript'?'var(--surface-3)':'transparent', pillTransFg:S.convoView==='transcript'?'var(--ink)':'var(--ink-3)',
       pillMsgBg:S.convoView==='messages'?'var(--surface-3)':'transparent', pillMsgFg:S.convoView==='messages'?'var(--ink)':'var(--ink-3)',
       bars, miniBars,
-      convFilters, conversationsVip, conversationsRegular, hasVipConvs, hasRegularConvs, recFilters, recommendations, alerts, stages, agg, aggClasses, offPolicy,
+      convFilters, conversationsVip, conversationsRegular, hasVipConvs, hasRegularConvs, recFilters, recommendations, alertCols, stages, agg, aggClasses, offPolicy,
       toggleLang:() => this.setState(s => ({ lang:s.lang==='en'?'pt':'en' })),
       toggleMenu:() => this.setState(s => ({ menuOpen:!s.menuOpen })),
       toggleChat:() => this.setState(s => ({ chatOpen:!s.chatOpen })),
