@@ -93,38 +93,48 @@ graph TB
 sequenceDiagram
     actor Advisor
     participant UI as Cockpit UI
-    participant Backend
+    participant Back as Backend (FastAPI)
+    participant PG as PostgreSQL
+    participant AN as Analytics (DuckDB)
     participant EL as ElevenLabs
 
+    Note over UI,AN: On page load
+    UI->>Back: GET /clients
+    Back->>AN: GET /clients
+    AN-->>Back: 12 clients (live from DuckDB)
+    Back-->>UI: Client book with live allocation data
+
+    Note over Advisor,EL: Voice session
     Advisor->>UI: Tap phone button
-    UI->>Backend: GET /agent/token
-    Backend->>EL: GET signed_url
+    UI->>Back: GET /agent/token
+    Back->>EL: GET signed_url
+    Back->>PG: INSERT agent_sessions
     EL-->>UI: WebSocket URL
     UI->>EL: Connect (WebSocket)
-    EL-->>Advisor: "Good morning. Ricardo Tanaka needs action today..."
+    EL-->>Advisor: "$CLIENT_NAME needs action today..."
 
-    Advisor->>EL: "Pull up Ricardo"
-    EL->>UI: show_opportunity({ clientId: "ricardo" })
-    UI->>UI: Client detail opens
+    Advisor->>EL: "Pull up $CLIENT_NAME"
+    EL->>UI: show_opportunity({ clientId })
+    UI->>Back: GET /memory/long/$CLIENT_ID
+    Back->>PG: SELECT agent_memory_long
+    PG-->>UI: Learned facts about client
+    UI->>UI: Client detail + Sofia memory opens
 
-    Advisor->>EL: "Draft a message for him"
-    EL->>UI: show_recommendation({ text: "Ricardo, seu portfólio..." })
+    Advisor->>EL: "Draft a message"
+    EL->>UI: show_recommendation({ text })
     UI->>UI: Editable approval card appears
 
     Advisor->>UI: Edits text, clicks Generate voice
-    UI->>Backend: POST /tts
-    Backend->>EL: TTS request (Sarah voice)
+    UI->>Back: POST /tts
+    Back->>EL: TTS request (Sarah voice)
+    Back->>PG: INSERT advisor_actions
     EL-->>UI: MP3 audio
     UI->>UI: Playable VOICE card in side panel
 
-    Advisor->>UI: Tap play to preview
-    UI->>EL: setVolume(0)
-    UI->>UI: Audio plays, setVolume(1) on end
-
     Advisor->>EL: "Send it"
-    EL->>UI: send_whatsapp({ clientId: "ricardo" })
+    EL->>UI: send_whatsapp({ clientId })
     UI->>UI: Toast "Sent"
-    EL-->>Advisor: "Sent. Next — Beatriz, suitability expires today..."
+    EL-->>Advisor: "Sent. Next — $CLIENT_NAME..."
 ```
 
 ---

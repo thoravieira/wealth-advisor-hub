@@ -1,4 +1,4 @@
-# SPEC-007 — Wealth Advisor Hub
+# SPEC-007 — sofIA
 
 **Status:** Implemented  
 **Author:** Thiago da Hora  

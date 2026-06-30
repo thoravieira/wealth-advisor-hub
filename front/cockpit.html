@@ -353,6 +353,17 @@
                   </div>
                 </sc-for>
               </div>
+              <sc-if value="{{ sc.hasMemory }}" hint-placeholder-val="{{ false }}">
+                <div style="font:500 10.5px 'JetBrains Mono',monospace;letter-spacing:.04em;color:var(--ink-3);margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">SOFIA MEMORY</div>
+                <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">
+                  <sc-for list="{{ sc.memoryList }}" as="mf" hint-placeholder-count="2">
+                    <div style="display:flex;align-items:flex-start;gap:8px">
+                      <span style="font:700 8.5px 'JetBrains Mono',monospace;color:{{ mf.catColor }};background:{{ mf.catBg }};border-radius:4px;padding:2px 5px;margin-top:2px;flex-shrink:0;letter-spacing:.04em;text-transform:uppercase">{{ mf.cat }}</span>
+                      <span style="font-size:11.5px;color:var(--ink-2);line-height:1.45">{{ mf.fact }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
             </div>
 
             <!-- conversation + intel OR empty -->
@@ -490,38 +501,6 @@
       <sc-if value="{{ isConversations }}" hint-placeholder-val="{{ false }}">
         <div>
           <div style="margin-bottom:16px"><div style="font-size:22px;font-weight:700;letter-spacing:-.015em">{{ t.convTitle }}</div><div style="font-size:13px;color:var(--ink-3);margin-top:3px">{{ t.convSub }}</div></div>
-
-          <!-- Sofia live call panel -->
-          <div style="border:1px solid var(--border);border-radius:14px;background:var(--surface);margin-bottom:20px;overflow:hidden">
-            <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border)">
-              <div style="width:8px;height:8px;border-radius:50%;background:{{ agentStatusDot }};flex-shrink:0"></div>
-              <div style="flex:1">
-                <span style="font-size:14px;font-weight:700">Sofia</span>
-                <span style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3);margin-left:8px">{{ agentStatusLabel }}</span>
-              </div>
-              <button onClick="{{ toggleAgent }}" style="background:{{ agentBtnBg }};color:var(--bg);border-radius:9px;padding:7px 16px;font-size:12.5px;font-weight:600;border:none;cursor:pointer">{{ agentBtnLabel }}</button>
-            </div>
-            <!-- transcript -->
-            <sc-if value="{{ agentActive }}" hint-placeholder-val="{{ false }}">
-              <div style="max-height:220px;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:10px">
-                <sc-for list="{{ agentTranscript }}" as="m" hint-placeholder-count="3">
-                  <div style="display:flex;gap:10px;align-items:flex-start">
-                    <span style="font:700 10px 'JetBrains Mono',monospace;color:var(--ink-3);flex-shrink:0;margin-top:3px;width:28px">{{ m.who }}</span>
-                    <div style="font-size:13px;color:var(--ink);line-height:1.55">{{ m.text }}</div>
-                  </div>
-                </sc-for>
-              </div>
-            </sc-if>
-            <sc-if value="{{ agentIdle }}" hint-placeholder-val="{{ true }}">
-              <div style="padding:18px;font-size:13px;color:var(--ink-3)">{{ t.sofiaIdleHint }}</div>
-            </sc-if>
-            <sc-if value="{{ agentConnecting }}" hint-placeholder-val="{{ false }}">
-              <div style="padding:18px;font-size:13px;color:var(--ink-3);display:flex;align-items:center;gap:8px">
-                <div style="width:7px;height:7px;border-radius:50%;background:var(--amber);animation:softpulse 1s infinite"></div>
-                {{ t.sofiaConnecting }}
-              </div>
-            </sc-if>
-          </div>
 
           <div style="display:flex;gap:7px;margin-bottom:14px">
             <sc-for list="{{ convFilters }}" as="f" hint-placeholder-count="4"><button onClick="{{ f.set }}" style="border:1px solid {{ f.border }};background:{{ f.bg }};color:{{ f.color }};border-radius:8px;padding:6px 12px;font-size:12px;font-weight:{{ f.weight }}">{{ f.label }}</button></sc-for>
@@ -747,7 +726,28 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
 class Component extends DCLogic {
-  state = { lang:'en', menuOpen:true, chatOpen:false, route:'overview', prevRoute:'overview', clientId:'ricardo', convoView:'transcript', clientFilter:'all', convFilter:'all', recFilter:'all', query:'', agentStatus:'idle', agentTranscript:[], voicePreviews:[], playingVoice:null, approvalCard:null, approvalClientId:null, toastMsg:null };
+  state = { lang:'en', menuOpen:true, chatOpen:false, route:'overview', prevRoute:'overview', clientId:'ricardo', convoView:'transcript', clientFilter:'all', convFilter:'all', recFilter:'all', query:'', agentStatus:'idle', agentTranscript:[], voicePreviews:[], playingVoice:null, approvalCard:null, approvalClientId:null, toastMsg:null, analyticsClients:{}, memoryFacts:{} };
+
+  async _initData() {
+    try {
+      const r = await fetch('http://localhost:8000/clients');
+      if (!r.ok) return;
+      const list = await r.json();
+      const analyticsClients = {};
+      for (const c of list) analyticsClients[c.client_id] = c;
+      this.setState({ analyticsClients });
+    } catch(e) { console.warn('Analytics unavailable:', e.message); }
+  }
+
+  async _fetchMemory(clientId) {
+    if (this.state.memoryFacts[clientId]) return;
+    try {
+      const r = await fetch(`http://localhost:8000/memory/long/${clientId}`);
+      if (!r.ok) return;
+      const facts = await r.json();
+      this.setState(s => ({ memoryFacts: { ...s.memoryFacts, [clientId]: facts } }));
+    } catch(e) { console.warn('Memory fetch failed:', e.message); }
+  }
 
   async _addVoicePreview(text, clientId) {
     const self = this;
@@ -790,6 +790,8 @@ class Component extends DCLogic {
   renderVals() {
     window._cockpit = this;
     const S = this.state, L = S.lang, pick = o => o[L], R = (en,pt) => ({ en, pt });
+    if (!this._initialized) { this._initialized = true; this._initData(); }
+    if (S.route === 'client' && S.clientId !== this._lastMemFetch) { this._lastMemFetch = S.clientId; this._fetchMemory(S.clientId); }
     const C = { red:'oklch(0.52 0.175 27)', green:'oklch(0.50 0.20 150)', amber:'oklch(0.56 0.145 65)', blue:'oklch(0.52 0.145 248)', gray:'oklch(0.55 0.005 265)' };
     const statusColor = { risk:C.red, attention:C.amber, opportunity:C.green, pending:C.amber, awaiting:C.blue, ok:C.gray };
     const statusLbl = { risk:R('At risk','Em risco'), attention:R('Attention','Atenção'), opportunity:R('Opportunity','Oportunidade'), pending:R('Pending','Pendência'), awaiting:R('Awaiting','Aguardando'), ok:R('On track','Em dia') };
@@ -861,11 +863,13 @@ class Component extends DCLogic {
     const legend = L === 'en' ? a => 'EQ '+a[0]+' · FI '+a[1]+' · FND '+a[2]+' · CASH '+a[3] : a => 'RV '+a[0]+' · RF '+a[1]+' · FND '+a[2]+' · CAIXA '+a[3];
     const byId = {};
     const clients = CL.map(c => {
+      const an = S.analyticsClients[c.id];
+      const al = an ? [an.equity_pct, an.fixed_income_pct, an.funds_pct, an.cash_pct] : c.al;
       const o = {
         ...c, accent:statusColor[c.status], deltaColor:c.dn?C.red:C.green,
         perfilLabel:pick(perfilLbl[c.perfil]), statusLabel:pick(statusLbl[c.status]),
-        note:pick(c.note), ago:pick(c.ago), allocLegend:legend(c.al),
-        alloc:{ rv:c.al[0]+'%', rf:c.al[1]+'%', fu:c.al[2]+'%', cx:c.al[3]+'%' },
+        note:pick(c.note), ago:pick(c.ago), allocLegend:legend(al),
+        alloc:{ rv:al[0]+'%', rf:al[1]+'%', fu:al[2]+'%', cx:al[3]+'%' },
         open:() => this.setState({ route:'client', clientId:c.id, prevRoute:S.route })
       };
       byId[c.id] = o; return o;
@@ -929,7 +933,8 @@ class Component extends DCLogic {
     const fill = riskFill[sc0.perfil];
     const riskSegs = [0,1,2,3,4].map(i => ({ color:i<fill?'oklch(0.12 0.005 265)':'var(--surface-3)' }));
     const shade = { rv:'oklch(0.12 0.005 265)', rf:'oklch(0.40 0.005 265)', fu:'oklch(0.60 0.005 265)', cx:'oklch(0.78 0.005 265)' };
-    const al = sc0.al;
+    const acData = S.analyticsClients[sc0.id];
+    const al = acData ? [acData.equity_pct, acData.fixed_income_pct, acData.funds_pct, acData.cash_pct] : sc0.al;
     const allocList = [
       { name:pick(R('Equities','Renda variável')), pct:al[0]+'%', w:al[0]+'%', shade:shade.rv },
       { name:pick(R('Fixed income','Renda fixa')), pct:al[1]+'%', w:al[1]+'%', shade:shade.rf },
@@ -1052,6 +1057,11 @@ class Component extends DCLogic {
     const cv = CONVO[sc0.id];
     const hasConvo = !!cv;
     const sc = { ...sc0, hasConvo, noConvo: !hasConvo };
+    const mfRaw = (S.memoryFacts[sc0.id] || []).filter(f => f.fact);
+    const catColor = { risk_signal:C.red, life_event:C.amber, objective:C.blue, preference:C.green, note:C.gray };
+    const catBg    = { risk_signal:'oklch(0.52 0.175 27 / .1)', life_event:'oklch(0.56 0.145 65 / .1)', objective:'oklch(0.52 0.145 248 / .1)', preference:'oklch(0.50 0.20 150 / .1)', note:'oklch(0.55 0.005 265 / .1)' };
+    sc.hasMemory  = mfRaw.length > 0;
+    sc.memoryList = mfRaw.map(f => ({ cat:f.category.replace(/_/g,' '), catColor:catColor[f.category]||C.gray, catBg:catBg[f.category]||'oklch(0.55 0.005 265/.1)', fact:f.fact }));
     let convo = null;
     if (cv) {
       const tr = cv.transcript.map(l => {

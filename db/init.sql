@@ -53,3 +53,17 @@ CREATE INDEX IF NOT EXISTS idx_memory_short_session ON agent_memory_short(sessio
 CREATE INDEX IF NOT EXISTS idx_memory_long_client   ON agent_memory_long(client_id) WHERE is_active;
 CREATE INDEX IF NOT EXISTS idx_advisor_actions_client ON advisor_actions(client_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_created     ON agent_sessions(created_at DESC);
+
+-- Seed: facts Sofia learned from prior advisor sessions (demo data)
+INSERT INTO agent_memory_long (client_id, category, fact, confidence) VALUES
+  ('ricardo', 'risk_signal',  'Equity at 71%, above 65% personal threshold. Mentioned wanting to withdraw funds in last call.',      0.95),
+  ('ricardo', 'life_event',   'Baby on the way — wants a larger safety reserve. Short-term liquidity concern raised explicitly.',     0.90),
+  ('beatriz', 'risk_signal',  'Suitability assessment expires 2026-06-30. Advisor signature required before expiry.',                1.00),
+  ('beatriz', 'preference',   'Conservative profile but open to CDBs at 120%+ CDI. Not receptive to equity fund proposals.',         0.80),
+  ('fernando', 'preference',  'Prefers WhatsApp for communication. Usually responds within 2 hours.',                                0.85),
+  ('fernando', 'objective',   'Targeting 15% annual return. Interested in private credit and infrastructure fund allocations.',       0.90),
+  ('lucia',   'objective',    'Planning partial liquidity event in Q4 2026 for a real estate purchase. Amount TBD.',                  0.85),
+  ('andre',   'risk_signal',  'Equity at 74%, approaching 80% policy limit. A market correction could trigger mandatory rebalance.',  0.90),
+  ('roberto', 'life_event',   'Recently divorced. Reviewing investment objectives and beneficiary designations on all positions.',     0.75),
+  ('ana',     'objective',    'Interested in ESG funds. Potential R$800k inflow expected from business sale in Q3 2026.',             0.80)
+ON CONFLICT DO NOTHING;
