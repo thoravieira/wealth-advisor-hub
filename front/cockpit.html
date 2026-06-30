@@ -511,51 +511,64 @@
           </div>
           <!-- VIP frame -->
           <sc-if value="{{ hasVipConvs }}" hint-placeholder-val="{{ true }}">
-            <div style="margin-bottom:16px">
-              <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:9px;background:oklch(0.8 0.13 85 / .08);border:1px solid oklch(0.8 0.13 85 / .3);border-radius:7px;padding:4px 10px">
-                <span style="width:7px;height:7px;background:oklch(0.78 0.13 85);transform:rotate(45deg);display:inline-block;flex-shrink:0"></span>
-                <span style="font:700 10.5px 'JetBrains Mono',monospace;letter-spacing:.07em;color:oklch(0.72 0.13 85)">VIP</span>
-              </div>
-              <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden">
-                <div style="display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">
-                  <span style="width:210px">{{ t.thClient }}</span><span style="width:120px">{{ t.thChannel }}</span><span style="width:90px">{{ t.thDate }}</span><span style="width:80px">{{ t.thDuration }}</span><span style="flex:1">{{ t.thSentiment }}</span><span>{{ t.thStatus }}</span>
+            <div style="margin-bottom:14px">
+              <button onClick="{{ toggleVipConv }}" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 14px;background:var(--ink);border-radius:10px;margin-bottom:10px;cursor:pointer">
+                <div style="display:flex;align-items:center;gap:7px">
+                  <span style="width:7px;height:7px;background:oklch(0.8 0.13 85);transform:rotate(45deg);display:inline-block;flex-shrink:0"></span>
+                  <span style="font:700 10.5px 'JetBrains Mono',monospace;letter-spacing:.07em;color:var(--bg)">VIP</span>
                 </div>
-                <sc-for list="{{ conversationsVip }}" as="v" hint-placeholder-count="4">
-                  <button onClick="{{ v.open }}" style="text-align:left;width:100%;display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border)" style-hover="background:var(--surface-2)">
-                    <div style="width:210px;display:flex;align-items:center;gap:11px"><div style="width:34px;height:34px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.ini }}</div><span style="font-size:13.5px;font-weight:600">{{ v.name }}</span></div>
-                    <div style="width:120px;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2)"><span style="width:7px;height:7px;border-radius:2px;background:{{ v.chColor }}"></span>{{ v.channel }}</div>
-                    <span style="width:90px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.date }}</span>
-                    <span style="width:80px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.dur }}</span>
-                    <div style="flex:1"><span style="display:inline-flex;align-items:center;gap:6px;font:600 11px 'JetBrains Mono',monospace;color:{{ v.sentColor }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ v.sentColor }}"></span>{{ v.sentLabel }}</span></div>
-                    <div style="display:flex;align-items:center;gap:10px">
-                      <span style="font:500 10px 'JetBrains Mono',monospace;color:{{ v.trColor }}">{{ v.trLabel }}</span>
-                      <sc-if value="{{ v.play }}" hint-placeholder-val="{{ true }}"><div style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink)"><span style="font-size:10px;margin-left:2px">▶</span></div></sc-if>
-                    </div>
-                  </button>
-                </sc-for>
-              </div>
+                <span style="font-size:11px;color:oklch(0.55 0.005 265)">{{ convVipChevron }}</span>
+              </button>
+              <sc-if value="{{ convVipOpen }}" hint-placeholder-val="{{ true }}">
+                <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden">
+                  <div style="display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--ink);border-bottom:1px solid oklch(0.2 0.005 265);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:oklch(0.55 0.005 265)">
+                    <span style="width:210px">{{ t.thClient }}</span><span style="width:120px">{{ t.thChannel }}</span><span style="width:90px">{{ t.thDate }}</span><span style="width:80px">{{ t.thDuration }}</span><span style="flex:1">{{ t.thSentiment }}</span><span>{{ t.thStatus }}</span>
+                  </div>
+                  <sc-for list="{{ conversationsVip }}" as="v" hint-placeholder-count="4">
+                    <button onClick="{{ v.open }}" style="text-align:left;width:100%;display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border)" style-hover="background:var(--surface-2)">
+                      <div style="width:210px;display:flex;align-items:center;gap:11px"><div style="width:34px;height:34px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.ini }}</div><span style="font-size:13.5px;font-weight:600">{{ v.name }}</span></div>
+                      <div style="width:120px;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2)"><span style="width:7px;height:7px;border-radius:2px;background:{{ v.chColor }}"></span>{{ v.channel }}</div>
+                      <span style="width:90px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.date }}</span>
+                      <span style="width:80px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.dur }}</span>
+                      <div style="flex:1"><span style="display:inline-flex;align-items:center;gap:6px;font:600 11px 'JetBrains Mono',monospace;color:{{ v.sentColor }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ v.sentColor }}"></span>{{ v.sentLabel }}</span></div>
+                      <div style="display:flex;align-items:center;gap:10px">
+                        <span style="font:500 10px 'JetBrains Mono',monospace;color:{{ v.trColor }}">{{ v.trLabel }}</span>
+                        <sc-if value="{{ v.play }}" hint-placeholder-val="{{ true }}"><div style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink)"><span style="font-size:10px;margin-left:2px">▶</span></div></sc-if>
+                      </div>
+                    </button>
+                  </sc-for>
+                </div>
+              </sc-if>
             </div>
           </sc-if>
 
           <!-- Regular clients frame -->
           <sc-if value="{{ hasRegularConvs }}" hint-placeholder-val="{{ true }}">
-            <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden">
-              <div style="display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">
-                <span style="width:210px">{{ t.thClient }}</span><span style="width:120px">{{ t.thChannel }}</span><span style="width:90px">{{ t.thDate }}</span><span style="width:80px">{{ t.thDuration }}</span><span style="flex:1">{{ t.thSentiment }}</span><span>{{ t.thStatus }}</span>
-              </div>
-              <sc-for list="{{ conversationsRegular }}" as="v" hint-placeholder-count="4">
-                <button onClick="{{ v.open }}" style="text-align:left;width:100%;display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border)" style-hover="background:var(--surface-2)">
-                  <div style="width:210px;display:flex;align-items:center;gap:11px"><div style="width:34px;height:34px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.ini }}</div><span style="font-size:13.5px;font-weight:600">{{ v.name }}</span></div>
-                  <div style="width:120px;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2)"><span style="width:7px;height:7px;border-radius:2px;background:{{ v.chColor }}"></span>{{ v.channel }}</div>
-                  <span style="width:90px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.date }}</span>
-                  <span style="width:80px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.dur }}</span>
-                  <div style="flex:1"><span style="display:inline-flex;align-items:center;gap:6px;font:600 11px 'JetBrains Mono',monospace;color:{{ v.sentColor }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ v.sentColor }}"></span>{{ v.sentLabel }}</span></div>
-                  <div style="display:flex;align-items:center;gap:10px">
-                    <span style="font:500 10px 'JetBrains Mono',monospace;color:{{ v.trColor }}">{{ v.trLabel }}</span>
-                    <sc-if value="{{ v.play }}" hint-placeholder-val="{{ true }}"><div style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink)"><span style="font-size:10px;margin-left:2px">▶</span></div></sc-if>
+            <div>
+              <button onClick="{{ toggleRegConv }}" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 14px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;cursor:pointer">
+                <span style="font:600 11px 'JetBrains Mono',monospace;letter-spacing:.04em;color:var(--ink-2)">{{ t.clients }}</span>
+                <span style="font-size:11px;color:var(--ink-3)">{{ convRegChevron }}</span>
+              </button>
+              <sc-if value="{{ convRegOpen }}" hint-placeholder-val="{{ true }}">
+                <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden">
+                  <div style="display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">
+                    <span style="width:210px">{{ t.thClient }}</span><span style="width:120px">{{ t.thChannel }}</span><span style="width:90px">{{ t.thDate }}</span><span style="width:80px">{{ t.thDuration }}</span><span style="flex:1">{{ t.thSentiment }}</span><span>{{ t.thStatus }}</span>
                   </div>
-                </button>
-              </sc-for>
+                  <sc-for list="{{ conversationsRegular }}" as="v" hint-placeholder-count="4">
+                    <button onClick="{{ v.open }}" style="text-align:left;width:100%;display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border)" style-hover="background:var(--surface-2)">
+                      <div style="width:210px;display:flex;align-items:center;gap:11px"><div style="width:34px;height:34px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.ini }}</div><span style="font-size:13.5px;font-weight:600">{{ v.name }}</span></div>
+                      <div style="width:120px;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2)"><span style="width:7px;height:7px;border-radius:2px;background:{{ v.chColor }}"></span>{{ v.channel }}</div>
+                      <span style="width:90px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.date }}</span>
+                      <span style="width:80px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.dur }}</span>
+                      <div style="flex:1"><span style="display:inline-flex;align-items:center;gap:6px;font:600 11px 'JetBrains Mono',monospace;color:{{ v.sentColor }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ v.sentColor }}"></span>{{ v.sentLabel }}</span></div>
+                      <div style="display:flex;align-items:center;gap:10px">
+                        <span style="font:500 10px 'JetBrains Mono',monospace;color:{{ v.trColor }}">{{ v.trLabel }}</span>
+                        <sc-if value="{{ v.play }}" hint-placeholder-val="{{ true }}"><div style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink)"><span style="font-size:10px;margin-left:2px">▶</span></div></sc-if>
+                      </div>
+                    </button>
+                  </sc-for>
+                </div>
+              </sc-if>
             </div>
           </sc-if>
         </div>
@@ -776,7 +789,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
 class Component extends DCLogic {
-  state = { lang:'en', menuOpen:true, chatOpen:false, route:'overview', prevRoute:'overview', clientId:'ricardo', convoView:'transcript', clientFilter:'all', convFilter:'all', recFilter:'all', query:'', agentStatus:'idle', agentTranscript:[], voicePreviews:[], playingVoice:null, approvalCard:null, approvalClientId:null, toastMsg:null, analyticsClients:{}, memoryFacts:{} };
+  state = { lang:'en', menuOpen:true, chatOpen:false, route:'overview', prevRoute:'overview', clientId:'ricardo', convoView:'transcript', clientFilter:'all', convFilter:'all', recFilter:'all', query:'', agentStatus:'idle', agentTranscript:[], voicePreviews:[], playingVoice:null, approvalCard:null, approvalClientId:null, toastMsg:null, analyticsClients:{}, memoryFacts:{}, convVipOpen:true, convRegOpen:true };
 
   async _initData() {
     try {
@@ -1162,6 +1175,10 @@ class Component extends DCLogic {
     const conversationsRegular = _allConvs.filter(v => !v.vip);
     const hasVipConvs     = conversationsVip.length > 0;
     const hasRegularConvs = conversationsRegular.length > 0;
+    const convVipChevron  = S.convVipOpen ? '▾' : '▸';
+    const convRegChevron  = S.convRegOpen ? '▾' : '▸';
+    const toggleVipConv   = () => this.setState(s => ({ convVipOpen:!s.convVipOpen }));
+    const toggleRegConv   = () => this.setState(s => ({ convRegOpen:!s.convRegOpen }));
 
     // ---------- recommendations ----------
     const recStatusLbl = { pending:R('Pending','Pendente'), sent:R('Sent','Enviada'), accepted:R('Accepted','Aceita'), declined:R('Declined','Recusada') };
@@ -1284,7 +1301,7 @@ class Component extends DCLogic {
       pillTransBg:S.convoView==='transcript'?'var(--surface-3)':'transparent', pillTransFg:S.convoView==='transcript'?'var(--ink)':'var(--ink-3)',
       pillMsgBg:S.convoView==='messages'?'var(--surface-3)':'transparent', pillMsgFg:S.convoView==='messages'?'var(--ink)':'var(--ink-3)',
       bars, miniBars,
-      convFilters, conversationsVip, conversationsRegular, hasVipConvs, hasRegularConvs, recFilters, recommendations, alertCols, stages, agg, aggClasses, offPolicy,
+      convFilters, conversationsVip, conversationsRegular, hasVipConvs, hasRegularConvs, convVipChevron, convRegChevron, toggleVipConv, toggleRegConv, recFilters, recommendations, alertCols, stages, agg, aggClasses, offPolicy,
       toggleLang:() => this.setState(s => ({ lang:s.lang==='en'?'pt':'en' })),
       toggleMenu:() => this.setState(s => ({ menuOpen:!s.menuOpen })),
       toggleChat:() => this.setState(s => ({ chatOpen:!s.chatOpen })),
