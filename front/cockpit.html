@@ -331,8 +331,17 @@
           </div>
 
           <div style="display:flex;gap:16px;align-items:flex-start">
-            <!-- profile -->
+            <!-- profile panel -->
             <div style="width:300px;flex-shrink:0;border:1px solid var(--border);border-radius:14px;padding:18px">
+              <!-- sub-nav -->
+              <div style="display:flex;gap:2px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:3px;margin-bottom:18px">
+                <button onClick="{{ setClientOverview }}" style="flex:1;border-radius:7px;padding:6px 8px;font:600 10.5px 'JetBrains Mono',monospace;background:{{ clientTabOvBg }};color:{{ clientTabOvFg }};text-align:center;letter-spacing:.01em">{{ t.overview }}</button>
+                <button onClick="{{ setClientRecs }}" style="flex:1;border-radius:7px;padding:6px 8px;font:600 10.5px 'JetBrains Mono',monospace;background:{{ clientTabRecBg }};color:{{ clientTabRecFg }};text-align:center;letter-spacing:.01em">{{ t.recommendations }}</button>
+              </div>
+
+              <!-- OVERVIEW content -->
+              <sc-if value="{{ showClientOverview }}" hint-placeholder-val="{{ true }}">
+              <div>
               <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">{{ t.aum }}</div>
               <div style="display:flex;align-items:baseline;gap:10px;margin-top:6px"><span style="font:700 26px 'JetBrains Mono',monospace;letter-spacing:-.03em">{{ sc.patr }}</span><span style="font:600 12px 'JetBrains Mono',monospace;color:{{ sc.deltaColor }}">{{ sc.delta }} {{ t.monthChange }}</span></div>
 
@@ -372,9 +381,35 @@
                   </sc-for>
                 </div>
               </sc-if>
+              </div>
+              </sc-if><!-- end showClientOverview -->
+
+              <!-- RECOMMENDATIONS content -->
+              <sc-if value="{{ showClientRecs }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <sc-for list="{{ clientRecs }}" as="r" hint-placeholder-count="3">
+                    <div onClick="{{ r.sel }}" style="cursor:pointer;border:{{ r.border }};border-radius:12px;padding:13px 14px;background:var(--bg)">
+                      <div style="font-size:12.5px;line-height:1.65;color:var(--ink)">{{ r.text }}</div>
+                      <div style="display:flex;align-items:center;gap:8px;margin-top:11px;padding-top:10px;border-top:1px solid var(--border)">
+                        <span style="font:500 10px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ r.voice }}</span>
+                        <span style="font:600 10px 'JetBrains Mono',monospace;color:var(--ink-muted)">{{ r.dur }}</span>
+                        <div style="margin-left:auto;display:flex;align-items:center;gap:5px">
+                          <button onClick="{{ r.edit }}" style="width:26px;height:26px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink-3);flex-shrink:0" title="Edit">
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                          </button>
+                          <button onClick="{{ r.send }}" style="width:26px;height:26px;border-radius:7px;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0" title="Send">
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if><!-- end showClientRecs -->
+
             </div>
 
-            <!-- f2: conversation (full width, 4 tabs) -->
+            <!-- f2: conversation (full width, 3 tabs) -->
             <div style="flex:1;min-width:0">
               <sc-if value="{{ sc.hasConvo }}" hint-placeholder-val="{{ true }}">
                 <div>
@@ -391,7 +426,6 @@
                     <div style="display:flex;gap:3px;background:var(--surface-3);border-radius:9px;padding:3px;flex-shrink:0">
                       <button onClick="{{ setTranscript }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillTransBg }};color:{{ pillTransFg }}">{{ t.transcriptTab }}</button>
                       <button onClick="{{ setMessages }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillMsgBg }};color:{{ pillMsgFg }}">{{ t.messagesTab }}</button>
-                      <button onClick="{{ setRecommendations }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillRecBg }};color:{{ pillRecFg }}">{{ t.recommendations }}</button>
                       <button onClick="{{ setInsights }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillInsBg }};color:{{ pillInsFg }}">✦ Insights</button>
                     </div>
                   </div>
@@ -479,31 +513,6 @@
                       </div>
                     </sc-if>
 
-                    <sc-if value="{{ showRecommendations }}" hint-placeholder-val="{{ false }}">
-                      <div>
-                        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
-                          <sc-for list="{{ clientRecs }}" as="r" hint-placeholder-count="3">
-                            <div style="border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--surface-2)">
-                              <div style="font-size:13.5px;line-height:1.55;color:var(--ink)">{{ r.text }}</div>
-                              <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-                                <span style="font:500 10.5px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ r.voice }}</span>
-                                <span style="font:600 10px 'JetBrains Mono',monospace;color:var(--ink-muted)">{{ r.dur }}</span>
-                              </div>
-                            </div>
-                          </sc-for>
-                        </div>
-                        <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border:1px solid var(--border);border-radius:12px;background:var(--surface)">
-                          <div style="display:flex;align-items:center;gap:10px">
-                            <span style="font:500 11.5px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ t.sendAs }}</span>
-                            <div style="display:flex;gap:3px;background:var(--surface-3);border-radius:8px;padding:3px">
-                              <button onClick="{{ setRecText }}" style="border-radius:6px;padding:5px 12px;font:600 11px 'JetBrains Mono',monospace;background:{{ recModeTextBg }};color:{{ recModeTextFg }}">{{ t.sendText }}</button>
-                              <button onClick="{{ setRecVoice }}" style="border-radius:6px;padding:5px 12px;font:600 11px 'JetBrains Mono',monospace;background:{{ recModeVoiceBg }};color:{{ recModeVoiceFg }}">{{ t.sendVoice }}</button>
-                            </div>
-                          </div>
-                          <button style="background:var(--ink);color:var(--bg);border-radius:9px;padding:9px 18px;font-size:13px;font-weight:600">{{ t.sendToClient }}</button>
-                        </div>
-                      </div>
-                    </sc-if>
 
                   </div>
                 </div>
@@ -912,7 +921,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
 class Component extends DCLogic {
-  state = { lang:'en', menuOpen:true, chatOpen:false, route:'overview', prevRoute:'overview', clientId:'ricardo', convoView:'transcript', clientFilter:'all', convFilter:'all', recFilter:'all', query:'', agentStatus:'idle', agentTranscript:[], voicePreviews:[], playingVoice:null, approvalCard:null, approvalClientId:null, toastMsg:null, analyticsClients:{}, memoryFacts:{}, convVipOpen:true, convRegOpen:true, convoDateIdx:0, recMode:'text', calOpen:false, calYear:2026, calMonth:5, calView:'days', calSel:null, allocTab:'allocation' };
+  state = { lang:'en', menuOpen:true, chatOpen:false, route:'overview', prevRoute:'overview', clientId:'ricardo', convoView:'transcript', clientFilter:'all', convFilter:'all', recFilter:'all', query:'', agentStatus:'idle', agentTranscript:[], voicePreviews:[], playingVoice:null, approvalCard:null, approvalClientId:null, toastMsg:null, analyticsClients:{}, memoryFacts:{}, convVipOpen:true, convRegOpen:true, convoDateIdx:0, recMode:'text', calOpen:false, calYear:2026, calMonth:5, calView:'days', calSel:null, allocTab:'allocation', clientTab:'overview', selectedRec:0 };
 
   async _initData() {
     try {
@@ -1367,21 +1376,50 @@ class Component extends DCLogic {
     const calIsOpen=!!S.calOpen, calShowDays=_CV==='days', calShowMonths=_CV==='months', calShowYears=_CV==='years';
     const calCancelLabel=pick(R('Cancel','Cancelar'));
 
-    // client detail tabs (Insights + Recommendations)
+    // client detail f2 tabs (Transcript | Messages | Insights)
     const showInsights = S.convoView==='insights';
-    const showRecommendations = S.convoView==='recommendations';
-    const pillInsBg  = S.convoView==='insights'?'var(--surface-3)':'transparent';
-    const pillInsFg  = S.convoView==='insights'?'var(--ink)':'var(--ink-3)';
-    const pillRecBg  = S.convoView==='recommendations'?'var(--surface-3)':'transparent';
-    const pillRecFg  = S.convoView==='recommendations'?'var(--ink)':'var(--ink-3)';
-    const setInsights       = () => this.setState({ convoView:'insights' });
-    const setRecommendations = () => this.setState({ convoView:'recommendations' });
+    const pillInsBg = S.convoView==='insights'?'var(--surface-3)':'transparent';
+    const pillInsFg = S.convoView==='insights'?'var(--ink)':'var(--ink-3)';
+    const setInsights = () => this.setState({ convoView:'insights' });
 
-    // recommendation cards for client detail tab
-    const _fallbackRec = { text:pick(R('Following our last conversation, I wanted to check in and share some ideas. Would you have a few minutes this week to go over them?','Após nossa última conversa, queria dar um retorno e compartilhar algumas ideias. Você teria alguns minutos esta semana para revisar?')), voice:'Bella · PT-BR', dur:'0:18' };
-    const clientRecs = convo ? [...convo.tts, ...Array(Math.max(0,3-convo.tts.length)).fill(_fallbackRec)].slice(0,3) : [];
+    // left panel sub-tab (Overview | Recommendations)
+    const _cTab = S.clientTab || 'overview';
+    const showClientOverview = _cTab === 'overview';
+    const showClientRecs     = _cTab === 'recommendations';
+    const clientTabOvBg  = showClientOverview ? 'var(--ink)' : 'transparent';
+    const clientTabOvFg  = showClientOverview ? 'var(--bg)'  : 'var(--ink-3)';
+    const clientTabRecBg = showClientRecs     ? 'var(--ink)' : 'transparent';
+    const clientTabRecFg = showClientRecs     ? 'var(--bg)'  : 'var(--ink-3)';
+    const setClientOverview = () => this.setState({ clientTab:'overview' });
+    const setClientRecs     = () => this.setState({ clientTab:'recommendations' });
 
-    // send mode radio
+    // recommendation options — 3 independent messages, advisor picks one
+    const _selIdx = S.selectedRec ?? 0;
+    const _toastSent = () => { this.setState({ toastMsg:pick(R('Message sent to client','Mensagem enviada ao cliente')) }); setTimeout(()=>this.setState({toastMsg:null}),3200); };
+    const _recTexts = [
+      pick(R(
+        sc0.name+', your portfolio is up 2.3% this month, outperforming the benchmark by 0.8 points. Given your equity exposure at 71% — above your 55% target — I\'d like to propose a partial rebalancing toward fixed income to reduce concentration risk while locking in recent gains. Can we schedule 20 minutes this week?',
+        sc0.name+', sua carteira valorizou 2,3% no mês, superando o benchmark em 0,8 ponto. Com exposição em RV de 71% — acima do alvo de 55% — gostaria de propor um rebalanceamento parcial para renda fixa, reduzindo o risco de concentração e assegurando os ganhos recentes. Conseguimos reservar 20 minutos esta semana?'
+      )),
+      pick(R(
+        sc0.name+', the latest interest rate decision adds near-term uncertainty to high-equity portfolios. With your current 71% equity weight, reviewing fixed income duration exposure may be timely. I\'ve prepared a proposal that keeps your return target while reducing rate sensitivity — happy to walk you through it whenever you\'re free.',
+        sc0.name+', a última decisão de juros traz incerteza de curto prazo para carteiras com alta exposição em RV. Com seus 71% em renda variável, revisar a duration na renda fixa pode ser oportuno. Preparei uma proposta que mantém seu objetivo de retorno com menor sensibilidade a juros — posso apresentar quando quiser.'
+      )),
+      pick(R(
+        sc0.name+', a new infrastructure credit fund opened this week with projected returns of CDI + 3.2%, aligned with your moderate-aggressive profile. A 5–8% allocation would improve diversification and reduce single-asset concentration. The subscription window closes June 30 — let me know if you\'d like the full prospectus.',
+        sc0.name+', um novo fundo de crédito em infraestrutura abriu esta semana com retorno projetado de CDI + 3,2%, alinhado ao seu perfil moderado-arrojado. Uma alocação de 5 a 8% melhoraria a diversificação e reduziria concentração. A janela de subscrição fecha em 30 de junho — me avisa se quiser o prospecto completo.'
+      ))
+    ];
+    const _recMeta = [{ voice:'Sarah · EN', dur:'0:28' },{ voice:'Sarah · EN', dur:'0:24' },{ voice:'Sarah · EN', dur:'0:22' }];
+    const clientRecs = _recTexts.map((text, i) => ({
+      text, voice:_recMeta[i].voice, dur:_recMeta[i].dur,
+      border: i === _selIdx ? '2px solid var(--ink)' : '1px solid var(--border)',
+      sel: () => this.setState({ selectedRec:i }),
+      edit: () => { this.setState({ approvalCard:text, approvalClientId:sc0.id }); setTimeout(()=>{ const ta=document.getElementById('voice-edit-ta'); if(ta){ta.value=text;ta.focus();} },60); },
+      send: _toastSent
+    }));
+
+    // send mode radio (kept for compatibility)
     const recModeTextBg  = S.recMode==='text' ?'var(--ink)':'var(--surface-2)';
     const recModeTextFg  = S.recMode==='text' ?'var(--bg)' :'var(--ink-2)';
     const recModeVoiceBg = S.recMode==='voice'?'var(--ink)':'var(--surface-2)';
@@ -1566,12 +1604,13 @@ class Component extends DCLogic {
       statTiles, groups, priorities, bookStats, activity,
       clientFilters, filteredClients, clientsCount, query:S.query,
       sc, riskSegs, allocList, lastContacts, convo,
-      showTranscript:S.convoView==='transcript', showMessages:S.convoView==='messages', showInsights, showRecommendations,
+      showTranscript:S.convoView==='transcript', showMessages:S.convoView==='messages', showInsights,
       pillTransBg:S.convoView==='transcript'?'var(--surface-3)':'transparent', pillTransFg:S.convoView==='transcript'?'var(--ink)':'var(--ink-3)',
       pillMsgBg:S.convoView==='messages'?'var(--surface-3)':'transparent', pillMsgFg:S.convoView==='messages'?'var(--ink)':'var(--ink-3)',
-      pillInsBg, pillInsFg, pillRecBg, pillRecFg,
+      pillInsBg, pillInsFg,
       carouselDates, clientRecs, recModeTextBg, recModeTextFg, recModeVoiceBg, recModeVoiceFg,
-      setInsights, setRecommendations, setRecText, setRecVoice,
+      setInsights, setRecText, setRecVoice,
+      showClientOverview, showClientRecs, clientTabOvBg, clientTabOvFg, clientTabRecBg, clientTabRecFg, setClientOverview, setClientRecs,
       calIsOpen, calShowDays, calShowMonths, calShowYears, calHeaderLabel, calWeeks, calMonthItems, calYearItems, calDayLabels, calConvoItems,
       openCal, closeCal, calStopProp, calOk, calPrev, calNext, calHeaderClick, calCancelLabel,
       bars, miniBars,
