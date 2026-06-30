@@ -671,12 +671,22 @@
         </div>
       </sc-if>
 
-      <!-- ===== ALLOCATION ===== -->
+      <!-- ===== REPORTS (allocation route) ===== -->
       <sc-if value="{{ isAllocation }}" hint-placeholder-val="{{ false }}">
         <div>
-          <div style="margin-bottom:18px"><div style="font-size:22px;font-weight:700;letter-spacing:-.015em">{{ t.allocTitle }}</div><div style="font-size:13px;color:var(--ink-3);margin-top:3px">{{ t.allocSub }}</div></div>
-          <div style="display:flex;gap:16px;align-items:flex-start">
-            <div style="flex:1;border:1px solid var(--border);border-radius:14px;padding:20px">
+          <!-- page header + sub-nav -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px">
+            <div style="font-size:22px;font-weight:700;letter-spacing:-.015em">{{ t.allocation }}</div>
+            <div style="display:flex;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;padding:3px;gap:2px">
+              <button onClick="{{ setAllocAllocation }}" style="border-radius:7px;padding:6px 16px;font:600 12px 'JetBrains Mono',monospace;background:{{ allocTabAllocBg }};color:{{ allocTabAllocFg }};letter-spacing:.01em">{{ t.allocTitle }}</button>
+              <button onClick="{{ setAllocOffpolicy }}" style="border-radius:7px;padding:6px 16px;font:600 12px 'JetBrains Mono',monospace;background:{{ allocTabOppBg }};color:{{ allocTabOppFg }};letter-spacing:.01em">{{ t.offPolicyTab }}</button>
+              <div style="border-radius:7px;padding:6px 16px;font:600 12px 'JetBrains Mono',monospace;color:var(--ink-muted);opacity:0.5;display:flex;align-items:center;gap:6px;cursor:default;user-select:none">Compliance<span style="font:700 9px 'JetBrains Mono',monospace;background:var(--amber);color:#fff;border-radius:4px;padding:1px 6px;letter-spacing:.04em">dev.</span></div>
+            </div>
+          </div>
+
+          <!-- TAB: Allocation -->
+          <sc-if value="{{ showAllocAllocation }}" hint-placeholder-val="{{ true }}">
+            <div style="border:1px solid var(--border);border-radius:14px;padding:20px">
               <div style="display:flex;align-items:baseline;justify-content:space-between">
                 <div><div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">{{ t.totalAum }}</div><div style="font:700 30px 'JetBrains Mono',monospace;letter-spacing:-.03em;margin-top:5px">{{ agg.total }}</div></div>
                 <span style="font:600 13px 'JetBrains Mono',monospace;color:var(--green)">{{ agg.delta }}</span>
@@ -696,18 +706,38 @@
                 </sc-for>
               </div>
             </div>
-            <div style="width:380px;flex-shrink:0;border:1px solid var(--border);border-radius:14px;overflow:hidden">
-              <div style="padding:14px 16px;border-bottom:1px solid var(--border)"><div style="font-size:14px;font-weight:700">{{ t.offPolicyTitle }}</div><div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">{{ t.offPolicySub }}</div></div>
+          </sc-if>
+
+          <!-- TAB: Off-policy -->
+          <sc-if value="{{ showAllocOffpolicy }}" hint-placeholder-val="{{ false }}">
+            <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden">
+              <div style="padding:16px 20px;border-bottom:1px solid var(--border)">
+                <div style="font-size:15px;font-weight:700">{{ t.offPolicyTitle }}</div>
+                <div style="font-size:12.5px;color:var(--ink-3);margin-top:3px">{{ t.offPolicySub }}</div>
+              </div>
               <sc-for list="{{ offPolicy }}" as="o" hint-placeholder-count="4">
-                <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border)">
-                  <div style="width:32px;height:32px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ o.ini }}</div>
-                  <div style="flex:1"><div style="font-size:13px;font-weight:600">{{ o.name }}</div><div style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ o.detail }}</div></div>
-                  <span style="font:600 12px 'JetBrains Mono',monospace;color:var(--red)">{{ o.drift }}</span>
+                <div style="display:flex;align-items:center;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border)">
+                  <div style="width:36px;height:36px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2);flex-shrink:0">{{ o.ini }}</div>
+                  <div style="flex:1"><div style="font-size:13.5px;font-weight:600">{{ o.name }}</div><div style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3);margin-top:2px">{{ o.detail }}</div></div>
+                  <span style="font:700 13px 'JetBrains Mono',monospace;color:var(--red)">{{ o.drift }}</span>
                 </div>
               </sc-for>
-              <div style="padding:13px 16px"><button onClick="{{ goObj.opportunities }}" style="width:100%;background:var(--ink);color:var(--bg);border-radius:9px;padding:10px;font-size:12.5px;font-weight:600">{{ t.rebalance }}</button></div>
+              <div style="padding:14px 20px"><button onClick="{{ goObj.opportunities }}" style="background:var(--ink);color:var(--bg);border-radius:9px;padding:10px 20px;font-size:12.5px;font-weight:600">{{ t.rebalance }}</button></div>
             </div>
-          </div>
+          </sc-if>
+
+          <!-- TAB: Compliance (disabled — coming soon) -->
+          <sc-if value="{{ showAllocCompliance }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:320px;gap:14px;border:1px solid var(--border);border-radius:14px;padding:40px">
+              <div style="width:52px;height:52px;border-radius:14px;background:var(--surface-2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
+              <div style="font-size:16px;font-weight:700;color:var(--ink)">{{ t.complianceName }}</div>
+              <div style="font-size:13px;color:var(--ink-3);text-align:center;max-width:340px;line-height:1.6">{{ t.complianceSoon }}</div>
+              <span style="font:700 10px 'JetBrains Mono',monospace;background:var(--amber);color:#fff;border-radius:6px;padding:4px 12px;letter-spacing:.06em">ROADMAP</span>
+            </div>
+          </sc-if>
+
         </div>
       </sc-if>
 
@@ -880,7 +910,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
 class Component extends DCLogic {
-  state = { lang:'en', menuOpen:true, chatOpen:false, route:'overview', prevRoute:'overview', clientId:'ricardo', convoView:'transcript', clientFilter:'all', convFilter:'all', recFilter:'all', query:'', agentStatus:'idle', agentTranscript:[], voicePreviews:[], playingVoice:null, approvalCard:null, approvalClientId:null, toastMsg:null, analyticsClients:{}, memoryFacts:{}, convVipOpen:true, convRegOpen:true, convoDateIdx:0, recMode:'text', calOpen:false, calYear:2026, calMonth:5, calView:'days', calSel:null };
+  state = { lang:'en', menuOpen:true, chatOpen:false, route:'overview', prevRoute:'overview', clientId:'ricardo', convoView:'transcript', clientFilter:'all', convFilter:'all', recFilter:'all', query:'', agentStatus:'idle', agentTranscript:[], voicePreviews:[], playingVoice:null, approvalCard:null, approvalClientId:null, toastMsg:null, analyticsClients:{}, memoryFacts:{}, convVipOpen:true, convRegOpen:true, convoDateIdx:0, recMode:'text', calOpen:false, calYear:2026, calMonth:5, calView:'days', calSel:null, allocTab:'allocation' };
 
   async _initData() {
     try {
@@ -957,7 +987,7 @@ class Component extends DCLogic {
     // ---------- static UI dictionary ----------
     const D = {
       desk:R('Premium Desk','Mesa Premium'), secMain:R('MAIN','PRINCIPAL'), secIntel:R('INTELLIGENCE','INTELIGÊNCIA'), secPortfolio:R('PORTFOLIO','CARTEIRA'),
-      overview:R('Overview','Visão geral'), clients:R('Clients','Clientes'), conversations:R('Conversations','Conversas'), recommendations:R('Recommendations','Recomendações'), alerts:R('Alerts','Alertas'), opportunities:R('Opportunities','Oportunidades'), allocation:R('Allocation','Alocação'), reports:R('Reports','Relatórios'),
+      overview:R('Overview','Visão geral'), clients:R('Clients','Clientes'), conversations:R('Conversations','Conversas'), recommendations:R('Recommendations','Recomendações'), alerts:R('Alerts','Alertas'), opportunities:R('Opportunities','Oportunidades'), allocation:R('Reports','Relatórios'),
       role:R('Advisor · A-1042','Assessora · A-1042'), search:R('Search…','Buscar…'),
       menuTip:R('Collapse / expand menu','Recolher / expandir menu'), chatTip:R('Ask the AI','Perguntar à IA'), langTip:R('Switch to Portuguese','Mudar para inglês'), hide:R('Hide','Ocultar'),
       chatSub:R('powered by ElevenAgent','powered by ElevenAgent'), suggested:R('Suggested','Sugestões'), chatPlaceholder:R('Send a message…','Envie uma mensagem…'), tapToCall:R('Tap to start a voice call','Toque para iniciar uma chamada'),
@@ -995,6 +1025,7 @@ class Component extends DCLogic {
       oppTitle:R('Opportunities','Oportunidades'), oppSub:R('Pipeline of inflows, cross-sell and reviews','Pipeline de aportes, cross-sell e revisões'), probability:R('prob','prob'),
       allocTitle:R('Allocation','Alocação'), allocSub:R('Aggregate book allocation vs. policy','Alocação consolidada da carteira vs. política'), totalAum:R('Total AUM','Patrimônio total'), target:R('target','alvo'),
       offPolicyTitle:R('Off-policy clients','Clientes fora da política'), offPolicySub:R('Equity weight above target','Peso em RV acima do alvo'), rebalance:R('Open rebalancing','Abrir rebalanceamento'),
+      offPolicyTab:R('Off-policy','Fora de política'), complianceSoon:R('Automated suitability checks, regulatory alerts and audit trails — coming in a future release.','Verificações automáticas de suitability, alertas regulatórios e trilha de auditoria — disponível em breve.'), complianceName:R('Compliance monitoring','Monitoramento de compliance'),
       repTitle:R('Reports','Relatórios'), repSub:R('Generated statements and reviews','Relatórios e extratos gerados'), generateReport:R('Generate report','Gerar relatório'), download:R('Download','Baixar'), period:R('Period','Período'), statusCol:R('Status','Status'), thReport:R('Report','Relatório'),
       repReady:R('Ready','Pronto'), repScheduled:R('Scheduled','Agendado')
     };
@@ -1468,6 +1499,18 @@ class Component extends DCLogic {
     const mkOff = (id,cur,tgt) => { const c = byId[id]; return { name:c.name, ini:c.ini, detail:(L==='en'?'Equities ':'RV ')+cur+'% · '+pick(R('target','alvo'))+' '+tgt+'%', drift:'+'+(cur-tgt)+'pp', open:c.open }; };
     const offPolicy = [ mkOff('fernando',71,60), mkOff('ricardo',71,55), mkOff('gustavo',68,55), mkOff('andre',62,55) ];
 
+    // allocation sub-tabs
+    const _aTab = S.allocTab || 'allocation';
+    const showAllocAllocation = _aTab === 'allocation';
+    const showAllocOffpolicy  = _aTab === 'offpolicy';
+    const showAllocCompliance = _aTab === 'compliance';
+    const allocTabAllocBg  = showAllocAllocation ? 'var(--ink)' : 'transparent';
+    const allocTabAllocFg  = showAllocAllocation ? 'var(--bg)'  : 'var(--ink-3)';
+    const allocTabOppBg    = showAllocOffpolicy  ? 'var(--ink)' : 'transparent';
+    const allocTabOppFg    = showAllocOffpolicy  ? 'var(--bg)'  : 'var(--ink-3)';
+    const setAllocAllocation = () => this.setState({ allocTab:'allocation' });
+    const setAllocOffpolicy  = () => this.setState({ allocTab:'offpolicy' });
+
     // ---------- reports ----------
     const repStatusColor = { ready:C.green, scheduled:C.amber };
     const REP = [
@@ -1530,6 +1573,7 @@ class Component extends DCLogic {
       openCal, closeCal, calStopProp, calOk, calPrev, calNext, calHeaderClick, calCancelLabel,
       bars, miniBars,
       convFilters, conversationsVip, conversationsRegular, hasVipConvs, hasRegularConvs, convVipOpen:S.convVipOpen, convRegOpen:S.convRegOpen, convVipChevron, convRegChevron, toggleVipConv, toggleRegConv, recFilters, recommendations, alertCols, stages, agg, aggClasses, offPolicy,
+      showAllocAllocation, showAllocOffpolicy, showAllocCompliance, allocTabAllocBg, allocTabAllocFg, allocTabOppBg, allocTabOppFg, setAllocAllocation, setAllocOffpolicy,
       toggleLang:() => this.setState(s => ({ lang:s.lang==='en'?'pt':'en' })),
       toggleMenu:() => this.setState(s => ({ menuOpen:!s.menuOpen })),
       toggleChat:() => this.setState(s => ({ chatOpen:!s.chatOpen })),
