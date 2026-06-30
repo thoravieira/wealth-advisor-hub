@@ -376,24 +376,21 @@
             <div style="flex:1;min-width:0">
               <sc-if value="{{ sc.hasConvo }}" hint-placeholder-val="{{ true }}">
                 <div>
-                  <!-- header: title + date carousel (left) · 4 tabs (right) -->
-                  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:13px">
-                    <div>
-                      <div style="font-size:15px;font-weight:700">{{ t.lastConversation }}</div>
-                      <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
-                        <div style="display:flex;gap:3px;background:var(--surface-3);border-radius:9px;padding:3px">
-                          <sc-for list="{{ convDateItems }}" as="d" hint-placeholder-count="3">
-                            <button onClick="{{ d.sel }}" style="display:flex;align-items:center;gap:5px;border-radius:7px;padding:5px 10px;font:600 11px 'JetBrains Mono',monospace;background:{{ d.bg }};color:{{ d.fg }}"><span style="width:5px;height:5px;border-radius:50%;background:{{ d.dot }};flex-shrink:0"></span>{{ d.label }}</button>
-                          </sc-for>
-                        </div>
-                        <button style="width:28px;height:28px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink-3)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button>
+                  <!-- header: date carousel (left) · 4 tabs (right) -->
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:13px">
+                    <div style="display:flex;align-items:center;gap:6px">
+                      <div style="display:flex;gap:3px;background:var(--surface-3);border-radius:9px;padding:3px">
+                        <sc-for list="{{ carouselDates }}" as="d" hint-placeholder-count="3">
+                          <button onClick="{{ d.sel }}" style="display:flex;align-items:center;gap:5px;border-radius:6px;padding:5px 10px;font:600 11px 'JetBrains Mono',monospace;border:{{ d.border }};background:{{ d.bg }};color:{{ d.fg }}"><span style="width:5px;height:5px;border-radius:50%;background:{{ d.dot }};flex-shrink:0"></span>{{ d.label }}</button>
+                        </sc-for>
                       </div>
+                      <button onClick="{{ openCal }}" style="width:28px;height:28px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink-3)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button>
                     </div>
                     <div style="display:flex;gap:3px;background:var(--surface-3);border-radius:9px;padding:3px;flex-shrink:0">
                       <button onClick="{{ setTranscript }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillTransBg }};color:{{ pillTransFg }}">{{ t.transcriptTab }}</button>
                       <button onClick="{{ setMessages }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillMsgBg }};color:{{ pillMsgFg }}">{{ t.messagesTab }}</button>
-                      <button onClick="{{ setInsights }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillInsBg }};color:{{ pillInsFg }}">✦ Insights</button>
                       <button onClick="{{ setRecommendations }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillRecBg }};color:{{ pillRecFg }}">{{ t.recommendations }}</button>
+                      <button onClick="{{ setInsights }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillInsBg }};color:{{ pillInsFg }}">✦ Insights</button>
                     </div>
                   </div>
 
@@ -810,7 +807,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
 class Component extends DCLogic {
-  state = { lang:'en', menuOpen:true, chatOpen:false, route:'overview', prevRoute:'overview', clientId:'ricardo', convoView:'transcript', clientFilter:'all', convFilter:'all', recFilter:'all', query:'', agentStatus:'idle', agentTranscript:[], voicePreviews:[], playingVoice:null, approvalCard:null, approvalClientId:null, toastMsg:null, analyticsClients:{}, memoryFacts:{}, convVipOpen:true, convRegOpen:true, convoDateIdx:0, recMode:'text' };
+  state = { lang:'en', menuOpen:true, chatOpen:false, route:'overview', prevRoute:'overview', clientId:'ricardo', convoView:'transcript', clientFilter:'all', convFilter:'all', recFilter:'all', query:'', agentStatus:'idle', agentTranscript:[], voicePreviews:[], playingVoice:null, approvalCard:null, approvalClientId:null, toastMsg:null, analyticsClients:{}, memoryFacts:{}, convVipOpen:true, convRegOpen:true, convoDateIdx:0, recMode:'text', calOpen:false, calYear:2026, calMonth:5, calView:'days', calSel:null };
 
   async _initData() {
     try {
@@ -1170,15 +1167,99 @@ class Component extends DCLogic {
       };
     }
 
-    // date carousel (uses lastContacts dates + channel colors)
-    const _dcDates = [pick(R('Jun 14','14 jun')), pick(R('Jun 9','9 jun')), pick(R('Jun 2','2 jun'))];
-    const _dcDots  = ['var(--ink-2)', C.green, C.blue];
-    const convDateItems = _dcDates.map((label, i) => ({
-      label, dot:_dcDots[i],
-      bg:S.convoDateIdx===i?'var(--surface-3)':'transparent',
-      fg:S.convoDateIdx===i?'var(--ink)':'var(--ink-3)',
-      sel:() => this.setState({ convoDateIdx:i })
+    // ---- date carousel + calendar popup ----
+    const clientConvoList = [
+      { year:2026, month:5, day:14, dot:'var(--ink-2)', label:pick(R('Jun 14  ·  call','14 jun  ·  ligação')) },
+      { year:2026, month:5, day:9,  dot:C.green,        label:pick(R('Jun 9  ·  WhatsApp','9 jun  ·  WhatsApp')) },
+      { year:2026, month:5, day:2,  dot:C.blue,         label:pick(R('Jun 2  ·  e-mail','2 jun  ·  e-mail')) }
+    ];
+    const _MNF = L==='en'
+      ? ['January','February','March','April','May','June','July','August','September','October','November','December']
+      : ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    const _MNS = L==='en'
+      ? ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec']
+      : ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+    // carousel: one before + selected + one after
+    const _cIdx  = Math.min(Math.max(S.convoDateIdx||0, 0), clientConvoList.length-1);
+    const _cSlot = Math.max(0, _cIdx-1);
+    const carouselDates = clientConvoList.slice(_cSlot, _cSlot+3).map((c,i) => {
+      const idx = _cSlot+i, isSel = idx===_cIdx;
+      return {
+        label: _MNS[c.month]+' '+c.day, dot:c.dot,
+        border: isSel?'2px solid var(--ink)':'1px solid transparent',
+        bg:'transparent', fg:isSel?'var(--ink)':'var(--ink-3)',
+        sel:()=>this.setState({ convoDateIdx:idx })
+      };
+    });
+
+    // calendar popup state aliases
+    const _CY=S.calYear||2026, _CM=S.calMonth??5, _CV=S.calView||'days', _CS=S.calSel;
+
+    const calHeaderLabel = _CV==='days'?_MNF[_CM]+' '+_CY : _CV==='months'?String(_CY) : (Math.floor(_CY/10)*10)+'–'+(Math.floor(_CY/10)*10+9);
+    const calHeaderClick = ()=>{ if(_CV==='days')this.setState({calView:'months'}); else if(_CV==='months')this.setState({calView:'years'}); };
+    const calPrev = ()=>{
+      if(_CV==='days'){ const m=_CM-1; this.setState(m<0?{calMonth:11,calYear:_CY-1}:{calMonth:m}); }
+      else if(_CV==='months') this.setState({calYear:_CY-1});
+      else this.setState({calYear:Math.floor(_CY/10)*10-10});
+    };
+    const calNext = ()=>{
+      if(_CV==='days'){ const m=_CM+1; this.setState(m>11?{calMonth:0,calYear:_CY+1}:{calMonth:m}); }
+      else if(_CV==='months') this.setState({calYear:_CY+1});
+      else this.setState({calYear:Math.floor(_CY/10)*10+10});
+    };
+
+    // day grid
+    const _convoSet = new Set(clientConvoList.map(c=>`${c.year}-${c.month}-${c.day}`));
+    const _fdow=new Date(_CY,_CM,1).getDay(), _dimC=new Date(_CY,_CM+1,0).getDate(), _dimP=new Date(_CY,_CM,0).getDate();
+    const _cells=[];
+    for(let i=0;i<_fdow;i++) _cells.push({d:_dimP-_fdow+i+1,in:false});
+    for(let d=1;d<=_dimC;d++) _cells.push({d,in:true});
+    while(_cells.length%7!==0) _cells.push({d:_cells.length-_fdow-_dimC+1,in:false});
+    const calWeeks=[];
+    for(let i=0;i<_cells.length;i+=7){
+      calWeeks.push({ days:_cells.slice(i,i+7).map(cell=>{
+        const isSel=cell.in&&_CS&&_CS.year===_CY&&_CS.month===_CM&&_CS.day===cell.d;
+        const hasDot=cell.in&&_convoSet.has(`${_CY}-${_CM}-${cell.d}`);
+        return {
+          label:String(cell.d),
+          border:isSel?'2px solid var(--ink)':'1px solid transparent',
+          bg:'transparent',
+          fg:!cell.in?'oklch(0.75 0 0)':isSel?'var(--ink)':'var(--ink-2)',
+          dotColor:hasDot?'oklch(0.50 0.005 265)':'transparent',
+          onClick:cell.in?()=>this.setState({calSel:{year:_CY,month:_CM,day:cell.d}}):()=>{}
+        };
+      })});
+    }
+
+    // months grid
+    const calMonthItems=_MNS.map((name,idx)=>{
+      const isSel=_CS&&_CS.year===_CY&&_CS.month===idx;
+      return { name, border:isSel?'2px solid var(--ink)':'1px solid transparent', bg:'transparent', fg:isSel?'var(--ink)':'var(--ink-2)', sel:()=>this.setState({calMonth:idx,calView:'days'}) };
+    });
+
+    // years grid (decade)
+    const _dec=Math.floor(_CY/10)*10;
+    const calYearItems=Array.from({length:10},(_,i)=>{
+      const y=_dec+i, isSel=_CS&&_CS.year===y;
+      return { year:String(y), border:isSel?'2px solid var(--ink)':'1px solid transparent', bg:'transparent', fg:isSel?'var(--ink)':'var(--ink-2)', sel:()=>this.setState({calYear:y,calView:'months'}) };
+    });
+
+    const calDayLabels=(L==='en'?['Su','Mo','Tu','We','Th','Fr','Sa']:['Do','Se','Te','Qu','Qu','Se','Sá']).map(d=>({d}));
+
+    // popup conversation list
+    const calConvoItems=clientConvoList.map((c,i)=>({
+      label:c.label, dot:c.dot,
+      bg:i===_cIdx?'var(--surface-3)':'transparent', fg:i===_cIdx?'var(--ink)':'var(--ink-2)',
+      jump:()=>this.setState({calSel:{year:c.year,month:c.month,day:c.day},calYear:c.year,calMonth:c.month,calView:'days'})
     }));
+
+    const openCal=()=>{ const cur=clientConvoList[_cIdx]||clientConvoList[0]; this.setState({calOpen:true,calYear:cur.year,calMonth:cur.month,calView:'days',calSel:{year:cur.year,month:cur.month,day:cur.day}}); };
+    const closeCal=()=>this.setState({calOpen:false});
+    const calStopProp=e=>{ if(e&&e.stopPropagation)e.stopPropagation(); };
+    const calOk=()=>{ if(!S.calSel){this.setState({calOpen:false});return;} const idx=clientConvoList.findIndex(c=>c.year===S.calSel.year&&c.month===S.calSel.month&&c.day===S.calSel.day); this.setState({calOpen:false,...(idx>=0?{convoDateIdx:idx}:{})}); };
+    const calIsOpen=!!S.calOpen, calShowDays=_CV==='days', calShowMonths=_CV==='months', calShowYears=_CV==='years';
+    const calCancelLabel=pick(R('Cancel','Cancelar'));
 
     // client detail tabs (Insights + Recommendations)
     const showInsights = S.convoView==='insights';
@@ -1355,8 +1436,10 @@ class Component extends DCLogic {
       pillTransBg:S.convoView==='transcript'?'var(--surface-3)':'transparent', pillTransFg:S.convoView==='transcript'?'var(--ink)':'var(--ink-3)',
       pillMsgBg:S.convoView==='messages'?'var(--surface-3)':'transparent', pillMsgFg:S.convoView==='messages'?'var(--ink)':'var(--ink-3)',
       pillInsBg, pillInsFg, pillRecBg, pillRecFg,
-      convDateItems, clientRecs, recModeTextBg, recModeTextFg, recModeVoiceBg, recModeVoiceFg,
+      carouselDates, clientRecs, recModeTextBg, recModeTextFg, recModeVoiceBg, recModeVoiceFg,
       setInsights, setRecommendations, setRecText, setRecVoice,
+      calIsOpen, calShowDays, calShowMonths, calShowYears, calHeaderLabel, calWeeks, calMonthItems, calYearItems, calDayLabels, calConvoItems,
+      openCal, closeCal, calStopProp, calOk, calPrev, calNext, calHeaderClick, calCancelLabel,
       bars, miniBars,
       convFilters, conversationsVip, conversationsRegular, hasVipConvs, hasRegularConvs, convVipOpen:S.convVipOpen, convRegOpen:S.convRegOpen, convVipChevron, convRegChevron, toggleVipConv, toggleRegConv, recFilters, recommendations, alertCols, stages, agg, aggClasses, offPolicy,
       toggleLang:() => this.setState(s => ({ lang:s.lang==='en'?'pt':'en' })),
@@ -1457,5 +1540,78 @@ class Component extends DCLogic {
   }
 }
 </script>
+
+<!-- ===== CALENDAR POPUP ===== -->
+<sc-if value="{{ calIsOpen }}" hint-placeholder-val="{{ false }}">
+  <div onClick="{{ closeCal }}" style="position:fixed;inset:0;background:oklch(0 0 0/.45);z-index:200;display:flex;align-items:center;justify-content:center">
+    <div onClick="{{ calStopProp }}" style="background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:24px;width:360px;box-shadow:0 12px 48px oklch(0 0 0/.25);max-height:90vh;overflow-y:auto">
+
+      <!-- header: prev · month+year · next -->
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:18px">
+        <button onClick="{{ calPrev }}" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--ink-2)">‹</button>
+        <button onClick="{{ calHeaderClick }}" style="flex:1;text-align:center;font:700 14px 'JetBrains Mono',monospace;color:var(--ink);letter-spacing:-.01em;padding:6px">{{ calHeaderLabel }}</button>
+        <button onClick="{{ calNext }}" style="width:32px;height:32px;border-radius:8px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--ink-2)">›</button>
+      </div>
+
+      <!-- DAYS VIEW -->
+      <sc-if value="{{ calShowDays }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <div style="display:flex;margin-bottom:6px">
+            <sc-for list="{{ calDayLabels }}" as="dl" hint-placeholder-count="7">
+              <div style="flex:1;text-align:center;font:600 10px 'JetBrains Mono',monospace;color:var(--ink-3);letter-spacing:.04em">{{ dl.d }}</div>
+            </sc-for>
+          </div>
+          <sc-for list="{{ calWeeks }}" as="week" hint-placeholder-count="5">
+            <div style="display:flex;margin-bottom:2px">
+              <sc-for list="{{ week.days }}" as="day" hint-placeholder-count="7">
+                <button onClick="{{ day.onClick }}" style="flex:1;aspect-ratio:1;min-width:0;border-radius:5px;border:{{ day.border }};background:{{ day.bg }};color:{{ day.fg }};font:600 11px 'JetBrains Mono',monospace;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;padding:2px 0">
+                  {{ day.label }}
+                  <span style="width:3px;height:3px;border-radius:50%;background:{{ day.dotColor }}"></span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- MONTHS VIEW -->
+      <sc-if value="{{ calShowMonths }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+          <sc-for list="{{ calMonthItems }}" as="m" hint-placeholder-count="12">
+            <button onClick="{{ m.sel }}" style="padding:12px 0;border-radius:7px;border:{{ m.border }};background:{{ m.bg }};color:{{ m.fg }};font:600 12px 'JetBrains Mono',monospace;text-align:center">{{ m.name }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- YEARS VIEW -->
+      <sc-if value="{{ calShowYears }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
+          <sc-for list="{{ calYearItems }}" as="y" hint-placeholder-count="10">
+            <button onClick="{{ y.sel }}" style="padding:12px 0;border-radius:7px;border:{{ y.border }};background:{{ y.bg }};color:{{ y.fg }};font:600 11px 'JetBrains Mono',monospace;text-align:center">{{ y.year }}</button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- conversation list -->
+      <div style="border-top:1px solid var(--border);margin-top:18px;padding-top:14px">
+        <div style="font:600 9px 'JetBrains Mono',monospace;letter-spacing:.07em;color:var(--ink-3);margin-bottom:8px">CONVERSATIONS</div>
+        <sc-for list="{{ calConvoItems }}" as="cv" hint-placeholder-count="3">
+          <button onClick="{{ cv.jump }}" style="width:100%;display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:9px;background:{{ cv.bg }};text-align:left;margin-bottom:4px">
+            <span style="width:6px;height:6px;border-radius:50%;background:{{ cv.dot }};flex-shrink:0"></span>
+            <span style="font-size:12.5px;color:{{ cv.fg }}">{{ cv.label }}</span>
+          </button>
+        </sc-for>
+      </div>
+
+      <!-- footer -->
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;padding-top:16px;border-top:1px solid var(--border)">
+        <button onClick="{{ closeCal }}" style="padding:9px 18px;border:1px solid var(--border);border-radius:9px;font-size:13px;font-weight:600;color:var(--ink-2)">{{ calCancelLabel }}</button>
+        <button onClick="{{ calOk }}" style="padding:9px 18px;background:var(--ink);color:var(--bg);border-radius:9px;font-size:13px;font-weight:600">OK</button>
+      </div>
+
+    </div>
+  </div>
+</sc-if>
+
 </body>
 </html>
