@@ -8,36 +8,42 @@ Real-time voice cockpit for wealth advisors. Sofia, an AI advisor built on Eleve
 
 ```mermaid
 graph LR
-    subgraph Browser["Browser · Port 8080"]
-        UI["Cockpit B.dc.html\ndc template engine"]
+    subgraph Browser["Browser"]
+        UI["cockpit.html\ndc template engine"]
         SDK["@11labs/client\nWebSocket"]
     end
 
-    subgraph Backend["Backend · Port 8000\nFastAPI"]
-        TTS["/tts\nText to MP3"]
-        STT["/stt\nAudio to transcript"]
-        TOKEN["/agent/token\nSigned URL"]
+    subgraph Compose["Docker Compose Stack"]
+        FRONT["front :8080\nnginx"]
+        BACK["backend :8000\nFastAPI + psycopg2"]
+        PG["postgres :5432\nPostgreSQL 16"]
+        AN["analytics :8001\nDuckDB + FastAPI"]
     end
 
     subgraph ElevenLabs["ElevenLabs Cloud"]
         CONV["Conversational AI\nSofia · Gemini 2.0 Flash"]
-        TTSAPI["TTS\nSarah voice"]
-        STTAPI["STT\nScribe v1"]
-        KB["Knowledge Base\nFSI Compliance Guide"]
+        TTSAPI["TTS · Sarah voice"]
+        STTAPI["STT · Scribe v2"]
+        KB["Knowledge Base"]
     end
 
-    UI -->|"fetch /agent/token"| TOKEN
-    TOKEN -->|"GET signed_url"| CONV
+    Browser -->|"HTTP"| FRONT
+    UI -->|"fetch :8000"| BACK
     SDK <-->|"WebSocket"| CONV
-    UI -->|"fetch /tts"| TTS
-    TTS --> TTSAPI
-    UI -->|"fetch /stt"| STT
-    STT --> STTAPI
+    BACK -->|"psycopg2"| PG
+    BACK -->|"HTTP proxy"| AN
+    BACK -->|"TTS/STT/token"| ElevenLabs
     CONV --- KB
-    UI -->|"client tools"| SDK
 ```
 
-**Stack:** Static HTML + vanilla JS · FastAPI · ElevenLabs (Conversational AI, TTS, STT) · Docker + nginx
+**Stack:** nginx · FastAPI · PostgreSQL 16 · DuckDB · ElevenLabs (Conversational AI, TTS, STT)
+
+| Container | Port | Purpose |
+|---|---|---|
+| `front` | 8080 | Static HTML cockpit via nginx |
+| `backend` | 8000 | API gateway — ElevenLabs proxy + postgres integration |
+| `postgres` | 5432 | Agent sessions, memory, advisor action log |
+| `analytics` | 8001 | DuckDB lakehouse — client book, recommendations, alerts |
 
 ---
 
@@ -124,23 +130,8 @@ docker compose up --build
 | Service | URL |
 |---|---|
 | Cockpit | http://localhost:8080/cockpit.html |
-| Backend | http://localhost:8000 |
-| Health | http://localhost:8000/health |
-
----
-
-## Running without Docker
-
-```bash
-# Backend
-cd backend
-pip install -r requirements.txt
-source ../.env && uvicorn main:app --reload --port 8000
-
-# Frontend (separate terminal)
-cd front
-docker build -t wealth-advisor-hub . && docker run -p 8080:80 wealth-advisor-hub
-```
+| Backend | http://localhost:8000/health |
+| Analytics | http://localhost:8001/health |
 
 ---
 
@@ -149,19 +140,36 @@ docker build -t wealth-advisor-hub . && docker run -p 8080:80 wealth-advisor-hub
 ```
 .
 ├── front/
-│   ├── Cockpit B.dc.html      # single-file cockpit (dc template engine)
+│   ├── cockpit.html           # single-file cockpit (dc template engine)
 │   ├── support.js             # dc runtime
-│   ├── index.html             # redirect
+│   ├── index.html             # redirect to cockpit.html
 │   └── Dockerfile             # nginx
 │
 ├── backend/
-│   ├── main.py                # FastAPI: /tts, /stt, /agent/token, /health
+│   ├── main.py                # FastAPI: ElevenLabs proxy + postgres integration
 │   ├── requirements.txt
 │   └── Dockerfile
 │
+├── analytics/
+│   ├── main.py                # DuckDB FastAPI: clients, recommendations, alerts
+│   ├── seed.py                # 12 demo clients
+│   ├── requirements.txt
+│   └── Dockerfile
+│
+├── db/
+│   └── init.sql               # PostgreSQL schema (sessions, memory, actions)
+│
 ├── setup/
-│   ├── create_agent.py        # creates the ElevenLabs agent + knowledge base
-│   └── compliance_guide.txt   # FSI compliance knowledge base
+│   ├── create_agent.py        # idempotent ElevenLabs agent + KB setup
+│   └── compliance_guide.txt   # FSI knowledge base content
+│
+├── tests/
+│   ├── conftest.py
+│   ├── test_01_backend_current.py    # 21 tests: health, TTS, STT, agent token
+│   ├── test_02_frontend_current.py   # 11 tests: pages load, old filenames gone
+│   ├── test_03_postgres.py           #  6 tests: schema, memory API
+│   ├── test_04_analytics.py          # 32 tests: clients, recommendations, alerts
+│   └── test_05_backend_pg_integration.py  # 13 tests: postgres integration, proxies
 │
 ├── docs/
 │   ├── ARCHITECTURE.md
@@ -169,8 +177,6 @@ docker build -t wealth-advisor-hub . && docker run -p 8080:80 wealth-advisor-hub
 │   │   ├── SOFIA_FLOW.md
 │   │   └── COCKPIT_FLOWS.md
 │   └── specs/
-│       ├── SPEC-001-advisor-agent.md
-│       ├── SPEC-006-elevenlabs-agent.md
 │       └── SPEC-007-cockpit-v2.md
 │
 ├── .env.example
@@ -184,10 +190,26 @@ docker build -t wealth-advisor-hub . && docker run -p 8080:80 wealth-advisor-hub
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `GET` | `/health` | `{status, agent_id}` |
-| `GET` | `/agent/token` | ElevenLabs signed WebSocket URL |
-| `POST` | `/tts` | `{text, voice_id?}` → `audio/mpeg` |
-| `POST` | `/stt` | audio file → `{transcript, words}` |
+| `GET` | `/health` | `{status, agent_id, postgres, analytics}` |
+| `GET` | `/agent/token` | ElevenLabs signed WebSocket URL; writes session to postgres |
+| `POST` | `/tts` | `{text, voice_id?, client_id?}` → `audio/mpeg`; logs action |
+| `POST` | `/stt` | audio file → `{transcript, words}` via Scribe v2 |
+| `GET` | `/memory/long/{client_id}` | Facts Sofia learned about a client |
+| `POST` | `/memory/long` | Save a fact to long-term memory |
+| `GET` | `/actions` | Advisor action audit log |
+| `GET` | `/clients[/{id}]` | Proxy to analytics service |
+
+## Analytics API
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/clients` | All 12 demo clients |
+| `GET` | `/clients/{id}` | Single client profile |
+| `GET` | `/clients/{id}/snapshots` | Portfolio time series |
+| `GET/POST` | `/recommendations` | Recommendation lifecycle |
+| `PATCH` | `/recommendations/{id}` | Update status (approved/sent) |
+| `GET/POST` | `/voice-messages` | TTS message history |
+| `GET` | `/alerts` | Risk and compliance alerts |
 
 ---
 
@@ -198,6 +220,7 @@ docker build -t wealth-advisor-hub . && docker run -p 8080:80 wealth-advisor-hub
 | Agent ID | `agent_7501kwap3zrre9wr5h20vdqbtz7n` |
 | Voice | Sarah (`EXAVITQu4vr4xnSDxMaL`) |
 | LLM | Gemini 2.0 Flash |
+| STT | Scribe v2 |
 | Knowledge Base | FSI Advisory Compliance Guide v2.1 |
 | Client tools | navigate, show_opportunity, show_recommendation, generate_voice_message, send_whatsapp, get_client_data |
 

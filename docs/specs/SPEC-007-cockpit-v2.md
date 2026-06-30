@@ -1,9 +1,9 @@
-# SPEC-007 — FSI Advisor Cockpit v2
+# SPEC-007 — Wealth Advisor Hub
 
 **Status:** Implemented  
 **Author:** Thiago da Hora  
 **Date:** 2026-06-30  
-**Implementation:** `front/cockpit.html` + `backend/main.py`
+**Implementation:** `front/cockpit.html` · `backend/main.py` · `analytics/main.py` · `db/init.sql`
 
 ---
 
@@ -14,7 +14,7 @@ A wealth advisor managing 45+ clients needs to:
 2. Act on those clients without context-switching between tools
 3. Communicate with clients via voice-first messages that feel personal, not AI-generated
 
-Existing tools (CRM, portfolio platforms) are reactive — the advisor queries them. This cockpit flips the model: the AI advisor *Sofia* proactively surfaces what matters and executes actions on voice command.
+Existing tools (CRM, portfolio platforms) are reactive — the advisor queries them. This cockpit flips the model: Sofia, the AI advisor, proactively surfaces what matters and executes actions on voice command.
 
 ---
 
@@ -22,13 +22,13 @@ Existing tools (CRM, portfolio platforms) are reactive — the advisor queries t
 
 ### Guiding principles
 
-| Principle | Implementation choice |
+| Principle | Implementation |
 |---|---|
-| **Demo over production** | Single HTML file, no build step, hardcoded data |
 | **ElevenLabs-first** | Every AI feature uses ElevenLabs APIs |
 | **Voice as primary UI** | Sofia navigates the screen; text is secondary |
-| **Minimal backend** | 3 proxy endpoints, no database, no auth |
 | **Editable AI output** | All Sofia-generated text passes through advisor review before delivery |
+| **Scalable separation** | Front and backend are independent containers |
+| **Persistent memory** | Agent sessions and learned facts survive across conversations |
 
 ### What is real vs. mock
 
@@ -38,7 +38,9 @@ Existing tools (CRM, portfolio platforms) are reactive — the advisor queries t
 | Voice message generation | **Real** | ElevenLabs TTS (Sarah voice) |
 | Speech-to-text | **Real** | ElevenLabs STT (Scribe v2) |
 | Cockpit navigation by voice | **Real** | Client-side tools + dc state |
-| Client data on screen | **Mock** | Hardcoded JS data |
+| Agent session persistence | **Real** | PostgreSQL |
+| Long-term advisor memory | **Real** | PostgreSQL |
+| Client book data | **Seed** | DuckDB analytics service (mirrors frontend data) |
 | Compliance knowledge base | **Real** | ElevenLabs KB (FSI Compliance Guide) |
 | WhatsApp delivery | **Mock** | Toast notification only |
 | Call transcription | **Mock** | Static demo data |
@@ -47,11 +49,12 @@ Existing tools (CRM, portfolio platforms) are reactive — the advisor queries t
 
 ## 3. Components
 
-### 3.1 Frontend
+### 3.1 Frontend — `front/cockpit.html`
 
-**File:** `front/cockpit.html`  
+Single HTML file (~1,200 lines). Served via nginx container. No build step.
+
 **Engine:** `dc` template engine (reactive HTML, no VDOM)  
-**Pattern:** Single DCLogic class — `state` + `renderVals()` returns all computed values and handlers
+**Pattern:** Single `DCLogic` class — `state` + `renderVals()` returns all computed values and handlers
 
 #### State schema
 
@@ -64,146 +67,188 @@ state = {
   prevRoute: 'overview',   // for back button
   clientId: 'ricardo',     // selected client
   convoView: 'transcript', // 'transcript' | 'messages'
-  clientFilter: 'all',     // client list filter
-  convFilter: 'all',       // conversations filter
-  recFilter: 'all',        // recommendations filter
-  query: '',               // search query
+  clientFilter: 'all',
+  convFilter: 'all',
+  recFilter: 'all',
+  query: '',
   agentStatus: 'idle',     // 'idle' | 'connecting' | 'connected'
   agentTranscript: [],     // [{ who: 'AI'|'YOU', text }]
   voicePreviews: [],       // [{ url, text, preview, clientId, play, btnBg }]
-  playingVoice: null,      // URL of currently playing preview
-  approvalCard: null,      // text shown in approval overlay
-  approvalClientId: null,  // client for approval card
-  toastMsg: null           // toast notification text
+  playingVoice: null,
+  approvalCard: null,
+  approvalClientId: null,
+  toastMsg: null
 }
 ```
 
-#### Rendering rule — dc template limitations
+#### dc rendering constraints
 
-> Ternary expressions do NOT evaluate inside `style=""` attributes.  
-> Pre-compute all display/color values in `renderVals()`:
+Ternary expressions do NOT evaluate inside `style=""` attributes. Pre-compute in `renderVals()`:
 
 ```javascript
-// ✗ does NOT work
+// wrong
 <div style="display:{{ chatOpen ? 'none' : 'flex' }}">
 
-// ✓ correct pattern
-fabDisplay: S.chatOpen ? 'none' : 'flex',
-// then in HTML:
+// correct — pre-compute fabDisplay: S.chatOpen ? 'none' : 'flex'
 <div style="display:{{ fabDisplay }}">
 ```
 
-#### Form input pattern
-
-> Textarea `value` resets on every re-render if bound reactively.  
-> Pattern: set value imperatively via DOM after state change.
+Textarea `value` resets on every re-render if bound reactively. Set imperatively after state change:
 
 ```javascript
-// In tool handler:
 self.setState({ approvalCard: text });
 setTimeout(() => {
   const ta = document.getElementById('voice-edit-ta');
   if (ta) { ta.value = text; ta.focus(); }
 }, 60);
-
-// In handler reading the value:
-const text = document.getElementById('voice-edit-ta')?.value || this.state.approvalCard;
 ```
 
-### 3.2 Backend
+---
 
-**File:** `backend/main.py`  
-**Framework:** FastAPI  
-**Dependencies:** `fastapi`, `uvicorn[standard]`, `python-multipart` — no ElevenLabs SDK
+### 3.2 Backend — `backend/main.py`
+
+**Framework:** FastAPI + psycopg2  
+**Dependencies:** `fastapi`, `uvicorn[standard]`, `python-multipart`, `psycopg2-binary`
 
 #### Endpoint contracts
 
 ```
 GET  /health
-     Response: { "status": "ok", "agent_id": string }
+     Response: { status, agent_id, postgres, analytics }
 
 GET  /agent/token
-     Response: { "signed_url": "wss://...", "agent_id": string }
-     Note: calls ElevenLabs GET /v1/convai/conversation/get_signed_url
+     Response: { signed_url: "wss://...", agent_id }
+     Side effect: INSERT INTO agent_sessions
 
 POST /tts
-     Body: { "text": string, "voice_id"?: string }
+     Body: { text, voice_id?, client_id? }
      Response: audio/mpeg stream
-     Note: calls ElevenLabs POST /v1/text-to-speech/{voice_id}
+     Side effect: INSERT INTO advisor_actions (voice_generated)
 
 POST /stt
-     Body: multipart/form-data, field "file" = audio file
-     Response: { "transcript": string, "words": [...] }
-     Note: calls ElevenLabs POST /v1/speech-to-text with scribe_v2
+     Body: multipart/form-data file
+     Response: { transcript, words }
+
+GET  /memory/long/{client_id}
+     Response: [{ id, client_id, category, fact, confidence, created_at }]
+
+POST /memory/long
+     Body: { client_id, category, fact, confidence }
+     Response: { id, status }
+
+GET  /actions?client_id=&limit=
+     Response: [{ id, session_id, client_id, action_type, payload, created_at }]
+
+GET  /clients[/{client_id}]
+     Proxy to analytics service
+
+GET  /internal/analytics-health
+     Response: { analytics: "ok" | "unavailable" }
 ```
 
-### 3.3 ElevenLabs Agent
+---
+
+### 3.3 PostgreSQL — `db/init.sql`
+
+Agent memory and operational state.
+
+```sql
+agent_sessions      -- one row per voice session (id, conversation_id, client_id, status, timestamps)
+agent_memory_short  -- conversation turns during a session (role, content, expires with session)
+agent_memory_long   -- facts learned across sessions (category, fact, confidence, is_active)
+advisor_actions     -- audit log (action_type, payload, client_id, session_id)
+```
+
+---
+
+### 3.4 Analytics — `analytics/main.py`
+
+DuckDB embedded in FastAPI. Tables stored in Docker volume `lake_data`.
+
+```
+GET  /health
+GET  /clients           → list of 12 demo clients
+GET  /clients/{id}      → single client
+GET  /clients/{id}/snapshots
+GET  /recommendations
+POST /recommendations
+GET  /recommendations/{id}
+PATCH /recommendations/{id}
+GET  /voice-messages
+POST /voice-messages
+GET  /alerts
+```
+
+---
+
+### 3.5 ElevenLabs Agent — Sofia
 
 **Agent ID:** `agent_7501kwap3zrre9wr5h20vdqbtz7n`  
 **Created by:** `setup/create_agent.py`
 
 #### System prompt strategy
 
-The system prompt embeds a compact book snapshot (~2,400 chars total) covering all 12 demo clients with their status, AUM, risk profile, allocation, and key alert. This eliminates tool-call latency for 95% of questions.
+Compact book snapshot (~2,400 chars) for 12 clients embedded in prompt — zero tool-call latency for 95% of questions. `get_client_data` is a silent fallback.
 
 ```
-BOOK SNAPSHOT — 30 Jun 2026:
-Ricardo Tanaka [VIP] · R$12.8M · Aggressive · EQ 71% (limit 80%) · AT RISK: ...
-Fernando Costa [VIP] · R$23.0M · Aggressive · EQ 71% (limit 80%) · ATTENTION: ...
-...
+Style: Never say "let me check" or "please wait".
+       You know this book cold. 2 sentences max, then act.
+       After sending, always suggest the next priority client.
 ```
 
-Style instruction forces natural language:
-```
-Never say "let me check", "please wait", "retrieving data". 
-You know this book cold. Be sharp — 2 sentences max, then act.
-```
+#### Client tools
 
-#### Client tools (6 total)
-
-| Tool | Type | Latency | Side effect |
-|---|---|---|---|
-| `navigate` | client | ~0ms | setState({route}) |
-| `show_opportunity` | client | ~0ms | setState({route:'client', clientId}) |
-| `show_recommendation` | client | ~0ms | setState({approvalCard}), sets textarea via DOM |
-| `generate_voice_message` | client | 300–800ms | POST /tts → adds VOICE card to transcript |
-| `send_whatsapp` | client | ~0ms | clears approval card, shows toast |
-| `get_client_data` | client | <1ms | reads `_clientsById` JS map |
+| Tool | Latency | Side effect |
+|---|---|---|
+| `navigate` | ~0ms | setState({route}) |
+| `show_opportunity` | ~0ms | setState({route:'client', clientId}) |
+| `show_recommendation` | ~0ms | setState({approvalCard}), sets textarea via DOM |
+| `generate_voice_message` | 300–800ms | POST /tts → VOICE card in side panel |
+| `send_whatsapp` | ~0ms | Clears approval card, shows toast |
+| `get_client_data` | <1ms | Reads `_clientsById` JS map silently |
 
 ---
 
-## 4. Key User Flows
+## 4. Compose Stack
 
-See detailed diagrams:
-- [Sofia interaction sequence](../flows/SOFIA_FLOW.md)
-- [Cockpit navigation flows](../flows/COCKPIT_FLOWS.md)
-
----
-
-## 5. Deployment
-
-### Local (dev)
-
-```bash
-# 1. Setup agent (once)
-ELEVENLABS_API_KEY=sk_... python setup/create_agent.py
-
-# 2. Backend
-cd backend && pip install -r requirements.txt
-source ../.env && uvicorn main:app --reload --port 8000
-
-# 3. Frontend
-cd front && docker build -t fsi-front . && docker run -p 8080:80 fsi-front
+```yaml
+services:
+  front:      nginx · :8080 · builds from ./front
+  backend:    FastAPI · :8000 · builds from ./backend
+  postgres:   postgres:16-alpine · :5432 · init from db/init.sql
+  analytics:  DuckDB FastAPI · :8001 · builds from ./analytics
 ```
 
-### Docker Compose (production demo)
-
+Start everything:
 ```bash
-cp .env.example .env     # fill in API key + agent IDs
+cp .env.example .env   # add ELEVENLABS_API_KEY, ELEVENLABS_AGENT_ID, ELEVENLABS_VOICE_ID
 docker compose up --build
-# Front: http://localhost:8080/Cockpit%20B.dc.html
-# Backend: http://localhost:8000
 ```
+
+| Service | URL |
+|---|---|
+| Cockpit | http://localhost:8080/cockpit.html |
+| Backend | http://localhost:8000 |
+| Analytics | http://localhost:8001 |
+| Health | http://localhost:8000/health |
+
+---
+
+## 5. Test Suite
+
+82 tests across 5 files. Run with:
+
+```bash
+cd tests && python3 -m pytest -v
+```
+
+| File | Tests | Covers |
+|---|---|---|
+| `test_01_backend_current.py` | 21 | Health, agent token, TTS, STT, error handling |
+| `test_02_frontend_current.py` | 11 | Index redirect, cockpit.html loads, old filenames gone |
+| `test_03_postgres.py` | 6 | Connectivity, schema, memory API via backend |
+| `test_04_analytics.py` | 32 | Clients (all 12), recommendations lifecycle, voice messages, alerts |
+| `test_05_backend_pg_integration.py` | 13 | Health with deps, session creation, memory CRUD, action log, proxies |
 
 ---
 
@@ -211,39 +256,40 @@ docker compose up --build
 
 ### Sofia conversation
 
-- [ ] Tapping the phone button connects to Sofia in < 5 seconds
-- [ ] Sofia speaks her opening line automatically
-- [ ] Saying "show me the alerts" navigates the cockpit to Alerts view
-- [ ] Saying "pull up Ricardo" opens Ricardo Tanaka's client detail
+- [ ] Phone button connects to Sofia in < 5 seconds
+- [ ] Sofia speaks her opening line automatically, starting with highest-risk client
+- [ ] "Show me the alerts" navigates the cockpit to Alerts view
+- [ ] "Pull up Ricardo" opens Ricardo Tanaka's client detail
 - [ ] Sofia generates a recommendation card with editable text
-- [ ] Clicking "Generate voice" creates a playable VOICE card in the side panel
-- [ ] Playing the VOICE card mutes Sofia's output; after it ends Sofia is unmuted
-- [ ] Saying "send it" triggers the send_whatsapp tool and shows a toast
+- [ ] "Generate voice" creates a playable VOICE card in the side panel
+- [ ] Playing the VOICE card mutes Sofia; after it ends she is unmuted
+- [ ] "Send it" triggers send_whatsapp and shows a toast
 - [ ] After sending, Sofia suggests the next priority client unprompted
-- [ ] Tapping the red × ends the session cleanly
+- [ ] Red × ends the session cleanly; side panel returns to idle state
 
 ### Cockpit navigation
 
-- [ ] Clicking any client card opens their detail panel
-- [ ] Back button returns to the originating screen (not always clients)
-- [ ] Language toggle switches all UI strings between EN and PT instantly
 - [ ] All 6 sidebar sections render without errors
+- [ ] Back button returns to the originating screen (not always overview)
+- [ ] Language toggle switches all strings between EN and PT instantly
 - [ ] Client filter chips narrow the client list correctly
 
-### Backend
+### Data layer
 
-- [ ] `GET /health` returns 200 with correct agent_id
-- [ ] `GET /agent/token` returns a `wss://` signed URL
-- [ ] `POST /tts` returns audio/mpeg for a short text input
-- [ ] `POST /stt` returns a transcript for a valid audio upload
+- [ ] `GET /health` reports postgres and analytics as "ok"
+- [ ] Each voice session creates a row in `agent_sessions`
+- [ ] `/memory/long` stores and retrieves facts about clients
+- [ ] `/actions` returns the audit log of advisor actions
+- [ ] `/clients/ricardo` returns Ricardo Tanaka's profile from analytics
 
 ---
 
 ## 7. Known Limitations (demo scope)
 
-- Client data is hardcoded — no live portfolio integration
-- WhatsApp delivery is mocked — no real message is sent
-- `voicePreviews` are lost on page reload (no persistence)
-- ElevenLabs free tier: 10 min/month agent voice + 10k TTS chars/month
-- No authentication — anyone with the URL can access the cockpit
-- CORS is open on the backend — restrict in any real deployment
+- Client portfolio data is seeded/static — no live market or CRM feed
+- WhatsApp delivery is mocked — no real message leaves the system
+- Voice previews are lost on page reload (in-memory blob URLs only)
+- agent_memory_short is never read back into Sofia's context (Phase 3 work)
+- No authentication — anyone with the URL can use the cockpit
+- CORS open on backend — must restrict in production
+- ElevenLabs free tier: 10 min/month agent voice, 10k TTS chars/month
