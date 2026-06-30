@@ -127,9 +127,12 @@
   <!-- ============ SIDEBAR ============ -->
   <aside style="width:{{ sidebarWidth }};flex-shrink:0;border-right:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;">
     <div style="display:flex;align-items:center;gap:10px;padding:16px 14px 14px;min-height:56px">
-      <div style="width:24px;height:24px;border-radius:6px;background:var(--green);flex-shrink:0"></div>
+      <div style="width:24px;height:24px;border-radius:6px;background:var(--ink);flex-shrink:0"></div>
       <span style="font-weight:700;font-size:15px;letter-spacing:-.01em;display:{{ lblDisplay }};white-space:nowrap">Cockpit</span>
-      <span style="font:500 9px 'JetBrains Mono',monospace;color:var(--ink-muted);letter-spacing:.06em;border-left:1px solid var(--border);padding-left:8px;display:{{ lblDisplay }};white-space:nowrap">ElevenLabs</span>
+      <div style="display:{{ lblDisplay }};flex-direction:column;gap:1px;border-left:1px solid var(--border);padding-left:8px;white-space:nowrap">
+        <div style="font:500 8px 'JetBrains Mono',monospace;color:var(--ink-muted);letter-spacing:.05em;line-height:1">powered by</div>
+        <div style="font:700 9px 'JetBrains Mono',monospace;color:var(--ink-muted);letter-spacing:.06em;line-height:1">ElevenLabs</div>
+      </div>
     </div>
 
     <div style="margin:4px 12px 8px;display:flex;align-items:center;gap:8px;padding:9px 11px;border:1px solid var(--border);border-radius:10px;justify-content:{{ navJustify }}">
