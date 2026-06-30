@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+<script type="module">
+  import { Conversation } from 'https://cdn.jsdelivr.net/npm/@11labs/client@latest/+esm';
+  window._ElevenLabsConversation = Conversation;
+</script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ── Tokens ──────────────────────────────────────── */
+  :root {
+    --bg:        oklch(1.000 0.000 265);
+    --surface:   oklch(0.975 0.003 265);
+    --surface-2: oklch(0.945 0.004 265);
+    --surface-3: oklch(0.910 0.005 265);
+    --border:    oklch(0.875 0.006 265);
+    --border-2:  oklch(0.780 0.008 265);
+    --ink:       oklch(0.100 0.005 265);
+    --ink-2:     oklch(0.380 0.005 265);
+    --ink-3:     oklch(0.550 0.005 265);
+    --ink-muted: oklch(0.700 0.005 265);
+    --green:     oklch(0.500 0.200 150);
+    --red:       oklch(0.520 0.175  27);
+    --amber:     oklch(0.560 0.145  65);
+    --blue:      oklch(0.520 0.145 248);
+    --ease:      cubic-bezier(0.25, 1, 0.5, 1);
+    --font-sans: 'Hanken Grotesk', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  /* ── Reset ───────────────────────────────────────── */
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+  button { font-family: inherit; border: none; background: none; cursor: pointer; transition: background 120ms var(--ease), color 120ms var(--ease), border-color 120ms var(--ease), opacity 120ms var(--ease); }
+  input  { font-family: inherit; outline: none; border: none; background: none; color: inherit; }
+
+  /* ── Scrollbar ───────────────────────────────────── */
+  ::-webkit-scrollbar { width: 9px; height: 9px; }
+  ::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  /* ── Focus ───────────────────────────────────────── */
+  :focus-visible { outline: 2px solid var(--green); outline-offset: 2px; border-radius: 4px; }
+
+  /* ── Hover utilities ─────────────────────────────── */
+  .btn-nav:hover  { background: var(--surface-3) !important; }
+  .btn-row:hover  { background: var(--surface-2) !important; }
+  .card-cl:hover  { border-color: var(--border-2) !important; box-shadow: 0 2px 12px oklch(0 0 0 / .35) !important; }
+  .opp-card:hover { border-color: var(--border-2) !important; box-shadow: 0 2px 8px oklch(0 0 0 / .3) !important; }
+
+  /* ── Animations ──────────────────────────────────── */
+  @keyframes eqbar {
+    0%, 100% { transform: scaleY(.3) }
+    50%       { transform: scaleY(1)  }
+  }
+  @keyframes softpulse {
+    0%, 100% { opacity: .4 }
+    50%       { opacity: 1  }
+  }
+  @keyframes slidein {
+    from { transform: translateX(16px); opacity: 0 }
+    to   { transform: translateX(0);    opacity: 1 }
+  }
+  @keyframes fadein {
+    from { opacity: 0; transform: translateY(6px) }
+    to   { opacity: 1; transform: translateY(0)   }
+  }
+  @keyframes pagein {
+    from { opacity: 0; transform: translateY(6px) }
+    to   { opacity: 1; transform: translateY(0)   }
+  }
+  @keyframes callpulse {
+    0%   { box-shadow: 0 0 0 0   oklch(0.50 0.20 150 / .45) }
+    60%  { box-shadow: 0 0 0 16px oklch(0.50 0.20 150 / 0)  }
+    100% { box-shadow: 0 0 0 0   oklch(0.50 0.20 150 / 0)   }
+  }
+
+  /* ── Page enter ──────────────────────────────────── */
+  .page-section { animation: pagein 200ms var(--ease) both; }
+
+  /* ── Reduced motion ──────────────────────────────── */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* ── Responsive ──────────────────────────────────── */
+  @media (max-width: 1200px) {
+    .panel-intel  { display: none !important; }
+    .panel-offpol { display: none !important; }
+  }
+  @media (max-width: 960px) {
+    .grid-4col { grid-template-columns: repeat(2, 1fr) !important; }
+    .grid-3col { grid-template-columns: repeat(2, 1fr) !important; }
+  }
+  @media (max-width: 600px) {
+    .grid-4col { grid-template-columns: 1fr !important; }
+    .grid-3col { grid-template-columns: 1fr !important; }
+  }
+</style>
+</helmet>
+
+<div style="display:flex;height:100vh;width:100%;overflow:hidden;background:var(--bg)">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside style="width:{{ sidebarWidth }};flex-shrink:0;border-right:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;">
+    <div style="display:flex;align-items:center;gap:10px;padding:16px 14px 14px;min-height:56px">
+      <div style="width:24px;height:24px;border-radius:6px;background:var(--green);flex-shrink:0"></div>
+      <span style="font-weight:700;font-size:15px;letter-spacing:-.01em;display:{{ lblDisplay }};white-space:nowrap">Cockpit</span>
+      <span style="font:500 9px 'JetBrains Mono',monospace;color:var(--ink-muted);letter-spacing:.06em;border-left:1px solid var(--border);padding-left:8px;display:{{ lblDisplay }};white-space:nowrap">ElevenLabs</span>
+    </div>
+
+    <div style="margin:4px 12px 8px;display:flex;align-items:center;gap:8px;padding:9px 11px;border:1px solid var(--border);border-radius:10px;justify-content:{{ navJustify }}">
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0"></div>
+      <span style="font-size:13px;font-weight:500;flex:1;white-space:nowrap;display:{{ lblDisplay }}">{{ t.desk }}</span>
+      <span style="color:var(--ink-3);font-size:12px;display:{{ lblDisplay }}">⌄</span>
+    </div>
+
+    <nav style="flex:1;padding:6px 10px;overflow-y:auto;overflow-x:hidden">
+      <div style="font:500 10.5px 'JetBrains Mono',monospace;letter-spacing:.04em;color:var(--ink-muted);padding:12px 10px 6px;display:{{ lblDisplay }};white-space:nowrap">{{ t.secMain }}</div>
+      <button onClick="{{ goObj.overview }}" style="width:100%;display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;background:{{ nav.overview.bg }};color:{{ nav.overview.color }};justify-content:{{ navJustify }}">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="flex-shrink:0"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        <span style="font-size:13.5px;font-weight:{{ nav.overview.weight }};white-space:nowrap;display:{{ lblDisplay }}">{{ t.overview }}</span>
+      </button>
+      <button onClick="{{ goObj.conversations }}" style="width:100%;display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;background:{{ nav.conversations.bg }};color:{{ nav.conversations.color }};justify-content:{{ navJustify }}">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="flex-shrink:0"><path d="M4 5h16v11H9l-5 4z" stroke-linejoin="round"/></svg>
+        <span style="font-size:13.5px;font-weight:{{ nav.conversations.weight }};white-space:nowrap;display:{{ lblDisplay }}">{{ t.conversations }}</span>
+      </button>
+
+      <div style="font:500 10.5px 'JetBrains Mono',monospace;letter-spacing:.04em;color:var(--ink-muted);padding:14px 10px 6px;display:{{ lblDisplay }};white-space:nowrap">{{ t.secIntel }}</div>
+      <button onClick="{{ goObj.alerts }}" style="width:100%;display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;background:{{ nav.alerts.bg }};color:{{ nav.alerts.color }};justify-content:{{ navJustify }};position:relative">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="flex-shrink:0"><path d="M6 9a6 6 0 0112 0c0 5 2 6 2 6H4s2-1 2-6z" stroke-linejoin="round"/><path d="M10 20a2 2 0 004 0"/></svg>
+        <span style="font-size:13.5px;font-weight:{{ nav.alerts.weight }};white-space:nowrap;display:{{ lblDisplay }};flex:1;text-align:left">{{ t.alerts }}</span>
+        <span style="font:600 10px 'JetBrains Mono',monospace;background:var(--red);color:#fff;border-radius:6px;padding:2px 6px;display:{{ lblDisplay }}">{{ alertCount }}</span>
+        <span style="position:absolute;top:7px;right:9px;width:6px;height:6px;border-radius:50%;background:var(--red);display:{{ collapsedDotDisplay }}"></span>
+      </button>
+      <button onClick="{{ goObj.opportunities }}" style="width:100%;display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;background:{{ nav.opportunities.bg }};color:{{ nav.opportunities.color }};justify-content:{{ navJustify }}">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="flex-shrink:0"><path d="M3 17l6-6 4 4 8-8" stroke-linejoin="round" stroke-linecap="round"/><path d="M15 7h6v6" stroke-linejoin="round" stroke-linecap="round"/></svg>
+        <span style="font-size:13.5px;font-weight:{{ nav.opportunities.weight }};white-space:nowrap;display:{{ lblDisplay }}">{{ t.opportunities }}</span>
+      </button>
+
+      <div style="font:500 10.5px 'JetBrains Mono',monospace;letter-spacing:.04em;color:var(--ink-muted);padding:14px 10px 6px;display:{{ lblDisplay }};white-space:nowrap">{{ t.secPortfolio }}</div>
+      <button onClick="{{ goObj.allocation }}" style="width:100%;display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;background:{{ nav.allocation.bg }};color:{{ nav.allocation.color }};justify-content:{{ navJustify }}">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="flex-shrink:0"><path d="M12 3v9l7 4" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9"/></svg>
+        <span style="font-size:13.5px;font-weight:{{ nav.allocation.weight }};white-space:nowrap;display:{{ lblDisplay }}">{{ t.allocation }}</span>
+      </button>
+    </nav>
+
+    <div style="border-top:1px solid var(--border);padding:12px;display:flex;align-items:center;gap:10px;justify-content:{{ navJustify }}">
+      <div style="width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;flex-shrink:0">VA</div>
+      <div style="flex:1;line-height:1.25;display:{{ lblDisplay }};white-space:nowrap"><div style="font-size:12.5px;font-weight:600">Thiago da Hora</div><div style="font-size:11px;color:var(--ink-3)">{{ t.role }}</div></div>
+      <span style="color:var(--ink-3);font-size:14px;display:{{ lblDisplay }}">⚙</span>
+    </div>
+  </aside>
+
+  <!-- ============ CENTER ============ -->
+  <div style="flex:1;display:flex;flex-direction:column;min-width:0">
+    <header style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:13px 22px;border-bottom:1px solid var(--border)">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button onClick="{{ toggleMenu }}" title="{{ t.menuTip }}" style="width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;color:var(--ink-2)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 6h18M3 12h18M3 18h18" stroke-linecap="round"/></svg>
+        </button>
+        <div style="display:flex;align-items:center;gap:9px"><div style="width:18px;height:18px;border:1.5px solid var(--border-2);border-radius:5px"></div><span style="font-size:14px;font-weight:600">{{ headerTitle }}</span></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <div onClick="{{ openSearch }}" style="display:flex;align-items:center;gap:8px;width:220px;height:34px;padding:0 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--ink-3);font-size:12.5px;cursor:text"><span style="font-size:14px">⌕</span><span>{{ t.search }}</span></div>
+        <button onClick="{{ toggleLang }}" title="{{ t.langTip }}" style="height:34px;display:flex;align-items:center;gap:7px;padding:0 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2)">
+          <sc-if value="{{ isEN }}" hint-placeholder-val="{{ true }}">
+            <svg width="22" height="15" viewBox="0 0 28 20" style="border-radius:2px;display:block">
+              <rect width="28" height="20" fill="#fff"/>
+              <rect width="28" height="2.86" y="0" fill="#B22234"/><rect width="28" height="2.86" y="5.71" fill="#B22234"/><rect width="28" height="2.86" y="11.43" fill="#B22234"/><rect width="28" height="2.86" y="17.14" fill="#B22234"/>
+              <rect width="12" height="11.43" fill="#3C3B6E"/>
+            </svg>
+          </sc-if>
+          <sc-if value="{{ isPT }}" hint-placeholder-val="{{ false }}">
+            <svg width="22" height="15" viewBox="0 0 28 20" style="border-radius:2px;display:block">
+              <rect width="28" height="20" fill="#009C3B"/>
+              <polygon points="14,2 26,10 14,18 2,10" fill="#FFDF00"/>
+              <circle cx="14" cy="10" r="4.4" fill="#002776"/>
+            </svg>
+          </sc-if>
+          <span style="font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ langCode }}</span>
+        </button>
+      </div>
+    </header>
+
+    <div style="padding:22px;flex:1;overflow-y:auto">
+
+      <!-- ===== OVERVIEW ===== -->
+      <sc-if value="{{ isOverview }}" hint-placeholder-val="{{ true }}">
+        <div>
+          <div style="margin-bottom:18px">
+            <div style="font-size:22px;font-weight:700;letter-spacing:-.015em">{{ t.pageTitle }}</div>
+            <div style="font-size:13px;color:var(--ink-3);margin-top:3px">{{ t.pageSub }}</div>
+          </div>
+          <div class="grid-4col" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px">
+            <sc-for list="{{ statTiles }}" as="s" hint-placeholder-count="4">
+              <div style="border:1px solid var(--border);border-radius:12px;padding:15px 16px;background:var(--surface)">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:11px">
+                  <span style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">{{ s.label }}</span>
+                  <div style="width:6px;height:6px;border-radius:50%;background:{{ s.dot }};flex-shrink:0"></div>
+                </div>
+                <div style="font:700 26px 'JetBrains Mono',monospace;letter-spacing:-.03em;color:var(--ink)">{{ s.n }}</div>
+                <div style="font-size:11.5px;color:var(--ink-3);margin-top:4px">{{ s.sub }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div class="grid-4col" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+            <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+              <div style="border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;">
+                <div style="display:flex;align-items:center;gap:8px;padding:12px 14px;background:{{ g.tint }};border-bottom:1px solid var(--border)">
+                  <div style="width:8px;height:8px;border-radius:50%;background:{{ g.accent }}"></div>
+                  <span style="font-size:13px;font-weight:700">{{ g.title }}</span>
+                  <span style="margin-left:auto;font:600 11px 'JetBrains Mono',monospace;color:#fff;background:{{ g.accent }};border-radius:6px;padding:2px 8px">{{ g.count }}</span>
+                </div>
+                <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="2">
+                  <button onClick="{{ it.open }}" style="text-align:left;width:100%;padding:12px 14px;border-bottom:1px solid var(--border);display:block;background:transparent">
+                    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px">
+                      <div style="display:flex;align-items:center;gap:6px;min-width:0">
+                        <span style="font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ it.name }}</span>
+                        <sc-if value="{{ it.vip }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:4px;background:var(--ink);color:var(--bg);border-radius:5px;padding:2px 6px;font:700 9px 'JetBrains Mono',monospace;letter-spacing:.06em;flex-shrink:0"><span style="width:6px;height:6px;background:oklch(0.8 0.13 85);transform:rotate(45deg);display:inline-block"></span>VIP</span></sc-if>
+                      </div>
+                      <span style="font:500 10px 'JetBrains Mono',monospace;color:var(--ink-3);flex-shrink:0">{{ it.ago }}</span>
+                    </div>
+                    <div style="font-size:12px;color:var(--ink-2);margin-top:3px">{{ it.note }}</div>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== CLIENTS ===== -->
+      <sc-if value="{{ isClients }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="display:flex;align-items:center;gap:10px;height:46px;padding:0 16px;border:1px solid var(--border);border-radius:12px;background:var(--surface-2);margin-bottom:14px">
+            <span style="font-size:17px;color:var(--ink-3)">⌕</span>
+            <input value="{{ query }}" onInput="{{ onSearch }}" placeholder="{{ t.clientsSearch }}" aria-label="{{ t.clientsSearch }}" style="flex:1;font-size:15px;color:var(--ink)" />
+            <span style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ clientsCount }}</span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div style="display:flex;gap:7px">
+              <sc-for list="{{ clientFilters }}" as="f" hint-placeholder-count="4">
+                <button onClick="{{ f.set }}" style="border:1px solid {{ f.border }};background:{{ f.bg }};color:{{ f.color }};border-radius:8px;padding:6px 12px;font-size:12px;font-weight:{{ f.weight }}">{{ f.label }}</button>
+              </sc-for>
+            </div>
+            <span style="font:500 12px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ t.sortPatr }} ⌄</span>
+          </div>
+          <div class="grid-3col" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px">
+            <sc-for list="{{ filteredClients }}" as="c" hint-placeholder-count="6">
+              <button onClick="{{ c.open }}" style="text-align:left;border:1px solid var(--border);border-radius:14px;padding:16px;background:var(--surface-2);display:block" style-hover="border-color:var(--border-2);box-shadow:0 2px 12px oklch(0 0 0/.35)">
+                <div style="display:flex;align-items:flex-start;justify-content:space-between">
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <div style="width:36px;height:36px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ c.ini }}</div>
+                    <div>
+                      <div style="display:flex;align-items:center;gap:6px"><span style="font-size:14px;font-weight:600">{{ c.name }}</span><sc-if value="{{ c.vip }}" hint-placeholder-val="{{ false }}"><span style="width:9px;height:9px;background:oklch(0.8 0.13 85);transform:rotate(45deg);display:inline-block"></span></sc-if></div>
+                      <div style="font-size:11.5px;color:var(--ink-3)">{{ c.perfilLabel }}</div>
+                    </div>
+                  </div>
+                  <div style="width:8px;height:8px;border-radius:50%;background:{{ c.accent }};margin-top:4px"></div>
+                </div>
+                <div style="font:600 22px 'JetBrains Mono',monospace;letter-spacing:-.02em;margin-top:14px">{{ c.patr }}</div>
+                <div style="display:flex;height:6px;border-radius:4px;overflow:hidden;margin-top:12px;background:var(--surface-3)">
+                  <div style="width:{{ c.alloc.rv }};background:oklch(0.12 0.005 265)"></div>
+                  <div style="width:{{ c.alloc.rf }};background:oklch(0.40 0.005 265)"></div>
+                  <div style="width:{{ c.alloc.fu }};background:oklch(0.60 0.005 265)"></div>
+                  <div style="width:{{ c.alloc.cx }};background:oklch(0.78 0.005 265)"></div>
+                </div>
+                <div style="font:500 10px 'JetBrains Mono',monospace;color:var(--ink-3);margin-top:7px">{{ c.allocLegend }}</div>
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-top:13px;padding-top:13px;border-top:1px solid var(--border)">
+                  <span style="display:inline-flex;align-items:center;gap:6px;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)"><span style="width:6px;height:6px;border-radius:50%;background:{{ c.accent }}"></span>{{ c.statusLabel }}</span>
+                  <span style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ c.ago }}</span>
+                </div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== CLIENT DETAIL ===== -->
+      <sc-if value="{{ isClient }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <button onClick="{{ goBack }}" style="display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:600;color:var(--ink-2);margin-bottom:14px"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 6l-6 6 6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>{{ backLabel }}</button>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:18px">
+            <div style="display:flex;align-items:center;gap:13px">
+              <div style="width:48px;height:48px;border-radius:50%;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;font:600 16px 'JetBrains Mono',monospace">{{ sc.ini }}</div>
+              <div>
+                <div style="display:flex;align-items:center;gap:9px">
+                  <span style="font-size:19px;font-weight:700;letter-spacing:-.01em">{{ sc.name }}</span>
+                  <sc-if value="{{ sc.vip }}" hint-placeholder-val="{{ false }}"><span style="display:inline-flex;align-items:center;gap:4px;background:var(--ink);color:var(--bg);border-radius:5px;padding:2px 7px;font:700 9px 'JetBrains Mono',monospace;letter-spacing:.06em"><span style="width:6px;height:6px;background:oklch(0.8 0.13 85);transform:rotate(45deg);display:inline-block"></span>VIP</span></sc-if>
+                </div>
+                <div style="display:flex;align-items:center;gap:9px;margin-top:4px">
+                  <span style="display:inline-flex;align-items:center;gap:6px;background:var(--surface-3);border-radius:7px;padding:4px 9px;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)"><span style="width:6px;height:6px;border-radius:50%;background:{{ sc.accent }}"></span>{{ sc.statusLabel }}</span>
+                  <span style="border:1px solid var(--border);border-radius:7px;padding:4px 9px;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ sc.perfilLabel }}</span>
+                  <span style="font-size:12px;color:var(--ink-3)">{{ t.clientSince }} {{ sc.since }}</span>
+                </div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button style="border:1px solid var(--border);background:var(--surface-2);border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:600">{{ t.scheduleCall }}</button>
+              <button style="background:var(--ink);color:var(--bg);border-radius:9px;padding:9px 15px;font-size:12.5px;font-weight:600">+ {{ t.newRec }}</button>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:16px;align-items:flex-start">
+            <!-- profile -->
+            <div style="width:300px;flex-shrink:0;border:1px solid var(--border);border-radius:14px;padding:18px">
+              <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">{{ t.aum }}</div>
+              <div style="display:flex;align-items:baseline;gap:10px;margin-top:6px"><span style="font:700 26px 'JetBrains Mono',monospace;letter-spacing:-.03em">{{ sc.patr }}</span><span style="font:600 12px 'JetBrains Mono',monospace;color:{{ sc.deltaColor }}">{{ sc.delta }} {{ t.monthChange }}</span></div>
+
+              <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-top:20px">{{ t.riskProfile }}</div>
+              <div style="display:flex;gap:4px;margin-top:8px">
+                <sc-for list="{{ riskSegs }}" as="r" hint-placeholder-count="5"><div style="flex:1;height:6px;border-radius:3px;background:{{ r.color }}"></div></sc-for>
+              </div>
+              <div style="font-size:12.5px;font-weight:600;margin-top:6px">{{ sc.perfilLabel }}</div>
+
+              <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-top:20px">{{ t.currentAlloc }}</div>
+              <div style="margin-top:10px;display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ allocList }}" as="a" hint-placeholder-count="4">
+                  <div>
+                    <div style="display:flex;justify-content:space-between;margin-bottom:5px"><span style="font-size:12.5px;color:var(--ink-2)">{{ a.name }}</span><span style="font:600 12px 'JetBrains Mono',monospace">{{ a.pct }}</span></div>
+                    <div style="height:6px;background:var(--surface-3);border-radius:4px;overflow:hidden"><div style="height:100%;width:{{ a.w }};background:{{ a.shade }}"></div></div>
+                  </div>
+                </sc-for>
+              </div>
+
+              <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-top:20px">{{ t.lastContacts }}</div>
+              <div style="margin-top:10px;display:flex;flex-direction:column">
+                <sc-for list="{{ lastContacts }}" as="lc" hint-placeholder-count="3">
+                  <div style="display:flex;align-items:flex-start;gap:11px;padding-bottom:13px">
+                    <div style="display:flex;flex-direction:column;align-items:center;padding-top:3px"><div style="width:8px;height:8px;border-radius:50%;border:2px solid var(--border-2)"></div><div style="width:2px;flex:1;background:var(--surface-3);margin-top:2px;min-height:14px"></div></div>
+                    <div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-size:12.5px;font-weight:600">{{ lc.ch }}</span><span style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ lc.when }}</span></div><div style="font-size:11.5px;color:var(--ink-3);margin-top:1px">{{ lc.detail }}</div></div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <!-- conversation + intel OR empty -->
+            <div style="flex:1;min-width:0">
+              <sc-if value="{{ sc.hasConvo }}" hint-placeholder-val="{{ true }}">
+                <div style="display:flex;gap:16px;align-items:flex-start">
+                  <!-- conversation -->
+                  <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px">
+                      <div>
+                        <div style="font-size:15px;font-weight:700">{{ t.lastConversation }}</div>
+                        <div style="font:500 12px 'JetBrains Mono',monospace;color:var(--ink-3);margin-top:2px">{{ convo.date }}</div>
+                      </div>
+                      <div style="display:flex;gap:4px;background:var(--surface-3);border-radius:9px;padding:3px">
+                        <button onClick="{{ setTranscript }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillTransBg }};color:{{ pillTransFg }}">{{ t.transcriptTab }}</button>
+                        <button onClick="{{ setMessages }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillMsgBg }};color:{{ pillMsgFg }}">{{ t.messagesTab }}</button>
+                      </div>
+                    </div>
+
+                    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:13px;padding:15px 16px">
+                      <div style="display:flex;align-items:center;gap:14px">
+                        <div style="width:46px;height:46px;border-radius:50%;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer"><span style="font-size:15px;margin-left:3px">▶</span></div>
+                        <div style="flex:1;display:flex;align-items:center;gap:2px;height:46px;min-width:0;overflow:hidden">
+                          <sc-for list="{{ bars }}" as="b" hint-placeholder-count="70"><div style="width:3px;flex-shrink:0;border-radius:2px;height:{{ b.h }}px;background:{{ b.color }}"></div></sc-for>
+                        </div>
+                        <span style="font:600 12.5px 'JetBrains Mono',monospace;color:var(--ink-2);flex-shrink:0">{{ convo.pos }}</span>
+                      </div>
+                      <div style="display:flex;align-items:center;gap:12px;margin-top:13px;padding-top:13px;border-top:1px solid var(--border)">
+                        <div style="display:flex;align-items:flex-end;gap:2px;height:14px">
+                          <div style="width:3px;height:100%;background:var(--green);border-radius:2px;transform-origin:bottom;animation:eqbar .9s ease-in-out infinite"></div>
+                          <div style="width:3px;height:100%;background:var(--green);border-radius:2px;transform-origin:bottom;animation:eqbar .9s ease-in-out infinite;animation-delay:-.3s"></div>
+                          <div style="width:3px;height:100%;background:var(--green);border-radius:2px;transform-origin:bottom;animation:eqbar .9s ease-in-out infinite;animation-delay:-.6s"></div>
+                          <div style="width:3px;height:100%;background:var(--green);border-radius:2px;transform-origin:bottom;animation:eqbar .9s ease-in-out infinite;animation-delay:-.15s"></div>
+                        </div>
+                        <span style="font:600 11.5px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ t.reproducing }}</span>
+                        <span style="border:1px solid var(--border);border-radius:7px;padding:3px 9px;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">1.0×</span>
+                        <span style="margin-left:auto;font:500 11.5px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ t.autoTranscribed }}</span>
+                      </div>
+                    </div>
+
+                    <div style="margin-top:18px">
+                      <sc-if value="{{ showTranscript }}" hint-placeholder-val="{{ true }}">
+                        <div style="display:flex;flex-direction:column;gap:18px">
+                          <sc-for list="{{ convo.transcript }}" as="p" hint-placeholder-count="3">
+                            <div>
+                              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font:600 12px 'JetBrains Mono',monospace;color:{{ p.whoColor }}">{{ p.who }}</span><span style="font:500 11px 'JetBrains Mono',monospace;color:#C0C0C0">{{ p.time }}</span><sc-if value="{{ p.active }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:5px;margin-left:4px;font:500 10px 'JetBrains Mono',monospace;color:var(--green)"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:softpulse 1.4s infinite"></span>{{ t.playingNow }}</span></sc-if></div>
+                              <sc-if value="{{ p.active }}" hint-placeholder-val="{{ false }}"><div style="font-size:14.5px;line-height:1.85"><sc-for list="{{ p.words }}" as="x" hint-placeholder-count="16"><span style="background:{{ x.bg }};color:{{ x.color }};padding:{{ x.pad }};border-radius:4px">{{ x.w }} </span></sc-for></div></sc-if>
+                              <sc-if value="{{ p.inactive }}" hint-placeholder-val="{{ true }}"><div style="font-size:14.5px;line-height:1.65;color:var(--ink-2)">{{ p.text }}</div></sc-if>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{ showMessages }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex;flex-direction:column">
+                          <sc-for list="{{ convo.messages }}" as="m" hint-placeholder-count="4">
+                            <div style="display:flex;justify-content:{{ m.justify }};margin-bottom:11px">
+                              <div style="max-width:74%;background:{{ m.bg }};color:{{ m.fg }};padding:10px 13px;border-radius:14px;font-size:13.5px;line-height:1.5">{{ m.t }}<div style="font:500 10px 'JetBrains Mono',monospace;opacity:.55;margin-top:5px;text-align:right">{{ m.time }}</div></div>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </div>
+
+                  <!-- intel -->
+                  <div class="panel-intel" style="width:312px;flex-shrink:0;border:1px solid var(--border);border-radius:14px;background:var(--surface);overflow:hidden">
+                    <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)">
+                      <div style="width:9px;height:9px;border-radius:50%;background:var(--green);animation:softpulse 1.6s infinite"></div>
+                      <div style="flex:1"><div style="font-size:14px;font-weight:700">ElevenAgent</div><div style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ t.analyzedCall }}</div></div>
+                    </div>
+                    <div style="padding:15px 16px">
+                      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 13px;font-size:12.5px;line-height:1.6;color:var(--ink-2)">{{ convo.summary }}</div>
+
+                      <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-top:16px">{{ t.objectivesLabel }}</div>
+                      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"><sc-for list="{{ convo.objectives }}" as="o" hint-placeholder-count="2"><span style="background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:5px 9px;font-size:11.5px;color:var(--ink-2)">{{ o }}</span></sc-for></div>
+
+                      <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-top:16px">{{ t.appetiteLabel }}</div>
+                      <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.5">{{ convo.appetite }}</div>
+
+                      <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-top:16px">{{ t.productsLabel }}</div>
+                      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"><sc-for list="{{ convo.products }}" as="p" hint-placeholder-count="3"><span style="background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:5px 9px;font-size:11.5px;color:var(--ink-2)">{{ p }}</span></sc-for></div>
+
+                      <sc-if value="{{ convo.hasLifeEvent }}" hint-placeholder-val="{{ false }}">
+                        <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-top:16px">{{ t.lifeEventLabel }}</div>
+                        <div style="display:flex;align-items:center;gap:9px;margin-top:8px;background:oklch(0.97 0.02 95);border:1px solid oklch(0.9 0.05 95);border-radius:9px;padding:9px 11px">
+                          <div style="width:7px;height:7px;border-radius:50%;background:oklch(0.66 0.11 65)"></div>
+                          <span style="font-size:12px;font-weight:600;color:var(--amber)">{{ convo.lifeEvent }}</span>
+                        </div>
+                      </sc-if>
+
+                      <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-top:16px">{{ t.sentimentLabel }}</div>
+                      <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><div style="flex:1;height:6px;background:var(--surface-3);border-radius:4px;overflow:hidden"><div style="height:100%;width:{{ convo.sentLevel }};background:{{ convo.sentColor }}"></div></div><span style="font:600 11.5px 'JetBrains Mono',monospace;color:{{ convo.sentColor }}">{{ convo.sentLabel }}</span></div>
+
+                      <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-top:16px">{{ t.nextActionsLabel }}</div>
+                      <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px"><sc-for list="{{ convo.nextActions }}" as="a" hint-placeholder-count="3"><div style="display:flex;align-items:flex-start;gap:9px"><div style="width:15px;height:15px;border:1.5px solid var(--border-2);border-radius:5px;flex-shrink:0;margin-top:1px"></div><span style="font-size:12px;color:var(--ink-2);line-height:1.4">{{ a }}</span></div></sc-for></div>
+
+                      <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">
+                        <div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:700">{{ t.suggestedMsgs }}</span><span style="font:500 10px 'JetBrains Mono',monospace;color:var(--bg);background:var(--ink);border-radius:5px;padding:2px 7px">{{ t.voiceTag }}</span></div>
+                        <div style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3);margin-top:4px">{{ t.genByEleven }}</div>
+                        <div style="margin-top:11px;display:flex;flex-direction:column;gap:10px">
+                          <sc-for list="{{ convo.tts }}" as="s" hint-placeholder-count="2">
+                            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px">
+                              <div style="font-size:12px;line-height:1.55;color:var(--ink)">{{ s.text }}</div>
+                              <div style="display:flex;align-items:center;gap:9px;margin-top:10px">
+                                <div style="width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer"><span style="font-size:9px;margin-left:2px">▶</span></div>
+                                <div style="flex:1;display:flex;align-items:center;gap:1.5px;height:18px;overflow:hidden"><sc-for list="{{ miniBars }}" as="mb" hint-placeholder-count="22"><div style="width:2px;flex-shrink:0;border-radius:1px;height:{{ mb.h }}px;background:var(--surface-3)"></div></sc-for></div>
+                                <span style="font:600 10px 'JetBrains Mono',monospace;color:var(--ink-3);flex-shrink:0">{{ s.dur }}</span>
+                              </div>
+                              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+                                <span style="font:500 10.5px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ s.voice }}</span>
+                                <button style="background:var(--ink);color:var(--bg);border-radius:8px;padding:5px 13px;font-size:11px;font-weight:600">{{ t.send }}</button>
+                              </div>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </sc-if>
+              <sc-if value="{{ sc.noConvo }}" hint-placeholder-val="{{ false }}">
+                <div style="border:1px dashed var(--border-2);border-radius:14px;padding:48px 24px;display:flex;flex-direction:column;align-items:center;text-align:center">
+                  <div style="width:46px;height:46px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;color:var(--ink-3);margin-bottom:14px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 5h16v11H9l-5 4z" stroke-linejoin="round"/></svg></div>
+                  <div style="font-size:15px;font-weight:700">{{ t.noConvoTitle }}</div>
+                  <div style="font-size:12.5px;color:var(--ink-3);margin-top:5px;max-width:320px;line-height:1.5">{{ t.noConvoSub }}</div>
+                  <button style="margin-top:16px;background:var(--ink);color:var(--bg);border-radius:9px;padding:9px 16px;font-size:12.5px;font-weight:600">{{ t.requestCall }}</button>
+                </div>
+              </sc-if>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== CONVERSATIONS ===== -->
+      <sc-if value="{{ isConversations }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="margin-bottom:16px"><div style="font-size:22px;font-weight:700;letter-spacing:-.015em">{{ t.convTitle }}</div><div style="font-size:13px;color:var(--ink-3);margin-top:3px">{{ t.convSub }}</div></div>
+
+          <!-- Sofia live call panel -->
+          <div style="border:1px solid var(--border);border-radius:14px;background:var(--surface);margin-bottom:20px;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--border)">
+              <div style="width:8px;height:8px;border-radius:50%;background:{{ agentStatusDot }};flex-shrink:0"></div>
+              <div style="flex:1">
+                <span style="font-size:14px;font-weight:700">Sofia</span>
+                <span style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3);margin-left:8px">{{ agentStatusLabel }}</span>
+              </div>
+              <button onClick="{{ toggleAgent }}" style="background:{{ agentBtnBg }};color:var(--bg);border-radius:9px;padding:7px 16px;font-size:12.5px;font-weight:600;border:none;cursor:pointer">{{ agentBtnLabel }}</button>
+            </div>
+            <!-- transcript -->
+            <sc-if value="{{ agentActive }}" hint-placeholder-val="{{ false }}">
+              <div style="max-height:220px;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:10px">
+                <sc-for list="{{ agentTranscript }}" as="m" hint-placeholder-count="3">
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <span style="font:700 10px 'JetBrains Mono',monospace;color:var(--ink-3);flex-shrink:0;margin-top:3px;width:28px">{{ m.who }}</span>
+                    <div style="font-size:13px;color:var(--ink);line-height:1.55">{{ m.text }}</div>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ agentIdle }}" hint-placeholder-val="{{ true }}">
+              <div style="padding:18px;font-size:13px;color:var(--ink-3)">{{ t.sofiaIdleHint }}</div>
+            </sc-if>
+            <sc-if value="{{ agentConnecting }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:18px;font-size:13px;color:var(--ink-3);display:flex;align-items:center;gap:8px">
+                <div style="width:7px;height:7px;border-radius:50%;background:var(--amber);animation:softpulse 1s infinite"></div>
+                {{ t.sofiaConnecting }}
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="display:flex;gap:7px;margin-bottom:14px">
+            <sc-for list="{{ convFilters }}" as="f" hint-placeholder-count="4"><button onClick="{{ f.set }}" style="border:1px solid {{ f.border }};background:{{ f.bg }};color:{{ f.color }};border-radius:8px;padding:6px 12px;font-size:12px;font-weight:{{ f.weight }}">{{ f.label }}</button></sc-for>
+          </div>
+          <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden">
+            <div style="display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">
+              <span style="width:210px">{{ t.thClient }}</span><span style="width:120px">{{ t.thChannel }}</span><span style="width:90px">{{ t.thDate }}</span><span style="width:80px">{{ t.thDuration }}</span><span style="flex:1">{{ t.thSentiment }}</span><span>{{ t.thStatus }}</span>
+            </div>
+            <sc-for list="{{ conversations }}" as="v" hint-placeholder-count="8">
+              <button onClick="{{ v.open }}" style="text-align:left;width:100%;display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border)" style-hover="background:var(--surface-2)">
+                <div style="width:210px;display:flex;align-items:center;gap:11px"><div style="width:34px;height:34px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.ini }}</div><span style="font-size:13.5px;font-weight:600">{{ v.name }}</span></div>
+                <div style="width:120px;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2)"><span style="width:7px;height:7px;border-radius:2px;background:{{ v.chColor }}"></span>{{ v.channel }}</div>
+                <span style="width:90px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.date }}</span>
+                <span style="width:80px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.dur }}</span>
+                <div style="flex:1"><span style="display:inline-flex;align-items:center;gap:6px;font:600 11px 'JetBrains Mono',monospace;color:{{ v.sentColor }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ v.sentColor }}"></span>{{ v.sentLabel }}</span></div>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <span style="font:500 10px 'JetBrains Mono',monospace;color:{{ v.trColor }}">{{ v.trLabel }}</span>
+                  <sc-if value="{{ v.play }}" hint-placeholder-val="{{ true }}"><div style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink)"><span style="font-size:10px;margin-left:2px">▶</span></div></sc-if>
+                </div>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== ALERTS ===== -->
+      <sc-if value="{{ isAlerts }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="margin-bottom:16px"><div style="font-size:22px;font-weight:700;letter-spacing:-.015em">{{ t.alertTitle }}</div><div style="font-size:13px;color:var(--ink-3);margin-top:3px">{{ t.alertSub }}</div></div>
+          <div style="display:flex;flex-direction:column;gap:11px">
+            <sc-for list="{{ alerts }}" as="a" hint-placeholder-count="6">
+              <div style="border:1px solid var(--border);border-radius:13px;padding:15px 16px;display:flex;align-items:center;gap:14px;background:var(--surface)">
+                <div style="width:34px;height:34px;border-radius:9px;background:{{ a.sevTint }};display:flex;align-items:center;justify-content:center;flex-shrink:0;color:{{ a.sevColor }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8v5" stroke-linecap="round"/><circle cx="12" cy="16.5" r="0.4" fill="currentColor" stroke="none"/><path d="M10.3 4.3l-7 12A2 2 0 005 19.3h14a2 2 0 001.7-3l-7-12a2 2 0 00-3.4 0z" stroke-linejoin="round"/></svg></div>
+                <div style="flex:1;min-width:0">
+                  <div style="display:flex;align-items:center;gap:8px"><span style="font-size:13.5px;font-weight:600">{{ a.name }}</span><span style="font:500 10.5px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">{{ a.typeLabel }}</span></div>
+                  <div style="font-size:12.5px;color:var(--ink-2);margin-top:3px">{{ a.desc }}</div>
+                </div>
+                <span style="flex-shrink:0;display:inline-flex;align-items:center;gap:6px;color:{{ a.sevColor }};font:600 11px 'JetBrains Mono',monospace">{{ a.sevLabel }}</span>
+                <span style="flex-shrink:0;font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3);width:44px;text-align:right">{{ a.time }}</span>
+                <button onClick="{{ a.open }}" style="flex-shrink:0;border:1px solid var(--border);border-radius:8px;padding:7px 13px;font-size:12px;font-weight:600">{{ t.review }}</button>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== OPPORTUNITIES ===== -->
+      <sc-if value="{{ isOpportunities }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="margin-bottom:16px"><div style="font-size:22px;font-weight:700;letter-spacing:-.015em">{{ t.oppTitle }}</div><div style="font-size:13px;color:var(--ink-3);margin-top:3px">{{ t.oppSub }}</div></div>
+          <div class="grid-4col" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
+            <sc-for list="{{ stages }}" as="st" hint-placeholder-count="4">
+              <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px;min-height:260px">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:0 2px"><span style="width:8px;height:8px;border-radius:2px;background:{{ st.color }}"></span><span style="font-size:12.5px;font-weight:700">{{ st.title }}</span><span style="margin-left:auto;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ st.count }}</span></div>
+                <div style="display:flex;flex-direction:column;gap:9px">
+                  <sc-for list="{{ st.items }}" as="o" hint-placeholder-count="2">
+                    <button onClick="{{ o.open }}" style="text-align:left;width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:11px;padding:12px;display:block" style-hover="border-color:var(--border-2);box-shadow:0 2px 10px oklch(0 0 0/.3)">
+                      <div style="display:flex;align-items:center;gap:8px"><div style="width:26px;height:26px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 10px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ o.ini }}</div><span style="font-size:12.5px;font-weight:600">{{ o.name }}</span></div>
+                      <div style="font:600 16px 'JetBrains Mono',monospace;letter-spacing:-.02em;margin-top:10px">{{ o.value }}</div>
+                      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px"><span style="font-size:11px;color:var(--ink-2)">{{ o.type }}</span><span style="font:600 10px 'JetBrains Mono',monospace;color:#fff;background:{{ o.probColor }};border-radius:5px;padding:2px 6px">{{ o.prob }}</span></div>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+
+          <!-- Recommendations sub-section -->
+          <div style="margin-top:28px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
+              <div style="font-size:16px;font-weight:700;letter-spacing:-.01em">{{ t.recTitle }}</div>
+              <div style="font-size:12.5px;color:var(--ink-3)">{{ t.recSub }}</div>
+            </div>
+            <div style="display:flex;gap:7px;margin-bottom:14px"><sc-for list="{{ recFilters }}" as="f" hint-placeholder-count="4"><button onClick="{{ f.set }}" style="border:1px solid {{ f.border }};background:{{ f.bg }};color:{{ f.color }};border-radius:8px;padding:6px 12px;font-size:12px;font-weight:{{ f.weight }}">{{ f.label }}</button></sc-for></div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <sc-for list="{{ recommendations }}" as="r" hint-placeholder-count="4">
+                <div style="border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:16px;background:var(--surface)">
+                  <div style="width:32px;height:32px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2);flex-shrink:0">{{ r.ini }}</div>
+                  <div style="width:140px;flex-shrink:0"><div style="font-size:13px;font-weight:600">{{ r.name }}</div><div style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ r.date }}</div></div>
+                  <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--ink)">{{ r.text }}</div><div style="font-size:12px;color:var(--ink-2);margin-top:2px">{{ r.rationale }}</div></div>
+                  <span style="flex-shrink:0;display:inline-flex;align-items:center;gap:6px;border:1px solid {{ r.stBorder }};background:{{ r.stBg }};color:{{ r.stColor }};border-radius:8px;padding:5px 10px;font:600 11px 'JetBrains Mono',monospace"><span style="width:6px;height:6px;border-radius:50%;background:{{ r.stColor }}"></span>{{ r.statusLabel }}</span>
+                  <button style="flex-shrink:0;border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600">{{ t.openLabel }}</button>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== ALLOCATION ===== -->
+      <sc-if value="{{ isAllocation }}" hint-placeholder-val="{{ false }}">
+        <div>
+          <div style="margin-bottom:18px"><div style="font-size:22px;font-weight:700;letter-spacing:-.015em">{{ t.allocTitle }}</div><div style="font-size:13px;color:var(--ink-3);margin-top:3px">{{ t.allocSub }}</div></div>
+          <div style="display:flex;gap:16px;align-items:flex-start">
+            <div style="flex:1;border:1px solid var(--border);border-radius:14px;padding:20px">
+              <div style="display:flex;align-items:baseline;justify-content:space-between">
+                <div><div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">{{ t.totalAum }}</div><div style="font:700 30px 'JetBrains Mono',monospace;letter-spacing:-.03em;margin-top:5px">{{ agg.total }}</div></div>
+                <span style="font:600 13px 'JetBrains Mono',monospace;color:var(--green)">{{ agg.delta }}</span>
+              </div>
+              <div style="display:flex;height:14px;border-radius:5px;overflow:hidden;margin-top:18px">
+                <div style="width:{{ agg.rv }};background:oklch(0.12 0.005 265)"></div><div style="width:{{ agg.rf }};background:oklch(0.40 0.005 265)"></div><div style="width:{{ agg.fu }};background:oklch(0.60 0.005 265)"></div><div style="width:{{ agg.cx }};background:oklch(0.78 0.005 265)"></div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:13px;margin-top:20px">
+                <sc-for list="{{ aggClasses }}" as="c" hint-placeholder-count="4">
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <span style="width:10px;height:10px;border-radius:3px;background:{{ c.shade }};flex-shrink:0"></span>
+                    <span style="width:160px;font-size:13px;color:var(--ink-2)">{{ c.name }}</span>
+                    <div style="flex:1;height:6px;background:var(--surface-3);border-radius:4px;overflow:hidden"><div style="height:100%;width:{{ c.w }};background:{{ c.shade }}"></div></div>
+                    <span style="width:46px;text-align:right;font:600 13px 'JetBrains Mono',monospace">{{ c.pct }}</span>
+                    <span style="width:96px;text-align:right;font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ t.target }} {{ c.target }}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+            <div style="width:380px;flex-shrink:0;border:1px solid var(--border);border-radius:14px;overflow:hidden">
+              <div style="padding:14px 16px;border-bottom:1px solid var(--border)"><div style="font-size:14px;font-weight:700">{{ t.offPolicyTitle }}</div><div style="font-size:11.5px;color:var(--ink-3);margin-top:2px">{{ t.offPolicySub }}</div></div>
+              <sc-for list="{{ offPolicy }}" as="o" hint-placeholder-count="4">
+                <div style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--border)">
+                  <div style="width:32px;height:32px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ o.ini }}</div>
+                  <div style="flex:1"><div style="font-size:13px;font-weight:600">{{ o.name }}</div><div style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ o.detail }}</div></div>
+                  <span style="font:600 12px 'JetBrains Mono',monospace;color:var(--red)">{{ o.drift }}</span>
+                </div>
+              </sc-for>
+              <div style="padding:13px 16px"><button onClick="{{ goObj.opportunities }}" style="width:100%;background:var(--ink);color:var(--bg);border-radius:9px;padding:10px;font-size:12.5px;font-weight:600">{{ t.rebalance }}</button></div>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+
+    </div>
+  </div>
+
+  <!-- ============ CHAT PANEL ============ -->
+  <sc-if value="{{ chatOpen }}" hint-placeholder-val="{{ false }}">
+    <aside style="width:360px;flex-shrink:0;border-left:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;animation:slidein .22s ease">
+      <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)">
+        <div style="width:9px;height:9px;border-radius:50%;background:var(--green);animation:softpulse 1.6s infinite"></div>
+        <div style="flex:1"><div style="font-size:14px;font-weight:700">Sofia</div><div style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ t.chatSub }}</div></div>
+        <button onClick="{{ toggleChat }}" title="{{ t.hide }}" style="width:30px;height:30px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:var(--ink-3)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 6l6 6-6 6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <!-- idle / connecting: centered phone button -->
+      <sc-if value="{{ agentNotActive }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:32px 24px">
+          <button onClick="{{ toggleAgent }}" style="width:76px;height:76px;border-radius:50%;background:{{ phoneBg }};display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;box-shadow:0 0 0 0 oklch(0.50 0.20 150 /.35);animation:callpulse 2.2s ease-in-out infinite;color:oklch(1 0 0)">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.68A2 2 0 012.18 1h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.15a16 16 0 006.47 6.47l1.51-1.51a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+          </button>
+          <div style="font-size:12.5px;color:var(--ink-3);text-align:center;line-height:1.6">{{ t.sofiaIdleHint }}</div>
+        </div>
+      </sc-if>
+      <!-- active: live transcript + hang-up -->
+      <sc-if value="{{ agentActive }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;overflow-y:auto;padding:14px 18px;display:flex;flex-direction:column;gap:10px">
+          <sc-for list="{{ agentTranscript }}" as="m" hint-placeholder-count="3">
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <span style="font:700 10px 'JetBrains Mono',monospace;color:var(--ink-3);flex-shrink:0;margin-top:3px;width:28px">{{ m.who }}</span>
+              <div style="font-size:13px;color:var(--ink);line-height:1.55">{{ m.text }}</div>
+            </div>
+          </sc-for>
+          <sc-for list="{{ voicePreviews }}" as="v" hint-placeholder-count="0">
+            <div style="border:1px solid var(--border);border-radius:10px;background:var(--surface);padding:10px 12px;display:flex;align-items:center;gap:10px">
+              <button onClick="{{ v.play }}" style="width:32px;height:32px;border-radius:50%;background:{{ v.btnBg }};color:oklch(1 0 0);display:flex;align-items:center;justify-content:center;border:none;cursor:pointer;flex-shrink:0">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5,3 19,12 5,21"/></svg>
+              </button>
+              <div style="min-width:0">
+                <div style="font:600 10px 'JetBrains Mono',monospace;color:var(--green);margin-bottom:2px">VOICE · TTS</div>
+                <div style="font-size:12px;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.preview }}</div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="border-top:1px solid var(--border);padding:14px;display:flex;justify-content:center">
+          <button onClick="{{ toggleAgent }}" style="background:var(--red);color:oklch(1 0 0);border-radius:50%;width:52px;height:52px;display:flex;align-items:center;justify-content:center;border:none;cursor:pointer">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>
+      </sc-if>
+      <div style="border-top:1px solid var(--border);padding:12px 14px;display:flex;align-items:center;gap:9px">
+        <div style="flex:1;height:38px;border:1px solid var(--border);border-radius:10px;background:var(--surface-2);display:flex;align-items:center;padding:0 13px;font-size:13px;color:var(--ink-3)">{{ t.chatPlaceholder }}</div>
+        <button style="width:38px;height:38px;border-radius:50%;background:var(--ink);display:flex;align-items:center;justify-content:center;flex-shrink:0;border:none;cursor:pointer;color:var(--bg)">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+        </button>
+      </div>
+    </aside>
+  </sc-if>
+  <!-- Approval card overlay -->
+  <sc-if value="{{ hasApproval }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;inset:0;background:oklch(0 0 0/.4);z-index:200;display:flex;align-items:center;justify-content:center">
+      <div style="background:var(--bg);border:1px solid var(--border);border-radius:18px;padding:28px 32px;max-width:440px;width:90%;box-shadow:0 24px 64px oklch(0 0 0/.18)">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:16px">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--green);animation:softpulse 1.6s infinite"></div>
+          <span style="font:600 11.5px 'JetBrains Mono',monospace;color:var(--green)">ElevenAgent</span>
+          <span style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3)">· {{ t.awaitingApproval }}</span>
+        </div>
+        <textarea id="voice-edit-ta" rows="4" style="width:100%;border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.65;color:var(--ink);background:var(--surface);resize:vertical;font-family:inherit;margin-bottom:16px;box-sizing:border-box;outline:none"></textarea>
+        <div style="display:flex;gap:10px">
+          <button onClick="{{ approveRecommendation }}" style="flex:1;background:var(--ink);color:var(--bg);border-radius:10px;padding:10px;font-size:13px;font-weight:600;border:none;cursor:pointer">{{ t.approveVoice }}</button>
+          <button onClick="{{ dismissRecommendation }}" style="border:1px solid var(--border);border-radius:10px;padding:10px 16px;font-size:13px;font-weight:600;color:var(--ink-2);cursor:pointer;background:transparent">{{ t.dismiss }}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- Toast -->
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:fixed;bottom:84px;right:28px;background:var(--ink);color:var(--bg);border-radius:12px;padding:12px 18px;font-size:13px;font-weight:600;box-shadow:0 8px 24px oklch(0 0 0/.2);z-index:300;display:flex;align-items:center;gap:8px">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+      {{ toastMsg }}
+    </div>
+  </sc-if>
+
+  <!-- Floating voice button -->
+  <div onClick="{{ toggleChat }}" style="position:fixed;bottom:28px;right:28px;width:44px;height:44px;border-radius:50%;background:var(--ink);display:{{ fabDisplay }};align-items:center;justify-content:center;gap:2.5px;cursor:pointer;box-shadow:0 4px 20px oklch(0 0 0/.22);z-index:50">
+    <div style="width:2.5px;height:8px;background:var(--bg);border-radius:2px;transform-origin:center;animation:eqbar 1s ease-in-out infinite"></div>
+    <div style="width:2.5px;height:14px;background:var(--bg);border-radius:2px;transform-origin:center;animation:eqbar 1s ease-in-out infinite;animation-delay:-.28s"></div>
+    <div style="width:2.5px;height:10px;background:var(--bg);border-radius:2px;transform-origin:center;animation:eqbar 1s ease-in-out infinite;animation-delay:-.56s"></div>
+    <div style="width:2.5px;height:16px;background:var(--bg);border-radius:2px;transform-origin:center;animation:eqbar 1s ease-in-out infinite;animation-delay:-.14s"></div>
+    <div style="width:2.5px;height:7px;background:var(--bg);border-radius:2px;transform-origin:center;animation:eqbar 1s ease-in-out infinite;animation-delay:-.42s"></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  state = { lang:'en', menuOpen:true, chatOpen:false, route:'overview', prevRoute:'overview', clientId:'ricardo', convoView:'transcript', clientFilter:'all', convFilter:'all', recFilter:'all', query:'', agentStatus:'idle', agentTranscript:[], voicePreviews:[], playingVoice:null, approvalCard:null, approvalClientId:null, toastMsg:null };
+
+  async _addVoicePreview(text, clientId) {
+    const self = this;
+    let url = null;
+    try {
+      const resp = await fetch('http://localhost:8000/tts', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ text })
+      });
+      const blob = await resp.blob();
+      url = URL.createObjectURL(blob);
+    } catch(e) { console.error('TTS error', e); return; }
+
+    const play = () => {
+      if (window._currentAudio) { window._currentAudio.pause(); window._currentAudio = null; }
+      try { window._activeConv?.setVolume({ volume: 0 }); } catch(e) {}
+      const audio = new Audio(url);
+      window._currentAudio = audio;
+      self.setState(s => ({
+        voicePreviews: s.voicePreviews.map(v => v.url === url ? { ...v, btnBg:'var(--amber)' } : v),
+        playingVoice: url
+      }));
+      audio.onended = () => {
+        try { window._activeConv?.setVolume({ volume: 1 }); } catch(e) {}
+        window._currentAudio = null;
+        self.setState(s => ({
+          voicePreviews: s.voicePreviews.map(v => v.url === url ? { ...v, btnBg:'var(--green)' } : v),
+          playingVoice: null
+        }));
+      };
+      audio.play();
+    };
+
+    const preview = text.length > 52 ? text.slice(0, 52) + '…' : text;
+    self.setState(s => ({
+      voicePreviews: [...s.voicePreviews, { url, text, preview, clientId, play, btnBg:'var(--green)' }]
+    }));
+  }
+
+  renderVals() {
+    window._cockpit = this;
+    const S = this.state, L = S.lang, pick = o => o[L], R = (en,pt) => ({ en, pt });
+    const C = { red:'oklch(0.52 0.175 27)', green:'oklch(0.50 0.20 150)', amber:'oklch(0.56 0.145 65)', blue:'oklch(0.52 0.145 248)', gray:'oklch(0.55 0.005 265)' };
+    const statusColor = { risk:C.red, attention:C.amber, opportunity:C.green, pending:C.amber, awaiting:C.blue, ok:C.gray };
+    const statusLbl = { risk:R('At risk','Em risco'), attention:R('Attention','Atenção'), opportunity:R('Opportunity','Oportunidade'), pending:R('Pending','Pendência'), awaiting:R('Awaiting','Aguardando'), ok:R('On track','Em dia') };
+    const perfilLbl = { conservative:R('Conservative','Conservador'), moderate:R('Moderate','Moderado'), modAggr:R('Mod-aggressive','Mod-agressivo'), aggressive:R('Aggressive','Arrojado') };
+    const riskFill = { conservative:2, moderate:3, modAggr:4, aggressive:5 };
+    const sentLbl = { positive:R('Positive','Positivo'), neutral:R('Neutral','Neutro'), negative:R('Negative','Negativo'), insecure:R('Insecure','Inseguro') };
+    const sentColor = { positive:C.green, neutral:C.gray, negative:C.red, insecure:C.amber };
+
+    // ---------- static UI dictionary ----------
+    const D = {
+      desk:R('Premium Desk','Mesa Premium'), secMain:R('MAIN','PRINCIPAL'), secIntel:R('INTELLIGENCE','INTELIGÊNCIA'), secPortfolio:R('PORTFOLIO','CARTEIRA'),
+      overview:R('Overview','Visão geral'), clients:R('Clients','Clientes'), conversations:R('Conversations','Conversas'), recommendations:R('Recommendations','Recomendações'), alerts:R('Alerts','Alertas'), opportunities:R('Opportunities','Oportunidades'), allocation:R('Allocation','Alocação'), reports:R('Reports','Relatórios'),
+      role:R('Advisor · A-1042','Assessora · A-1042'), search:R('Search…','Buscar…'),
+      menuTip:R('Collapse / expand menu','Recolher / expandir menu'), chatTip:R('Ask the AI','Perguntar à IA'), langTip:R('Switch to Portuguese','Mudar para inglês'), hide:R('Hide','Ocultar'),
+      chatSub:R('powered by ElevenAgent','powered by ElevenAgent'), suggested:R('Suggested','Sugestões'), chatPlaceholder:R('Send a message…','Envie uma mensagem…'), tapToCall:R('Tap to start a voice call','Toque para iniciar uma chamada'),
+      sofiaIdleHint:R('Ask Sofia about clients, opportunities, or actions — she can navigate the cockpit and draft messages for you.','Pergunte à Sofia sobre clientes, oportunidades ou ações — ela navega o cockpit e redige mensagens por você.'),
+      sofiaConnecting:R('Connecting to Sofia…','Conectando com Sofia…'),
+      awaitingApproval:R('awaiting your approval','aguardando sua aprovação'),
+      approveVoice:R('Generate voice','Gerar voz'),
+      dismiss:R('Dismiss','Descartar'),
+      chatGreeting:R('Hi Thiago — I went through your book this morning. Want a rundown of who needs you most?','Oi Thiago — revisei sua carteira hoje cedo. Quer um resumo de quem mais precisa de você?'),
+      chatUserMsg:R('Who needs me most today?','Quem mais precisa de mim hoje?'),
+      chatAgentMsg:R('Ricardo Tanaka (VIP) is the priority: recurring withdrawals and he mentioned wanting to "pull some out". His risk appetite is dropping. Want me to draft a voice message?','Ricardo Tanaka (VIP) é a prioridade: saques recorrentes e falou em "tirar parte". O apetite de risco está caindo. Quer que eu gere uma mensagem em voz?'),
+      pageTitle:R('Action center','Central de ações'), pageSub:R('What needs you now, grouped by type','O que precisa de você agora, agrupado por tipo'),
+      greeting:R('Good morning, Thiago.','Bom dia, Thiago.'),
+      briefBy:R('· analyzed 2h ago','· analisou há 2h'),
+      listen:R('Listen','Ouvir'),
+      briefBody:R('Ricardo Tanaka (VIP) is showing withdrawal intent — equity exposure at 71%, above his risk threshold. Beatriz Almeida\'s suitability expires Jun 30 and requires your signature. Gustavo Reis has a rebalance pending your approval. Strongest opportunity this week: Otávio Mendes has an R$500k inflow expected in July — a good moment for a proactive contact.','Ricardo Tanaka (VIP) demonstra intenção de resgate — RV em 71%, acima do threshold de risco. O suitability de Beatriz Almeida vence em 30/jun e requer sua assinatura. Gustavo Reis tem um rebalanceamento aguardando aprovação. Principal oportunidade da semana: Otávio Mendes tem aporte de R$500k previsto para julho — bom momento para contato proativo.'),
+      topPriority:R('Needs your attention','Precisa da sua atenção'),
+      recentActivity:R('Recent activity','Atividade recente'),
+      aumValue:R('R$ 91.9M','R$ 91,9M'), clientsWord:R('clients','clientes'),
+      clientsSearch:R('Search client, asset, objective…','Buscar cliente, ativo, objetivo…'), sortPatr:R('Sort: AUM','Ordenar: Patrimônio'),
+      filterAll:R('All','Todos'), filterConservative:R('Conservative','Conservador'), filterModerate:R('Moderate','Moderado'), filterAggressive:R('Aggressive','Arrojado'),
+      backToClients:R('Back to clients','Voltar para clientes'), backToOverview:R('Back to overview','Voltar para visão geral'), backToConversations:R('Back to conversations','Voltar para conversas'), backToOpportunities:R('Back to opportunities','Voltar para oportunidades'), backToAlerts:R('Back to alerts','Voltar para alertas'), clientSince:R('Client since','Cliente desde'), scheduleCall:R('Schedule call','Agendar call'), newRec:R('New recommendation','Nova recomendação'),
+      aum:R('Assets under management','Patrimônio sob gestão'), monthChange:R('mo','mês'), riskProfile:R('Risk profile','Perfil de risco'), currentAlloc:R('Current allocation','Alocação atual'), lastContacts:R('Recent contacts','Últimos contatos'),
+      lastConversation:R('Last conversation','Última conversa'), transcriptTab:R('Transcript','Transcrição'), messagesTab:R('Messages','Mensagens'), playingNow:R('playing now','tocando agora'), reproducing:R('Playing','Reproduzindo'), autoTranscribed:R('Auto-transcribed','Transcrito automaticamente'),
+      analyzedCall:R('analyzed this call','analisou esta conversa'), objectivesLabel:R('Financial objectives','Objetivos financeiros'), appetiteLabel:R('Risk appetite','Apetite de risco'), productsLabel:R('Products / assets cited','Produtos / ativos citados'), lifeEventLabel:R('Life event detected','Evento de vida detectado'), sentimentLabel:R('Sentiment','Sentimento'), nextActionsLabel:R('Suggested next actions','Próximas ações sugeridas'),
+      suggestedMsgs:R('Suggested messages','Mensagens sugeridas'), voiceTag:R('voice · TTS','voz · TTS'), genByEleven:R('generated by ElevenLabs — listen & send','geradas pelo ElevenLabs — ouça e envie'), send:R('Send','Enviar'),
+      noConvoTitle:R('No recorded conversations yet','Nenhuma conversa gravada ainda'), noConvoSub:R('Once a call is recorded, ElevenAgent transcribes it and extracts objectives, risk and next actions here.','Quando uma ligação for gravada, o ElevenAgent transcreve e extrai objetivos, risco e próximas ações aqui.'), requestCall:R('Request a call','Solicitar ligação'),
+      convTitle:R('Conversations','Conversas'), convSub:R('Every recorded interaction, transcribed by ElevenLabs','Cada interação gravada, transcrita pelo ElevenLabs'),
+      thClient:R('Client','Cliente'), thChannel:R('Channel','Canal'), thDate:R('Date','Data'), thDuration:R('Length','Duração'), thSentiment:R('Sentiment','Sentimento'), thStatus:R('Status','Status'),
+      convFilterAll:R('All','Todas'), convFilterCalls:R('Calls','Ligações'), convFilterWa:R('WhatsApp','WhatsApp'), convFilterEmail:R('E-mail','E-mail'), transcribedBadge:R('Transcribed','Transcrita'),
+      recTitle:R('Recommendations','Recomendações'), recSub:R('Suggested actions per client and their status','Ações sugeridas por cliente e seu status'),
+      recFilterAll:R('All','Todas'), recFilterPending:R('Pending','Pendentes'), recFilterSent:R('Sent','Enviadas'), recFilterAccepted:R('Accepted','Aceitas'), openLabel:R('Open','Abrir'),
+      alertTitle:R('Alerts','Alertas'), alertSub:R('Risk, suitability and behavior signals across your book','Sinais de risco, suitability e comportamento na sua carteira'), review:R('Review','Revisar'),
+      oppTitle:R('Opportunities','Oportunidades'), oppSub:R('Pipeline of inflows, cross-sell and reviews','Pipeline de aportes, cross-sell e revisões'), probability:R('prob','prob'),
+      allocTitle:R('Allocation','Alocação'), allocSub:R('Aggregate book allocation vs. policy','Alocação consolidada da carteira vs. política'), totalAum:R('Total AUM','Patrimônio total'), target:R('target','alvo'),
+      offPolicyTitle:R('Off-policy clients','Clientes fora da política'), offPolicySub:R('Equity weight above target','Peso em RV acima do alvo'), rebalance:R('Open rebalancing','Abrir rebalanceamento'),
+      repTitle:R('Reports','Relatórios'), repSub:R('Generated statements and reviews','Relatórios e extratos gerados'), generateReport:R('Generate report','Gerar relatório'), download:R('Download','Baixar'), period:R('Period','Período'), statusCol:R('Status','Status'), thReport:R('Report','Relatório'),
+      repReady:R('Ready','Pronto'), repScheduled:R('Scheduled','Agendado')
+    };
+    const t = {}; Object.keys(D).forEach(k => t[k] = pick(D[k]));
+
+    // ---------- clients master ----------
+    const CL = [
+      { id:'ricardo', name:'Ricardo Tanaka', ini:'RT', vip:true, perfil:'aggressive', patr:'R$ 12,8M', delta:'−4,2%', dn:true, status:'risk', since:'2019', al:[71,14,10,5], note:R('Recurring withdrawals + wants to "pull some out"','Saques recorrentes + quer "tirar parte"'), ago:R('2d ago','há 2d') },
+      { id:'fernando', name:'Fernando Costa', ini:'FC', vip:true, perfil:'aggressive', patr:'R$ 23,0M', delta:'+1,1%', dn:false, status:'attention', since:'2017', al:[71,12,12,5], note:R('71% concentrated in equities','Concentração de 71% em RV'), ago:R('5d ago','há 5d') },
+      { id:'helena', name:'Helena Vasconcelos', ini:'HV', vip:false, perfil:'moderate', patr:'R$ 4,2M', delta:'+0,4%', dn:false, status:'awaiting', since:'2020', al:[38,42,14,6], note:R('Reallocation proposal sent','Proposta de realocação enviada'), ago:R('3d ago','há 3d') },
+      { id:'otavio', name:'Otávio Mendes', ini:'OM', vip:true, perfil:'modAggr', patr:'R$ 7,6M', delta:'+2,3%', dn:false, status:'opportunity', since:'2018', al:[55,25,15,5], note:R('R$500k inflow expected in Jul','Aporte de R$ 500k previsto jul'), ago:R('6d ago','há 6d') },
+      { id:'beatriz', name:'Beatriz Almeida', ini:'BA', vip:false, perfil:'conservative', patr:'R$ 1,5M', delta:'+0,3%', dn:false, status:'pending', since:'2021', al:[8,70,12,10], note:R('Sign suitability (due Jun 30)','Assinar suitability (vence 30/jun)'), ago:R('1d ago','há 1d') },
+      { id:'camila', name:'Camila Rezende', ini:'CR', vip:false, perfil:'conservative', patr:'R$ 0,9M', delta:'+0,2%', dn:false, status:'awaiting', since:'2022', al:[5,75,8,12], note:R('Confirm pension migration','Confirmar migração de previdência'), ago:R('4d ago','há 4d') },
+      { id:'lucia', name:'Lúcia Prado', ini:'LP', vip:false, perfil:'moderate', patr:'R$ 3,1M', delta:'+0,9%', dn:false, status:'opportunity', since:'2019', al:[40,40,15,5], note:R('Birthday in 3 days','Aniversário em 3 dias'), ago:R('8d ago','há 8d') },
+      { id:'gustavo', name:'Gustavo Reis', ini:'GR', vip:true, perfil:'aggressive', patr:'R$ 15,4M', delta:'−2,9%', dn:true, status:'pending', since:'2016', al:[68,15,12,5], note:R('Rebalance pending approval','Rebalanceamento aguardando aprovação'), ago:R('9d ago','há 9d') },
+      { id:'andre', name:'André Lima', ini:'AL', vip:true, perfil:'modAggr', patr:'R$ 9,1M', delta:'−1,8%', dn:true, status:'attention', since:'2018', al:[62,20,13,5], note:R('Equity drift above policy','RV acima da política'), ago:R('7d ago','há 7d') },
+      { id:'paulo', name:'Paulo Esteves', ini:'PE', vip:false, perfil:'moderate', patr:'R$ 5,4M', delta:'+0,6%', dn:false, status:'ok', since:'2020', al:[35,45,15,5], note:R('On track — quarterly review in Jul','Em dia — revisão trimestral jul'), ago:R('12d ago','há 12d') },
+      { id:'tereza', name:'Tereza Bittencourt', ini:'TB', vip:false, perfil:'moderate', patr:'R$ 6,7M', delta:'+0,7%', dn:false, status:'ok', since:'2017', al:[30,50,15,5], note:R('On track','Em dia'), ago:R('15d ago','há 15d') },
+      { id:'sofia', name:'Sofia Marques', ini:'SM', vip:false, perfil:'conservative', patr:'R$ 2,2M', delta:'+0,2%', dn:false, status:'ok', since:'2021', al:[6,74,10,10], note:R('On track','Em dia'), ago:R('20d ago','há 20d') }
+    ];
+    const legend = L === 'en' ? a => 'EQ '+a[0]+' · FI '+a[1]+' · FND '+a[2]+' · CASH '+a[3] : a => 'RV '+a[0]+' · RF '+a[1]+' · FND '+a[2]+' · CAIXA '+a[3];
+    const byId = {};
+    const clients = CL.map(c => {
+      const o = {
+        ...c, accent:statusColor[c.status], deltaColor:c.dn?C.red:C.green,
+        perfilLabel:pick(perfilLbl[c.perfil]), statusLabel:pick(statusLbl[c.status]),
+        note:pick(c.note), ago:pick(c.ago), allocLegend:legend(c.al),
+        alloc:{ rv:c.al[0]+'%', rf:c.al[1]+'%', fu:c.al[2]+'%', cx:c.al[3]+'%' },
+        open:() => this.setState({ route:'client', clientId:c.id, prevRoute:S.route })
+      };
+      byId[c.id] = o; return o;
+    });
+    this._clientsById = byId;
+
+    // ---------- overview ----------
+    const pad = n => String(n).padStart(2,'0');
+    const riskClients = clients.filter(c => c.status==='risk' || c.status==='attention');
+    const oppClients = clients.filter(c => c.status==='opportunity');
+    const pendClients = clients.filter(c => c.status==='pending');
+    const awaitClients = clients.filter(c => c.status==='awaiting');
+    const mkItems = arr => arr.map(c => ({ name:c.name, vip:c.vip, note:c.note, ago:c.ago, open:c.open }));
+    const statTiles = [
+      { n:pad(riskClients.length), dot:C.red, label:pick(R('At risk','Em risco')), sub:pick(R('needs action','requer ação')) },
+      { n:pad(oppClients.length), dot:C.green, label:pick(R('Opportunities','Oportunidades')), sub:pick(R('this month','no mês')) },
+      { n:pad(pendClients.length), dot:C.amber, label:pick(R('Pending','Pendências')), sub:pick(R('to action','a tratar')) },
+      { n:pad(awaitClients.length), dot:C.blue, label:pick(R('Awaiting reply','Aguardando resposta')), sub:pick(R('follow up','dar retorno')) }
+    ];
+    const groups = [
+      { title:pick(R('At risk','Em risco')), accent:C.red, tint:'oklch(0.975 0.018 27)', count:String(riskClients.length), items:mkItems(riskClients) },
+      { title:pick(R('Opportunities','Oportunidades')), accent:C.green, tint:'oklch(0.975 0.018 150)', count:String(oppClients.length), items:mkItems(oppClients) },
+      { title:pick(R('Pending','Pendências')), accent:C.amber, tint:'oklch(0.975 0.018 65)', count:String(pendClients.length), items:mkItems(pendClients) },
+      { title:pick(R('Awaiting reply','Aguardando resposta')), accent:C.blue, tint:'oklch(0.975 0.018 248)', count:String(awaitClients.length), items:mkItems(awaitClients) }
+    ];
+
+    const priorityOrder = {risk:0,attention:1,pending:2,opportunity:3,awaiting:4,ok:5};
+    const priorityRanked = [...clients].filter(c => c.status!=='ok').sort((a,b) =>
+      (priorityOrder[a.status]??9)-(priorityOrder[b.status]??9) || (b.vip?1:0)-(a.vip?1:0)
+    );
+    const urgencyColor = s => s==='risk'||s==='attention'?C.red:s==='pending'?C.amber:s==='opportunity'?C.green:C.blue;
+    const priorities = priorityRanked.slice(0,5).map((c,i) => ({
+      rank:String(i+1).padStart(2,'0'), name:c.name, vip:c.vip,
+      reason:pick(c.note), urgencyColor:urgencyColor(c.status), ago:pick(c.ago), open:c.open
+    }));
+    const bookStats = [
+      {n:pad(riskClients.length), color:C.red, label:pick(R('at risk','em risco')), tint:'oklch(0.974 0.018 27)', borderColor:'oklch(0.88 0.04 27)'},
+      {n:pad(oppClients.length), color:C.green, label:pick(R('opps','opport.')), tint:'oklch(0.974 0.018 150)', borderColor:'oklch(0.88 0.04 150)'},
+      {n:pad(pendClients.length), color:C.amber, label:pick(R('pending','pendente')), tint:'oklch(0.974 0.018 65)', borderColor:'oklch(0.88 0.04 65)'},
+      {n:pad(awaitClients.length), color:C.blue, label:pick(R('awaiting','aguardando')), tint:'oklch(0.974 0.018 248)', borderColor:'oklch(0.88 0.04 248)'}
+    ];
+    const activity = [
+      {dot:C.red, client:'Ricardo Tanaka', signal:pick(R('Withdrawal intent · equity at 71%','Intenção de resgate · RV em 71%')), when:pick(R('2d','2d'))},
+      {dot:C.red, client:'Fernando Costa', signal:pick(R('Compliance flag · equity concentration','Alerta compliance · concentração em RV')), when:pick(R('5d','5d'))},
+      {dot:C.amber, client:'Beatriz Almeida', signal:pick(R('Suitability expires Jun 30','Suitability vence 30 jun')), when:pick(R('1d','1d'))},
+      {dot:C.green, client:'Otávio Mendes', signal:pick(R('R$500k inflow expected in Jul','Aporte R$500k previsto jul')), when:pick(R('6d','6d'))}
+    ];
+
+    // ---------- clients filters + search ----------
+    const setCF = k => () => this.setState({ clientFilter:k });
+    const cfDefs = [['all',D.filterAll],['conservative',D.filterConservative],['moderate',D.filterModerate],['aggressive',D.filterAggressive]];
+    const chip = (active, label, onset) => ({ label:pick(label), set:onset, bg:active?'var(--ink)':'var(--surface-2)', color:active?'var(--bg)':'var(--ink-2)', border:active?'var(--ink)':'var(--border)', weight:active?'600':'500' });
+    const clientFilters = cfDefs.map(([k,l]) => chip(S.clientFilter===k, l, setCF(k)));
+    const q = S.query.trim().toLowerCase();
+    const matchPerfil = c => S.clientFilter==='all' ? true : (S.clientFilter==='aggressive' ? (c.perfil==='aggressive'||c.perfil==='modAggr') : c.perfil===S.clientFilter);
+    const filteredClients = clients.filter(c => matchPerfil(c) && (!q || c.name.toLowerCase().includes(q)));
+    const clientsCount = (L==='en') ? clients.length+' clients' : clients.length+' clientes';
+
+    // ---------- selected client detail ----------
+    const sc0 = byId[S.clientId] || clients[0];
+    const fill = riskFill[sc0.perfil];
+    const riskSegs = [0,1,2,3,4].map(i => ({ color:i<fill?'oklch(0.12 0.005 265)':'var(--surface-3)' }));
+    const shade = { rv:'oklch(0.12 0.005 265)', rf:'oklch(0.40 0.005 265)', fu:'oklch(0.60 0.005 265)', cx:'oklch(0.78 0.005 265)' };
+    const al = sc0.al;
+    const allocList = [
+      { name:pick(R('Equities','Renda variável')), pct:al[0]+'%', w:al[0]+'%', shade:shade.rv },
+      { name:pick(R('Fixed income','Renda fixa')), pct:al[1]+'%', w:al[1]+'%', shade:shade.rf },
+      { name:pick(R('Multimarket funds','Fundos multimercado')), pct:al[2]+'%', w:al[2]+'%', shade:shade.fu },
+      { name:pick(R('Cash','Caixa')), pct:al[3]+'%', w:al[3]+'%', shade:shade.cx }
+    ];
+    const lastContacts = [
+      { ch:pick(R('Phone call','Ligação telefônica')), detail:pick(R('8min32s · auto-transcribed','8min32s · transcrita pela IA')), when:pick(R('Jun 14','14 jun')) },
+      { ch:pick(R('WhatsApp','WhatsApp')), detail:pick(R('4 messages exchanged','4 mensagens trocadas')), when:pick(R('Jun 9','9 jun')) },
+      { ch:pick(R('E-mail','E-mail')), detail:pick(R('Monthly report sent','Relatório mensal enviado')), when:pick(R('Jun 2','2 jun')) }
+    ];
+
+    // ---------- conversation data (featured clients) ----------
+    const CONVO = {
+      ricardo:{ pos:'03:12 / 08:32', date:pick(R('Jun 14 · 08:32 · phone call','14 jun · 08:32 · ligação telefônica')), sentKey:'insecure', sentLevel:28,
+        summary:R('Ricardo is uncomfortable with volatility and wants a bigger safety reserve due to a child on the way. Signs of risk aversion and short-term redemption risk.','Ricardo está desconfortável com a volatilidade e quer uma reserva maior pela chegada de um filho. Há sinais de aversão a risco e risco de resgate no curto prazo.'),
+        objectives:[R('Larger safety reserve','Reserva de segurança maior'), R('Cut short-term exposure','Reduzir exposição no curto prazo')],
+        appetite:R('Falling — clear risk aversion after recent volatility.','Em queda — aversão a risco clara após a volatilidade recente.'),
+        products:[R('Equities','Renda variável'), R('Tesouro Selic','Tesouro Selic'), R('Emergency reserve','Reserva de emergência')],
+        lifeEvent:R('A child on the way — coming months','Chegada de um filho — próximos meses'),
+        nextActions:[R('Cut equities 71% → 55%','Reduzir RV de 71% → 55%'), R('Build 6–12mo emergency reserve','Estruturar reserva de 6–12 meses'), R('Schedule follow-up call (tomorrow AM)','Agendar call de acompanhamento (amanhã de manhã)')],
+        transcript:[
+          { whoKey:'client', time:'01:42', text:R('Honestly, I\u2019m thinking of pulling some out. The market is so unstable and it makes me uneasy.','Sinceramente, tô pensando em tirar uma parte. O mercado tá muito instável e isso me deixa desconfortável.') },
+          { whoKey:'you', time:'02:10', text:R('I understand, Ricardo. Before we move anything, I\u2019d like to know if it\u2019s the short term worrying you or the long-term goal.','Entendo, Ricardo. Antes de mexer, queria entender se é o curto prazo que te preocupa ou o objetivo lá da frente.') },
+          { whoKey:'client', time:'03:08', active:true, text:R('It\u2019s more the right now. With the baby coming I\u2019d want a much bigger safety cushion.','É mais o agora mesmo. Com a chegada do bebê eu queria ter um colchão de segurança bem maior.') }
+        ],
+        messages:[
+          { c:true, time:'14:02', text:R('Afternoon! Did you see how the market opened today? I\u2019m worried.','Boa tarde! Viu como o mercado abriu hoje? Tô preocupado.') },
+          { c:false, time:'14:05', text:R('Hi Ricardo! I did. Breathe — your portfolio is within the plan we built. Want 15min so I can show you?','Oi Ricardo! Vi sim. Respira — sua carteira tá dentro do plano que a gente desenhou. Quer 15min pra eu te mostrar?') },
+          { c:true, time:'14:11', text:R('Tomorrow morning works. And with the baby coming I\u2019d like a bigger reserve set aside.','Pode ser amanhã de manhã. E olha, com o bebê chegando eu queria deixar uma reserva maior parada.') },
+          { c:false, time:'14:13', text:R('Perfect, noted. I\u2019ll send you a reserve proposal before the call.','Perfeito, anotado. Já te mando uma proposta de reserva antes da call.') }
+        ],
+        tts:[
+          { voice:'Bella · PT-BR', dur:'0:18', text:R('Hi Ricardo! I thought about what you said on the market. I put together a proposal to make your reserve much stronger without giving up your goals. Have a listen?','Oi Ricardo! Pensei no que você falou sobre o momento do mercado. Montei uma proposta pra deixar sua reserva bem mais robusta sem abrir mão dos seus objetivos. Dá uma ouvida?') },
+          { voice:'Antoni · PT-BR', dur:'0:14', text:R('And congrats on the family news! Since a baby is on the way, how about we plan around this new chapter? I\u2019ll call you tomorrow morning.','E parabéns pela novidade da família! Já que vem bebê por aí, que tal estruturarmos um plano pensando nesse novo momento? Te ligo amanhã de manhã.') }
+        ]
+      },
+      fernando:{ pos:'05:40 / 12:04', date:pick(R('Jun 10 · 12:04 · phone call','10 jun · 12:04 · ligação telefônica')), sentKey:'neutral', sentLevel:55,
+        summary:R('Fernando is comfortable but heavily concentrated: 71% in equities, above his policy band. Open to diversifying if returns are preserved.','Fernando está confortável mas muito concentrado: 71% em RV, acima da banda da política. Aberto a diversificar se manter o retorno.'),
+        objectives:[R('Preserve returns','Preservar o retorno'), R('Reduce single-name risk','Reduzir risco de concentração')],
+        appetite:R('High but stable — comfortable with volatility.','Alto, porém estável — confortável com volatilidade.'),
+        products:[R('Equities','Renda variável'), R('Single stocks','Ações individuais'), R('Multimarket funds','Fundos multimercado')],
+        lifeEvent:null,
+        nextActions:[R('Trim equities 71% → 60%','Reduzir RV de 71% → 60%'), R('Diversify concentrated position','Diversificar posição concentrada'), R('Review policy bands','Revisar bandas da política')],
+        transcript:[
+          { whoKey:'you', time:'02:01', text:R('Fernando, your equity sleeve is at 71% — above the band we agreed. I\u2019d like to bring it closer to 60%.','Fernando, sua parcela de RV está em 71% — acima da banda que combinamos. Queria trazer pra perto de 60%.') },
+          { whoKey:'client', time:'02:30', text:R('I get it, but it\u2019s been doing well. I don\u2019t want to give up the upside.','Entendo, mas tá indo bem. Não quero abrir mão do retorno.') },
+          { whoKey:'client', time:'05:12', active:true, text:R('If you can keep a similar return with less single-stock risk, I\u2019m open to it.','Se você conseguir manter um retorno parecido com menos risco de ação única, eu topo.') }
+        ],
+        messages:[
+          { c:false, time:'09:20', text:R('Morning Fernando — sending the diversification proposal we discussed.','Bom dia Fernando — mandando a proposta de diversificação que conversamos.') },
+          { c:true, time:'09:42', text:R('Got it, I\u2019ll review today.','Recebi, vejo hoje.') },
+          { c:false, time:'09:43', text:R('Great. It keeps the expected return and cuts concentration risk.','Ótimo. Ela mantém o retorno esperado e reduz o risco de concentração.') }
+        ],
+        tts:[
+          { voice:'Bella · PT-BR', dur:'0:16', text:R('Fernando, I built a version that keeps your expected return and lowers the single-stock risk. Take a listen and tell me what you think.','Fernando, montei uma versão que mantém seu retorno esperado e reduz o risco de ação única. Ouça e me diz o que acha.') }
+        ]
+      },
+      helena:{ pos:'—', date:pick(R('Jun 12 · WhatsApp','12 jun · WhatsApp')), sentKey:'neutral', sentLevel:60,
+        summary:R('Helena received the reallocation proposal and is reviewing. No objections so far; awaiting her confirmation to execute.','Helena recebeu a proposta de realocação e está avaliando. Sem objeções até agora; aguardando confirmação para executar.'),
+        objectives:[R('Balanced growth','Crescimento equilibrado'), R('Slightly more yield','Um pouco mais de rendimento')],
+        appetite:R('Moderate — comfortable as planned.','Moderado — confortável conforme o plano.'),
+        products:[R('Fixed income','Renda fixa'), R('Multimarket funds','Fundos multimercado')],
+        lifeEvent:null,
+        nextActions:[R('Follow up on the proposal','Dar retorno sobre a proposta'), R('Move 10% FI → multimarket','Migrar 10% RF → multimercado'), R('Confirm execution window','Confirmar janela de execução')],
+        transcript:[
+          { whoKey:'you', time:'10:02', text:R('Hi Helena, sharing the reallocation proposal — moving 10% from fixed income into multimarket.','Oi Helena, compartilhando a proposta de realocação — migrar 10% da renda fixa para multimercado.') },
+          { whoKey:'client', time:'10:40', text:R('Looks good at first glance. Let me read it carefully.','Parece bom à primeira vista. Deixa eu ler com calma.') },
+          { whoKey:'client', time:'11:15', active:true, text:R('I\u2019ll get back to you by the end of the week.','Te dou um retorno até o fim da semana.') }
+        ],
+        messages:[
+          { c:false, time:'10:02', text:R('Proposal attached 👆 any questions, I\u2019m here.','Proposta em anexo 👆 qualquer dúvida, tô aqui.') },
+          { c:true, time:'10:41', text:R('Thanks! Reviewing.','Obrigada! Avaliando.') }
+        ],
+        tts:[
+          { voice:'Bella · PT-BR', dur:'0:12', text:R('Hi Helena! Just a nudge on the reallocation proposal — happy to walk you through it in 10 minutes whenever works.','Oi Helena! Só um lembrete sobre a proposta de realocação — posso te explicar em 10 minutinhos quando puder.') }
+        ]
+      },
+      otavio:{ pos:'04:02 / 06:18', date:pick(R('Jun 9 · 06:18 · phone call','9 jun · 06:18 · ligação telefônica')), sentKey:'positive', sentLevel:82,
+        summary:R('Otávio confirmed a R$500k inflow for July and is open to a balanced allocation. Positive, engaged, ready to deploy.','Otávio confirmou um aporte de R$ 500k para julho e está aberto a uma alocação balanceada. Positivo, engajado, pronto pra alocar.'),
+        objectives:[R('Put new capital to work','Alocar capital novo'), R('Balanced long-term growth','Crescimento equilibrado de longo prazo')],
+        appetite:R('Moderately aggressive — confident.','Moderado-agressivo — confiante.'),
+        products:[R('Balanced fund','Fundo balanceado'), R('Equities','Renda variável'), R('Fixed income','Renda fixa')],
+        lifeEvent:null,
+        nextActions:[R('Allocate Jul inflow to balanced fund','Alocar aporte de jul em fundo balanceado'), R('Send allocation plan','Enviar plano de alocação'), R('Set deployment schedule','Definir cronograma de alocação')],
+        transcript:[
+          { whoKey:'client', time:'01:10', text:R('I\u2019ll have about R$500k coming in July. I want to put it to work.','Vou ter uns R$ 500k entrando em julho. Quero colocar pra render.') },
+          { whoKey:'you', time:'01:35', text:R('Perfect. I\u2019d suggest a balanced allocation, deployed over a few weeks.','Perfeito. Eu sugeriria uma alocação balanceada, distribuída em algumas semanas.') },
+          { whoKey:'client', time:'04:00', active:true, text:R('Sounds good. Send me the plan and let\u2019s go.','Pode ser. Me manda o plano e bora.') }
+        ],
+        messages:[
+          { c:false, time:'15:00', text:R('Otávio, here\u2019s the allocation plan for the July inflow.','Otávio, segue o plano de alocação pro aporte de julho.') },
+          { c:true, time:'15:18', text:R('Great, approved 👍','Show, aprovado 👍') }
+        ],
+        tts:[
+          { voice:'Antoni · PT-BR', dur:'0:13', text:R('Otávio, all set for the July inflow! I\u2019ll deploy in tranches as we agreed. I\u2019ll keep you posted at each step.','Otávio, tudo pronto pro aporte de julho! Vou alocar em partes como combinamos. Te aviso a cada etapa.') }
+        ]
+      },
+      lucia:{ pos:'—', date:pick(R('Jun 8 · WhatsApp','8 jun · WhatsApp')), sentKey:'positive', sentLevel:78,
+        summary:R('Lúcia is happy with returns. Her birthday is in 3 days — a warm moment to reconnect and explore a small cross-sell.','Lúcia está satisfeita com os retornos. O aniversário dela é em 3 dias — bom momento pra reaproximar e explorar um cross-sell leve.'),
+        objectives:[R('Steady growth','Crescimento constante'), R('Start a pension plan','Começar uma previdência')],
+        appetite:R('Moderate — content with the plan.','Moderado — satisfeita com o plano.'),
+        products:[R('Multimarket funds','Fundos multimercado'), R('Private pension','Previdência privada')],
+        lifeEvent:R('Birthday in 3 days','Aniversário em 3 dias'),
+        nextActions:[R('Send a birthday voice note','Enviar áudio de aniversário'), R('Introduce pension plan','Apresentar plano de previdência'), R('Schedule a catch-up','Agendar um bate-papo')],
+        transcript:[
+          { whoKey:'client', time:'18:02', text:R('Just saw the statement — really happy with how things are going!','Acabei de ver o extrato — bem feliz com como tá indo!') },
+          { whoKey:'you', time:'18:20', text:R('That\u2019s great to hear, Lúcia! By the way, your birthday\u2019s coming up 🎉','Que ótimo, Lúcia! Aliás, seu aniversário tá chegando 🎉') },
+          { whoKey:'client', time:'18:35', active:true, text:R('It is! Maybe we can catch up soon, I\u2019ve been meaning to ask about pension plans.','Tá sim! Quem sabe a gente conversa logo, queria perguntar sobre previdência.') }
+        ],
+        messages:[
+          { c:true, time:'18:02', text:R('Loving the results 😍','Amando os resultados 😍') },
+          { c:false, time:'18:20', text:R('So glad! Let\u2019s talk this week — I have an idea for you.','Que bom! Bora conversar essa semana — tenho uma ideia pra você.') }
+        ],
+        tts:[
+          { voice:'Bella · PT-BR', dur:'0:11', text:R('Happy birthday, Lúcia! Wishing you an amazing year. Whenever you like, let\u2019s grab a coffee and talk about that pension idea.','Feliz aniversário, Lúcia! Que seu ano seja incrível. Quando quiser, bora um café pra falar daquela ideia de previdência.') }
+        ]
+      }
+    };
+    const cv = CONVO[sc0.id];
+    const hasConvo = !!cv;
+    const sc = { ...sc0, hasConvo, noConvo: !hasConvo };
+    let convo = null;
+    if (cv) {
+      const tr = cv.transcript.map(l => {
+        const txt = pick(l.text);
+        const o = { who: l.whoKey==='you' ? pick(R('You (advisor)','Você (assessora)')) : sc0.name, whoColor: l.whoKey==='you' ? 'var(--ink)' : 'var(--ink-3)', time:l.time, active:!!l.active, inactive:!l.active, text:txt };
+        if (l.active) {
+          const toks = txt.split(' '); const curIdx = Math.max(1, Math.floor(toks.length*0.42));
+          o.words = toks.map((w,i) => ({ w, bg:i===curIdx?'var(--ink)':'transparent', color:i<curIdx?'var(--ink-2)':(i===curIdx?'var(--bg)':'var(--ink-muted)'), pad:i===curIdx?'2px 5px':'0' }));
+        }
+        return o;
+      });
+      convo = {
+        pos:cv.pos, date:cv.date, sentLevel:cv.sentLevel+'%', sentLabel:pick(sentLbl[cv.sentKey]), sentColor:sentColor[cv.sentKey],
+        summary:pick(cv.summary), appetite:pick(cv.appetite),
+        objectives:cv.objectives.map(pick), products:cv.products.map(pick),
+        hasLifeEvent:!!cv.lifeEvent, lifeEvent:cv.lifeEvent?pick(cv.lifeEvent):'',
+        nextActions:cv.nextActions.map(pick),
+        transcript:tr,
+        messages:cv.messages.map(m => ({ t:pick(m.text), time:m.time, justify:m.c?'flex-start':'flex-end', bg:m.c?'var(--surface-3)':'var(--ink)', fg:m.c?'var(--ink)':'var(--bg)' })),
+        tts:cv.tts.map(s => ({ text:pick(s.text), voice:s.voice, dur:s.dur }))
+      };
+    }
+
+    // waveforms
+    const bars = Array.from({ length:70 }, (_,i) => { let h = 5 + Math.round(22*Math.abs(Math.sin(i*0.7)+0.35*Math.cos(i*0.27))); h = Math.max(4, Math.min(34, h)); return { h, color: i<28 ? 'var(--ink)' : 'var(--surface-3)' }; });
+    const miniBars = Array.from({ length:26 }, (_,i) => ({ h: 3 + Math.round(10*Math.abs(Math.sin(i*0.9))) }));
+
+    // ---------- conversations ----------
+    const chLbl = { call:R('Call','Ligação'), whatsapp:R('WhatsApp','WhatsApp'), email:R('E-mail','E-mail') };
+    const chColor = { call:'var(--ink-2)', whatsapp:C.green, email:C.blue };
+    const CONV = [
+      { id:'ricardo', ch:'call', date:R('Jun 14','14 jun'), dur:'08:32', sent:'negative', tr:true },
+      { id:'andre', ch:'call', date:R('Jun 13','13 jun'), dur:'09:41', sent:'negative', tr:true },
+      { id:'helena', ch:'whatsapp', date:R('Jun 12','12 jun'), dur:'—', sent:'neutral', tr:false },
+      { id:'beatriz', ch:'email', date:R('Jun 11','11 jun'), dur:'—', sent:'neutral', tr:false },
+      { id:'fernando', ch:'call', date:R('Jun 10','10 jun'), dur:'12:04', sent:'neutral', tr:true },
+      { id:'otavio', ch:'call', date:R('Jun 9','9 jun'), dur:'06:18', sent:'positive', tr:true },
+      { id:'camila', ch:'whatsapp', date:R('Jun 9','9 jun'), dur:'—', sent:'neutral', tr:false },
+      { id:'lucia', ch:'whatsapp', date:R('Jun 8','8 jun'), dur:'—', sent:'positive', tr:false }
+    ];
+    const setConvF = k => () => this.setState({ convFilter:k });
+    const convFilters = [['all',D.convFilterAll],['call',D.convFilterCalls],['whatsapp',D.convFilterWa],['email',D.convFilterEmail]].map(([k,l]) => chip(S.convFilter===k, l, setConvF(k)));
+    const conversations = CONV.filter(v => S.convFilter==='all' || v.ch===S.convFilter).map(v => {
+      const c = byId[v.id];
+      return { name:c.name, ini:c.ini, channel:pick(chLbl[v.ch]), chColor:chColor[v.ch], date:pick(v.date), dur:v.dur, sentLabel:pick(sentLbl[v.sent]), sentColor:sentColor[v.sent], play:v.ch==='call', trLabel: v.tr ? pick(D.transcribedBadge) : '—', trColor: v.tr ? C.green : 'var(--ink-muted)', open:c.open };
+    });
+
+    // ---------- recommendations ----------
+    const recStatusLbl = { pending:R('Pending','Pendente'), sent:R('Sent','Enviada'), accepted:R('Accepted','Aceita'), declined:R('Declined','Recusada') };
+    const recStatusColor = { pending:C.amber, sent:C.blue, accepted:C.green, declined:C.gray };
+    const REC = [
+      { id:'ricardo', st:'pending', date:R('Jun 14','14 jun'), text:R('Reduce equities 71% → 55%','Reduzir RV de 71% → 55%'), why:R('Risk appetite dropping after volatility','Apetite de risco caindo após volatilidade') },
+      { id:'gustavo', st:'pending', date:R('Jun 12','12 jun'), text:R('Rebalance to target bands','Rebalancear para as bandas-alvo'), why:R('68% in equities, above policy','68% em RV, acima da política') },
+      { id:'otavio', st:'pending', date:R('Jun 9','9 jun'), text:R('Allocate Jul inflow to balanced fund','Alocar aporte de jul em fundo balanceado'), why:R('R$500k confirmed for July','R$ 500k confirmados para julho') },
+      { id:'fernando', st:'sent', date:R('Jun 10','10 jun'), text:R('Diversify concentrated position','Diversificar posição concentrada'), why:R('Single-name risk above limit','Risco de ação única acima do limite') },
+      { id:'helena', st:'sent', date:R('Jun 12','12 jun'), text:R('Move 10% FI → multimarket','Migrar 10% RF → multimercado'), why:R('Add yield within moderate profile','Ganhar rendimento dentro do perfil moderado') },
+      { id:'beatriz', st:'accepted', date:R('Jun 5','5 jun'), text:R('Increase emergency reserve','Aumentar reserva de emergência'), why:R('Reserve below 6 months','Reserva abaixo de 6 meses') }
+    ];
+    const setRecF = k => () => this.setState({ recFilter:k });
+    const recFilters = [['all',D.recFilterAll],['pending',D.recFilterPending],['sent',D.recFilterSent],['accepted',D.recFilterAccepted]].map(([k,l]) => chip(S.recFilter===k, l, setRecF(k)));
+    const recommendations = REC.filter(r => S.recFilter==='all' || r.st===S.recFilter).map(r => {
+      const c = byId[r.id];
+      return { name:c.name, ini:c.ini, text:pick(r.text), rationale:pick(r.why), date:pick(r.date), statusLabel:pick(recStatusLbl[r.st]), stColor:recStatusColor[r.st], stBg:'var(--surface-2)', stBorder:'var(--border)' };
+    });
+
+    // ---------- alerts ----------
+    const alertTypeLbl = { behavior:R('Behavior change','Mudança de comportamento'), suitability:R('Suitability','Suitability'), concentration:R('Concentration','Concentração'), inactivity:R('Inactivity','Inatividade') };
+    const sevColor = { high:C.red, med:C.amber, low:C.blue };
+    const sevTint = { high:'oklch(0.96 0.025 27)', med:'oklch(0.96 0.020 65)', low:'oklch(0.96 0.018 248)' };
+    const sevLbl = { high:R('High','Alta'), med:R('Medium','Média'), low:R('Low','Baixa') };
+    const ALERT = [
+      { id:'ricardo', type:'behavior', sev:'high', time:R('2h','2h'), desc:R('Withdrawal pattern + lower risk appetite','Padrão de saques + queda no apetite de risco') },
+      { id:'fernando', type:'concentration', sev:'high', time:R('5h','5h'), desc:R('71% in equities — above policy','71% em RV — acima da política') },
+      { id:'andre', type:'behavior', sev:'med', time:R('3h','3h'), desc:R('Equity drift +7pp this month','Drift de RV +7pp no mês') },
+      { id:'beatriz', type:'suitability', sev:'med', time:R('1d','1d'), desc:R('Suitability expires Jun 30','Suitability vence em 30/jun') },
+      { id:'gustavo', type:'concentration', sev:'med', time:R('1d','1d'), desc:R('68% in equities','68% em RV') },
+      { id:'camila', type:'inactivity', sev:'low', time:R('2d','2d'), desc:R('No contact in 30 days','Sem contato há 30 dias') }
+    ];
+    const alerts = ALERT.map(a => {
+      const c = byId[a.id];
+      return { name:c.name, typeLabel:pick(alertTypeLbl[a.type]), desc:pick(a.desc), sevColor:sevColor[a.sev], sevTint:sevTint[a.sev], sevLabel:pick(sevLbl[a.sev]), time:pick(a.time), open:c.open };
+    });
+    const alertCount = String(ALERT.filter(a => a.sev==='high').length);
+
+    // ---------- opportunities ----------
+    const oppTypeLbl = { crosssell:R('Cross-sell','Cross-sell'), inflow:R('New inflow','Novo aporte'), realloc:R('Reallocation','Realocação'), pension:R('Pension','Previdência'), review:R('Review','Revisão') };
+    const probColor = p => p>=70 ? C.green : (p>=45 ? C.amber : C.blue);
+    const mkOpp = (id,value,type,prob) => { const c = byId[id]; return { name:c.name, ini:c.ini, value, type:pick(oppTypeLbl[type]), prob:prob+'%', probColor:probColor(prob), open:c.open }; };
+    const stageDefs = [
+      { title:R('Identified','Identificadas'), color:C.gray, items:[ mkOpp('lucia','R$ 180k','pension',40), mkOpp('tereza','R$ 200k','review',30) ] },
+      { title:R('Contacted','Contatadas'), color:C.blue, items:[ mkOpp('otavio','R$ 500k','inflow',70) ] },
+      { title:R('Proposal sent','Proposta enviada'), color:C.amber, items:[ mkOpp('helena','R$ 420k','realloc',55), mkOpp('camila','R$ 180k','pension',45) ] },
+      { title:R('Won','Ganhas'), color:C.green, items:[ mkOpp('paulo','R$ 300k','inflow',100) ] }
+    ];
+    const stages = stageDefs.map(s => ({ title:pick(s.title), color:s.color, count:String(s.items.length), items:s.items }));
+
+    // ---------- allocation ----------
+    const agg = { total:'R$ 92,7M', delta:'+0,6% '+pick(R('mo','mês')), rv:'52%', rf:'30%', fu:'13%', cx:'5%' };
+    const aggClasses = [
+      { name:pick(R('Equities','Renda variável')), pct:'52%', w:'52%', target:'48%', shade:'oklch(0.12 0.005 265)' },
+      { name:pick(R('Fixed income','Renda fixa')), pct:'30%', w:'30%', target:'32%', shade:'oklch(0.40 0.005 265)' },
+      { name:pick(R('Multimarket funds','Fundos multimercado')), pct:'13%', w:'13%', target:'14%', shade:'oklch(0.60 0.005 265)' },
+      { name:pick(R('Cash','Caixa')), pct:'5%', w:'5%', target:'6%', shade:'oklch(0.78 0.005 265)' }
+    ];
+    const mkOff = (id,cur,tgt) => { const c = byId[id]; return { name:c.name, ini:c.ini, detail:(L==='en'?'Equities ':'RV ')+cur+'% · '+pick(R('target','alvo'))+' '+tgt+'%', drift:'+'+(cur-tgt)+'pp', open:c.open }; };
+    const offPolicy = [ mkOff('fernando',71,60), mkOff('ricardo',71,55), mkOff('gustavo',68,55), mkOff('andre',62,55) ];
+
+    // ---------- reports ----------
+    const repStatusColor = { ready:C.green, scheduled:C.amber };
+    const REP = [
+      { title:R('Monthly performance','Performance mensal'), period:R('Jun 2026','Jun 2026'), st:'ready', date:R('Jun 25','25 jun') },
+      { title:R('Allocation review','Revisão de alocação'), period:R('Jun 2026','Jun 2026'), st:'ready', date:R('Jun 24','24 jun') },
+      { title:R('Suitability review','Revisão de suitability'), period:R('Q2 2026','2º tri 2026'), st:'scheduled', date:R('Jun 30','30 jun') },
+      { title:R('Client statements','Extratos de clientes'), period:R('Jun 2026','Jun 2026'), st:'ready', date:R('Jun 20','20 jun') },
+      { title:R('Tax report (IR)','Informe de IR'), period:R('2025','2025'), st:'ready', date:R('Mar 12','12 mar') }
+    ];
+    const reports = REP.map(r => ({ title:pick(r.title), period:pick(r.period), date:pick(r.date), statusLabel: r.st==='ready'?pick(D.repReady):pick(D.repScheduled), stColor:repStatusColor[r.st] }));
+
+    // ---------- chat ----------
+    const chatSugs = (L==='en') ? ["Who's most at risk today?", 'Summarize Ricardo\u2019s last call', 'Draft a message for Lúcia'] : ['Quem está mais em risco hoje?', 'Resuma a última call do Ricardo', 'Escreva uma mensagem para a Lúcia'];
+
+    // ---------- nav / routing ----------
+    const route = S.route;
+    const isActive = r => route===r || (r==='clients' && route==='client');
+    const navS = r => ({ bg:isActive(r)?'var(--surface-3)':'transparent', color:isActive(r)?'var(--ink)':'var(--ink-2)', weight:isActive(r)?'600':'400' });
+    const keys = ['overview','conversations','alerts','opportunities','allocation'];
+    const nav = {}, goObj = {};
+    keys.forEach(k => { nav[k] = navS(k); goObj[k] = () => this.setState({ route:k, query:'' }); });
+    goObj.clients = () => this.setState({ route:'clients', query:'' });
+
+    const backRouteMap = { overview:t.backToOverview, clients:t.backToClients, conversations:t.backToConversations, opportunities:t.backToOpportunities, alerts:t.backToAlerts };
+    const goBack = () => this.setState({ route:S.prevRoute, query:'' });
+    const backLabel = backRouteMap[S.prevRoute] || t.backToClients;
+
+    const routeTitle = { overview:t.overview, clients:t.clients, conversations:t.conversations, alerts:t.alerts, opportunities:t.opportunities, allocation:t.allocation, client:sc0.name };
+    const isEN = L==='en';
+
+    return {
+      agentStatus:S.agentStatus, agentTranscript:S.agentTranscript,
+      agentIdle:S.agentStatus==='idle', agentConnecting:S.agentStatus==='connecting', agentActive:S.agentStatus==='connected',
+      agentNotActive:S.agentStatus!=='connected',
+      agentBtnLabel:S.agentStatus==='idle'?pick(R('Start conversation','Iniciar conversa')):S.agentStatus==='connecting'?pick(R('Connecting…','Conectando…')):pick(R('End call','Encerrar')),
+      agentBtnBg:S.agentStatus==='connected'?'var(--red)':'var(--ink)',
+      phoneBg:S.agentStatus==='connected'?'var(--red)':S.agentStatus==='connecting'?'var(--amber)':'var(--green)',
+      phoneLabel:S.agentStatus==='idle'?pick(R('Tap to call Sofia','Toque para chamar a Sofia')):S.agentStatus==='connecting'?pick(R('Connecting…','Conectando…')):pick(R('Sofia is listening…','Sofia está ouvindo…')),
+      agentStatusDot:S.agentStatus==='connected'?'var(--green)':S.agentStatus==='connecting'?'var(--amber)':'var(--border-2)',
+      agentStatusLabel:S.agentStatus==='connected'?pick(R('Live','Ao vivo')):S.agentStatus==='connecting'?pick(R('Connecting…','Conectando…')):pick(R('Ready','Pronto')),
+      approvalCard:S.approvalCard, approvalClientId:S.approvalClientId, hasApproval:!!S.approvalCard,
+      voicePreviews:S.voicePreviews, playingVoice:S.playingVoice,
+      toastMsg:S.toastMsg, hasToast:!!S.toastMsg,
+      t, nav, goObj, goBack, backLabel, headerTitle:routeTitle[route] || t.overview, alertCount, langCode:isEN?'EN':'PT', isEN, isPT:!isEN, chatSugs,
+      isOverview:route==='overview', isClients:route==='clients', isClient:route==='client', isConversations:route==='conversations', isAlerts:route==='alerts', isOpportunities:route==='opportunities', isAllocation:route==='allocation',
+      chatOpen:S.chatOpen,
+      sidebarWidth:S.menuOpen?'236px':'66px', lblDisplay:S.menuOpen?'inline':'none', collapsedDotDisplay:S.menuOpen?'none':'block', navJustify:S.menuOpen?'flex-start':'center',
+      chatBtnColor:S.chatOpen?'var(--bg)':'var(--ink-2)', chatBtnBg:S.chatOpen?'var(--ink)':'var(--surface-2)', chatBtnBorder:S.chatOpen?'var(--ink)':'var(--border)',
+      fabDisplay:S.chatOpen?'none':'flex',
+      statTiles, groups, priorities, bookStats, activity,
+      clientFilters, filteredClients, clientsCount, query:S.query,
+      sc, riskSegs, allocList, lastContacts, convo,
+      showTranscript:S.convoView==='transcript', showMessages:S.convoView==='messages',
+      pillTransBg:S.convoView==='transcript'?'var(--surface-3)':'transparent', pillTransFg:S.convoView==='transcript'?'var(--ink)':'var(--ink-3)',
+      pillMsgBg:S.convoView==='messages'?'var(--surface-3)':'transparent', pillMsgFg:S.convoView==='messages'?'var(--ink)':'var(--ink-3)',
+      bars, miniBars,
+      convFilters, conversations, recFilters, recommendations, alerts, stages, agg, aggClasses, offPolicy,
+      toggleLang:() => this.setState(s => ({ lang:s.lang==='en'?'pt':'en' })),
+      toggleMenu:() => this.setState(s => ({ menuOpen:!s.menuOpen })),
+      toggleChat:() => this.setState(s => ({ chatOpen:!s.chatOpen })),
+      setTranscript:() => this.setState({ convoView:'transcript' }),
+      setMessages:() => this.setState({ convoView:'messages' }),
+      onSearch:e => this.setState({ query:e.target.value }),
+      openSearch:() => this.setState({ route:'clients', query:'' }),
+
+      toggleAgent: async () => {
+        if (this.state.agentStatus === 'connected') {
+          window._activeConv && await window._activeConv.endSession();
+          window._activeConv = null;
+          this.setState({ agentStatus:'idle', agentTranscript:[] });
+          return;
+        }
+        if (this.state.agentStatus === 'connecting') return;
+        this.setState({ agentStatus:'connecting' });
+        try {
+          const Conversation = window._ElevenLabsConversation;
+          if (!Conversation) throw new Error('SDK not loaded yet');
+          const r = await fetch('http://localhost:8000/agent/token');
+          const { signed_url } = await r.json();
+          const self = this;
+          const conv = await Conversation.startSession({
+            signedUrl: signed_url,
+            clientTools: {
+              navigate: async ({ route }) => {
+                self.setState({ route });
+                return 'done';
+              },
+              show_opportunity: async ({ clientId }) => {
+                self.setState({ route:'client', clientId, prevRoute: self.state.route });
+                return 'done';
+              },
+              show_recommendation: async ({ clientId, text }) => {
+                self.setState({ approvalCard:text, approvalClientId:clientId });
+                setTimeout(() => {
+                  const ta = document.getElementById('voice-edit-ta');
+                  if (ta) { ta.value = text; ta.focus(); }
+                }, 60);
+                return 'done';
+              },
+              generate_voice_message: async ({ clientId, text }) => {
+                self._addVoicePreview(text, clientId);
+                return 'done';
+              },
+              send_whatsapp: async ({ clientId }) => {
+                self.setState({ approvalCard:null, approvalClientId:null, toastMsg:'Sent via WhatsApp ✓' });
+                setTimeout(() => self.setState({ toastMsg:null }), 3500);
+                return 'done';
+              },
+              get_client_data: async ({ clientId }) => {
+                const c = window._cockpit?._clientsById?.[clientId];
+                if (!c) return JSON.stringify({ error: 'not found' });
+                return JSON.stringify({
+                  name: c.name, vip: c.vip, aum: c.patr,
+                  riskProfile: c.perfilLabel, status: c.statusLabel,
+                  allocation: { equities: c.al[0]+'%', fixedIncome: c.al[1]+'%', funds: c.al[2]+'%', cash: c.al[3]+'%' },
+                  mtd: c.delta, note: c.note, clientSince: c.since
+                });
+              }
+            },
+            onMessage: ({ source, message }) => {
+              const who = source === 'ai' ? 'AI' : 'YOU';
+              self.setState(s => ({ agentTranscript:[...s.agentTranscript, { who, text:message }] }));
+            },
+            onStatusChange: ({ status }) => {
+              if (status === 'connected') self.setState({ agentStatus:'connected' });
+              if (status === 'disconnecting' || status === 'disconnected') {
+                self.setState({ agentStatus:'idle' });
+                window._activeConv = null;
+              }
+            },
+            onError: (err) => {
+              console.error('Agent error', err);
+              self.setState({ agentStatus:'idle' });
+            }
+          });
+          window._activeConv = conv;
+        } catch(err) {
+          console.error('Failed to start agent:', err);
+          this.setState({ agentStatus:'idle' });
+        }
+      },
+
+      approveRecommendation: async () => {
+        const ta = document.getElementById('voice-edit-ta');
+        const text = (ta?.value || this.state.approvalCard || '').trim();
+        const clientId = this.state.approvalClientId;
+        this.setState({ approvalCard:null, approvalClientId:null });
+        if (text) this._addVoicePreview(text, clientId);
+      },
+
+      dismissRecommendation: () => this.setState({ approvalCard:null, approvalClientId:null })
+    };
+  }
+}
+</script>
+</body>
+</html>

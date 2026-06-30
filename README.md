@@ -1,105 +1,173 @@
-# ElevenLabs FSI Demo — Investment Advisor Agent
+# Wealth Advisor Hub
 
-Proof-of-concept demonstrating ElevenLabs Conversational AI applied to Financial Services (FSI).
-Built with **Specification-Driven Development (SDD)** and **Test-Driven Development (TDD)**.
+Real-time voice cockpit for wealth advisors. Sofia, an AI advisor built on ElevenLabs Conversational AI, joins the session and can navigate the dashboard, pull up client profiles, draft and generate voice messages, and suggest next actions — all mid-conversation, through natural voice.
 
-## Scenarios
+---
 
-| # | Scenario | Status | Demo |
-|---|---|---|---|
-| 1 | **Investment Advisor Agent** — real-time conversational AI for client advisory | ✅ Built | Live agent |
-| 2 | **Multi-Market Campaign** — same campaign, multi-language audio in 48h | 📄 Spec + Diagram | Excalidraw flow |
-| 3 | **Proactive Outbound** — churn prevention via voice for acquirers | 📄 Spec + Diagram | Excalidraw flow |
+## Architecture
 
-## Account Constraints (Free Tier)
+```mermaid
+graph LR
+    subgraph Browser["Browser · Port 8080"]
+        UI["Cockpit B.dc.html\ndc template engine"]
+        SDK["@11labs/client\nWebSocket"]
+    end
 
-| Resource | Limit | Used | Remaining |
-|---|---|---|---|
-| Characters/month | 10,000 | 187 | **9,813** |
-| Voice slots | 3 | 0 | 3 |
-| Voice cloning | ❌ Not available | — | — |
-| Outbound calls | ❌ Not available | — | — |
+    subgraph Backend["Backend · Port 8000\nFastAPI"]
+        TTS["/tts\nText to MP3"]
+        STT["/stt\nAudio to transcript"]
+        TOKEN["/agent/token\nSigned URL"]
+    end
 
-> Credit budget is tracked per feature in [`docs/credit-management.md`](docs/credit-management.md).
+    subgraph ElevenLabs["ElevenLabs Cloud"]
+        CONV["Conversational AI\nSofia · Gemini 2.0 Flash"]
+        TTSAPI["TTS\nSarah voice"]
+        STTAPI["STT\nScribe v1"]
+        KB["Knowledge Base\nFSI Compliance Guide"]
+    end
 
-## Repository Structure
-
-```
-.
-├── docs/
-│   ├── specs/              # SDD — one spec per feature (written before code)
-│   ├── diagrams/           # Excalidraw flow diagrams
-│   ├── architecture.md     # System design overview
-│   └── credit-management.md # Credit budget per feature
-├── src/
-│   └── elevenlabs_fsi/
-│       ├── agent/          # Conversational agent management
-│       └── budget/         # Credit tracking & pre-flight estimator
-├── tests/
-│   ├── unit/               # Unit tests (written before implementation)
-│   └── integration/        # Integration tests against real API
-└── scripts/
-    ├── setup_agent.py      # One-time agent + knowledge base setup
-    └── demo.py             # Interactive demo runner
+    UI -->|"fetch /agent/token"| TOKEN
+    TOKEN -->|"GET signed_url"| CONV
+    SDK <-->|"WebSocket"| CONV
+    UI -->|"fetch /tts"| TTS
+    TTS --> TTSAPI
+    UI -->|"fetch /stt"| STT
+    STT --> STTAPI
+    CONV --- KB
+    UI -->|"client tools"| SDK
 ```
 
-## Development Approach
+**Stack:** Static HTML + vanilla JS · FastAPI · ElevenLabs (Conversational AI, TTS, STT) · Docker + nginx
 
-### SDD — Specification-Driven Development
-Each feature starts as a spec in `docs/specs/SPEC-XXX-*.md` covering:
-- User story and acceptance criteria
-- Technical design and API calls
-- Credit cost estimate (pre-flight budget check)
-- Out of scope
+---
 
-### TDD — Test-Driven Development
-Tests in `tests/` are written **before** implementation:
-1. **Red** — write failing test that describes expected behavior
-2. **Green** — implement minimum code to pass
-3. **Refactor** — clean up without breaking tests
+## What Sofia Can Do
+
+| Action | Implementation |
+|---|---|
+| Navigate the cockpit | `navigate({route})` updates the dashboard view |
+| Open a client panel | `show_opportunity({clientId})` routes to client detail |
+| Show a recommendation | `show_recommendation({text})` opens an editable approval card |
+| Generate a voice preview | `generate_voice_message({text})` calls `/tts`, saves playable card |
+| Send via WhatsApp | `send_whatsapp({clientId})` confirms delivery (mock) |
+| Look up client data | `get_client_data({clientId})` reads live cockpit state |
+| Suggest next action | Built into system prompt, fires after every send |
+
+---
 
 ## Setup
 
 ### Prerequisites
-- Python 3.11+
-- ElevenLabs account (free tier sufficient for Scenario 1)
 
-### Install
+- Docker + Docker Compose
+- ElevenLabs account (free tier works)
+- Agent created via `setup/create_agent.py`
 
-```bash
-python -m venv .venv
-source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-```
-
-### Configure
+### 1. Configure environment
 
 ```bash
 cp .env.example .env
-# Edit .env with your ELEVENLABS_API_KEY
+# add your ELEVENLABS_API_KEY
 ```
 
-### Run tests
+### 2. Create the ElevenLabs agent (run once)
 
 ```bash
-pytest tests/unit/          # Fast, no API calls
-pytest tests/integration/   # Requires ELEVENLABS_API_KEY + real API
+ELEVENLABS_API_KEY=sk_... python setup/create_agent.py
+# writes AGENT_ID, KB_ID, VOICE_ID to .env
 ```
 
-### Setup agent (one-time)
+### 3. Start
 
 ```bash
-python scripts/setup_agent.py
+docker compose up --build
 ```
 
-### Run demo
+| Service | URL |
+|---|---|
+| Cockpit | http://localhost:8080/Cockpit%20B.dc.html |
+| Backend | http://localhost:8000 |
+| Health | http://localhost:8000/health |
+
+---
+
+## Running without Docker
 
 ```bash
-python scripts/demo.py
+# Backend
+cd backend
+pip install -r requirements.txt
+source ../.env && uvicorn main:app --reload --port 8000
+
+# Frontend (separate terminal)
+cd front
+docker build -t wealth-advisor-hub . && docker run -p 8080:80 wealth-advisor-hub
 ```
 
-## Specs Index
+---
 
-- [SPEC-001 — Investment Advisor Agent](docs/specs/SPEC-001-advisor-agent.md)
-- [SPEC-002 — Multi-Market Campaign](docs/specs/SPEC-002-campaign.md)
-- [SPEC-003 — Proactive Outbound Call](docs/specs/SPEC-003-outbound.md)
+## Project Structure
+
+```
+.
+├── front/
+│   ├── Cockpit B.dc.html      # single-file cockpit (dc template engine)
+│   ├── support.js             # dc runtime
+│   ├── index.html             # redirect
+│   └── Dockerfile             # nginx
+│
+├── backend/
+│   ├── main.py                # FastAPI: /tts, /stt, /agent/token, /health
+│   ├── requirements.txt
+│   └── Dockerfile
+│
+├── setup/
+│   ├── create_agent.py        # creates the ElevenLabs agent + knowledge base
+│   └── compliance_guide.txt   # FSI compliance knowledge base
+│
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── flows/
+│   │   ├── SOFIA_FLOW.md
+│   │   └── COCKPIT_FLOWS.md
+│   └── specs/
+│       ├── SPEC-001-advisor-agent.md
+│       ├── SPEC-006-elevenlabs-agent.md
+│       └── SPEC-007-cockpit-v2.md
+│
+├── .env.example
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+## Backend API
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/health` | `{status, agent_id}` |
+| `GET` | `/agent/token` | ElevenLabs signed WebSocket URL |
+| `POST` | `/tts` | `{text, voice_id?}` → `audio/mpeg` |
+| `POST` | `/stt` | audio file → `{transcript, words}` |
+
+---
+
+## ElevenLabs Agent
+
+| | |
+|---|---|
+| Agent ID | `agent_7501kwap3zrre9wr5h20vdqbtz7n` |
+| Voice | Sarah (`EXAVITQu4vr4xnSDxMaL`) |
+| LLM | Gemini 2.0 Flash |
+| Knowledge Base | FSI Advisory Compliance Guide v2.1 |
+| Client tools | navigate, show_opportunity, show_recommendation, generate_voice_message, send_whatsapp, get_client_data |
+
+---
+
+## Docs
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Sofia interaction flow](docs/flows/SOFIA_FLOW.md)
+- [Cockpit navigation flows](docs/flows/COCKPIT_FLOWS.md)
+- [Design spec (SPEC-007)](docs/specs/SPEC-007-cockpit-v2.md)

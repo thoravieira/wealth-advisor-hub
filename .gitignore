@@ -1,9 +1,4 @@
 .env
 .budget.json
-.venv/
-__pycache__/
-*.pyc
-*.pyo
-dist/
-*.egg-info/
-.pytest_cache/
+# Claude
+.claude/
