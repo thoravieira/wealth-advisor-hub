@@ -631,42 +631,42 @@
       <!-- ===== OPPORTUNITIES ===== -->
       <sc-if value="{{ isOpportunities }}" hint-placeholder-val="{{ false }}">
         <div>
-          <div style="margin-bottom:16px"><div style="font-size:22px;font-weight:700;letter-spacing:-.015em">{{ t.oppTitle }}</div><div style="font-size:13px;color:var(--ink-3);margin-top:3px">{{ t.oppSub }}</div></div>
+          <div style="margin-bottom:20px"><div style="font-size:22px;font-weight:700;letter-spacing:-.015em">{{ t.oppTitle }}</div><div style="font-size:13px;color:var(--ink-3);margin-top:3px">{{ t.oppSub }}</div></div>
           <div class="grid-4col" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px">
             <sc-for list="{{ stages }}" as="st" hint-placeholder-count="4">
-              <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px;min-height:260px">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:0 2px"><span style="width:8px;height:8px;border-radius:2px;background:{{ st.color }}"></span><span style="font-size:12.5px;font-weight:700">{{ st.title }}</span><span style="margin-left:auto;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ st.count }}</span></div>
-                <div style="display:flex;flex-direction:column;gap:9px">
+              <div style="background:var(--bg);border:1px solid var(--border);border-radius:14px;padding:12px;min-height:200px">
+                <!-- column header -->
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;padding:0 2px">
+                  <span style="width:8px;height:8px;border-radius:2px;background:{{ st.color }}"></span>
+                  <span style="font:600 11.5px 'JetBrains Mono',monospace;letter-spacing:.02em">{{ st.title }}</span>
+                  <span style="margin-left:auto;font:600 10px 'JetBrains Mono',monospace;background:var(--surface-2);border:1px solid var(--border);border-radius:5px;padding:1px 7px;color:var(--ink-3)">{{ st.count }}</span>
+                </div>
+                <!-- cards -->
+                <div style="display:flex;flex-direction:column;gap:10px">
                   <sc-for list="{{ st.items }}" as="o" hint-placeholder-count="2">
-                    <button onClick="{{ o.open }}" style="text-align:left;width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:11px;padding:12px;display:block" style-hover="border-color:var(--border-2);box-shadow:0 2px 10px oklch(0 0 0/.3)">
-                      <div style="display:flex;align-items:center;gap:8px"><div style="width:26px;height:26px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 10px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ o.ini }}</div><span style="font-size:12.5px;font-weight:600">{{ o.name }}</span></div>
-                      <div style="font:600 16px 'JetBrains Mono',monospace;letter-spacing:-.02em;margin-top:10px">{{ o.value }}</div>
-                      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:9px"><span style="font-size:11px;color:var(--ink-2)">{{ o.type }}</span><span style="font:600 10px 'JetBrains Mono',monospace;color:#fff;background:{{ o.probColor }};border-radius:5px;padding:2px 6px">{{ o.prob }}</span></div>
+                    <button onClick="{{ o.open }}" style="text-align:left;width:100%;background:var(--bg);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:block">
+                      <!-- client strip - gray -->
+                      <div style="background:var(--surface-2);padding:10px 12px;display:flex;align-items:center;gap:8px">
+                        <div style="width:28px;height:28px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 10px 'JetBrains Mono',monospace;color:var(--ink-2);flex-shrink:0">{{ o.ini }}</div>
+                        <div style="flex:1;min-width:0">
+                          <div style="font-size:12.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.name }}</div>
+                          <div style="font:500 10px 'JetBrains Mono',monospace;color:var(--ink-3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ o.patr }} · {{ o.perfil }}</div>
+                        </div>
+                      </div>
+                      <!-- opportunity body - white -->
+                      <div style="padding:11px 12px">
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+                          <span style="font:700 15px 'JetBrains Mono',monospace;letter-spacing:-.02em">{{ o.value }}</span>
+                          <span style="font:600 10px 'JetBrains Mono',monospace;color:#fff;background:{{ o.probColor }};border-radius:5px;padding:2px 7px">{{ o.prob }}</span>
+                        </div>
+                        <div style="font:500 10.5px 'JetBrains Mono',monospace;color:var(--ink-3);margin-bottom:8px">{{ o.type }} · {{ o.ago }}</div>
+                        <div style="font-size:12px;color:var(--ink-2);line-height:1.5">{{ o.desc }}</div>
+                      </div>
                     </button>
                   </sc-for>
                 </div>
               </div>
             </sc-for>
-          </div>
-
-          <!-- Recommendations sub-section -->
-          <div style="margin-top:28px">
-            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px">
-              <div style="font-size:16px;font-weight:700;letter-spacing:-.01em">{{ t.recTitle }}</div>
-              <div style="font-size:12.5px;color:var(--ink-3)">{{ t.recSub }}</div>
-            </div>
-            <div style="display:flex;gap:7px;margin-bottom:14px"><sc-for list="{{ recFilters }}" as="f" hint-placeholder-count="4"><button onClick="{{ f.set }}" style="border:1px solid {{ f.border }};background:{{ f.bg }};color:{{ f.color }};border-radius:8px;padding:6px 12px;font-size:12px;font-weight:{{ f.weight }}">{{ f.label }}</button></sc-for></div>
-            <div style="display:flex;flex-direction:column;gap:10px">
-              <sc-for list="{{ recommendations }}" as="r" hint-placeholder-count="4">
-                <div style="border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:16px;background:var(--surface)">
-                  <div style="width:32px;height:32px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2);flex-shrink:0">{{ r.ini }}</div>
-                  <div style="width:140px;flex-shrink:0"><div style="font-size:13px;font-weight:600">{{ r.name }}</div><div style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ r.date }}</div></div>
-                  <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600;color:var(--ink)">{{ r.text }}</div><div style="font-size:12px;color:var(--ink-2);margin-top:2px">{{ r.rationale }}</div></div>
-                  <span style="flex-shrink:0;display:inline-flex;align-items:center;gap:6px;border:1px solid {{ r.stBorder }};background:{{ r.stBg }};color:{{ r.stColor }};border-radius:8px;padding:5px 10px;font:600 11px 'JetBrains Mono',monospace"><span style="width:6px;height:6px;border-radius:50%;background:{{ r.stColor }}"></span>{{ r.statusLabel }}</span>
-                  <button style="flex-shrink:0;border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600">{{ t.openLabel }}</button>
-                </div>
-              </sc-for>
-            </div>
           </div>
         </div>
       </sc-if>
@@ -1433,12 +1433,27 @@ class Component extends DCLogic {
     // ---------- opportunities ----------
     const oppTypeLbl = { crosssell:R('Cross-sell','Cross-sell'), inflow:R('New inflow','Novo aporte'), realloc:R('Reallocation','Realocação'), pension:R('Pension','Previdência'), review:R('Review','Revisão') };
     const probColor = p => p>=70 ? C.green : (p>=45 ? C.amber : C.blue);
-    const mkOpp = (id,value,type,prob) => { const c = byId[id]; return { name:c.name, ini:c.ini, value, type:pick(oppTypeLbl[type]), prob:prob+'%', probColor:probColor(prob), open:c.open }; };
+    const perfilLblOpp = { conservative:R('Conservative','Conservador'), moderate:R('Moderate','Moderado'), modAggr:R('Mod. Aggressive','Mod. Arrojado'), aggressive:R('Aggressive','Arrojado') };
+    const mkOpp = (id,value,type,prob,desc) => {
+      const c = byId[id];
+      return { name:c.name, ini:c.ini, vip:c.vip, value, type:pick(oppTypeLbl[type]), prob:prob+'%', probColor:probColor(prob),
+               desc:pick(desc), patr:c.patr, perfil:pick(perfilLblOpp[c.perfil]||R(c.perfil,c.perfil)), delta:c.delta, ago:pick(c.ago), open:c.open };
+    };
     const stageDefs = [
-      { title:R('Identified','Identificadas'), color:C.gray, items:[ mkOpp('lucia','R$ 180k','pension',40), mkOpp('tereza','R$ 200k','review',30) ] },
-      { title:R('Contacted','Contatadas'), color:C.blue, items:[ mkOpp('otavio','R$ 500k','inflow',70) ] },
-      { title:R('Proposal sent','Proposta enviada'), color:C.amber, items:[ mkOpp('helena','R$ 420k','realloc',55), mkOpp('camila','R$ 180k','pension',45) ] },
-      { title:R('Won','Ganhas'), color:C.green, items:[ mkOpp('paulo','R$ 300k','inflow',100) ] }
+      { title:R('Identified','Identificadas'), color:C.gray, items:[
+        mkOpp('lucia','R$ 180k','pension',40, R('Pension fund discussion, approaching retirement planning stage — good opening for a structured plan','Previdência privada em pauta, próxima da fase de planejamento — boa abertura para um plano estruturado')),
+        mkOpp('tereza','R$ 200k','review',30, R('Annual suitability review overdue; equity concentration above profile threshold — signature needed','Revisão de suitability anual pendente; concentração em RV acima do perfil — assinatura necessária'))
+      ]},
+      { title:R('Contacted','Contatadas'), color:C.blue, items:[
+        mkOpp('otavio','R$ 500k','inflow',70, R('R$500k inflow expected in July; favorable timing for allocation into structured products or multimarket funds','Aporte de R$500k previsto para julho; bom momento para alocação em produtos estruturados ou multimercado'))
+      ]},
+      { title:R('Proposal sent','Proposta enviada'), color:C.amber, items:[
+        mkOpp('helena','R$ 420k','realloc',55, R('Reallocation to reduce fixed income overexposure; proposal sent, awaiting client sign-off after call last week','Realocação para reduzir sobreexposição em RF; proposta enviada, aguardando aprovação após call da semana passada')),
+        mkOpp('camila','R$ 180k','pension',45, R('Private pension tax optimization opportunity; proposal presented, follow-up scheduled for end of month','Oportunidade de otimização fiscal via previdência privada; proposta apresentada, follow-up agendado para o fim do mês'))
+      ]},
+      { title:R('Won','Ganhas'), color:C.green, items:[
+        mkOpp('paulo','R$ 300k','inflow',100, R('Confirmed inflow; structured product allocation signed and transferred — client satisfaction high','Aporte confirmado; alocação em produto estruturado assinada e transferida — alta satisfação do cliente'))
+      ]}
     ];
     const stages = stageDefs.map(s => ({ title:pick(s.title), color:s.color, count:String(s.items.length), items:s.items }));
 
