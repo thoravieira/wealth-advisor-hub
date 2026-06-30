@@ -7,11 +7,7 @@ Four containers, one compose stack. The frontend and backend are independent ser
 ```
 ┌──────────────────────────────────────────────────────────────────────────┐
 │  Browser                                                                 │
-│  ┌──────────────────────────────────────────────────────────────────┐   │
-│  │  front/cockpit.html                                              │   │
-│  │  dc template engine · DCLogic class · @11labs/client SDK        │   │
-│  └──────────────────────────────────────────────────────────────────┘   │
-│         │ fetch :8000              │ WebSocket (audio)                   │
+│         │ HTTP :8080               │ WebSocket (audio)                   │
 └─────────┼──────────────────────────┼───────────────────────────────────┘
           │                          │
  ┌──────────────────────────────┐    │   ┌──────────────────────────────┐
@@ -42,9 +38,9 @@ Four containers, one compose stack. The frontend and backend are independent ser
 
 ## Containers
 
-### `front` — nginx · port 8080
+### `front` — Frontend · port 8080
 
-Static HTML served via nginx. One file: `front/cockpit.html` (~1,200 lines). No build step, no npm, no framework.
+Single-file cockpit (`front/cockpit.html`, ~1,200 lines) served via nginx. On load it fetches `/clients` from the backend to populate live analytics data into the client book.
 
 | Concern | Implementation |
 |---|---|
@@ -54,10 +50,8 @@ Static HTML served via nginx. One file: `front/cockpit.html` (~1,200 lines). No 
 | ElevenLabs | `@11labs/client` CDN ESM; `Conversation.startSession()` in `toggleAgent` |
 | Client tools | Plain async functions passed in `clientTools` dict |
 | Audio preview | `URL.createObjectURL(blob)` + volume mute/unmute via `_activeConv.setVolume()` |
-
-**Known dc quirks:**
-- Ternary expressions don't evaluate inside `style=""` — pre-compute display values in `renderVals()`.
-- Textarea `value` resets on re-render if bound reactively — set via `document.getElementById` + `setTimeout(60ms)`.
+| Analytics init | `_initData()` runs once on first render; fetches `/clients` and caches into `analyticsClients` state |
+| Memory fetch | `_fetchMemory(clientId)` runs when client detail opens; fetches `agent_memory_long` from postgres |
 
 ### `backend` — FastAPI · port 8000
 

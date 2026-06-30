@@ -91,16 +91,13 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    CO[Conversations] --> SOFIA[Sofia panel\nidle → voice call → transcript]
-    CO --> F[Filters: All · Calls · WhatsApp · Email]
+    CO[Conversations] --> F[Filters: All · Calls · WhatsApp · Email]
     CO --> T[Table: client · channel · date · duration · sentiment · status]
     T --> ROW[Click row]
     ROW --> CD[Client Detail\nprevRoute = conversations]
 ```
 
-**Sofia panel** (top of this screen):
-- Idle: status dot + hint text + phone button
-- Active: live transcript + red end-call button
+Sofia session control is via the EQ button (bottom-right), consistent with every other screen.
 
 ---
 
@@ -182,7 +179,7 @@ All UI strings exist in English and Portuguese. Toggle in the sidebar header swi
 
 | Feature | Overview | Conversations | Client Detail | Alerts | Opportunities | Allocation |
 |---|---|---|---|---|---|---|
-| Sofia voice call | ✓ | ✓ (primary) | ✓ | ✓ | ✓ | ✓ |
+| Sofia voice call | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Navigate here via Sofia | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Client list | ✓ (grouped) | ✓ (table) | — | ✓ | ✓ | ✓ |
 | Open client detail | ✓ | ✓ | — | ✓ | ✓ | ✓ |

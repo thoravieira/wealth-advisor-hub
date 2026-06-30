@@ -77,7 +77,9 @@ state = {
   playingVoice: null,
   approvalCard: null,
   approvalClientId: null,
-  toastMsg: null
+  toastMsg: null,
+  analyticsClients: {},    // keyed by client_id; populated by _initData() on first render
+  memoryFacts: {}          // keyed by client_id; populated by _fetchMemory() when client detail opens
 }
 ```
 
@@ -183,8 +185,7 @@ GET  /alerts
 
 ### 3.5 ElevenLabs Agent — Sofia
 
-**Agent ID:** `agent_7501kwap3zrre9wr5h20vdqbtz7n`  
-**Created by:** `setup/create_agent.py`
+**Created by:** `setup/create_agent.py` — idempotent, writes `ELEVENLABS_AGENT_ID` back to `.env`
 
 #### System prompt strategy
 
@@ -236,7 +237,7 @@ docker compose up --build
 
 ## 5. Test Suite
 
-82 tests across 5 files. Run with:
+106 tests across 6 files. Run with:
 
 ```bash
 cd tests && python3 -m pytest -v
@@ -249,6 +250,7 @@ cd tests && python3 -m pytest -v
 | `test_03_postgres.py` | 6 | Connectivity, schema, memory API via backend |
 | `test_04_analytics.py` | 32 | Clients (all 12), recommendations lifecycle, voice messages, alerts |
 | `test_05_backend_pg_integration.py` | 13 | Health with deps, session creation, memory CRUD, action log, proxies |
+| `test_06_data_integration.py` | 24 | Analytics→cockpit data flow, postgres seed facts, Sofia memory in UI |
 
 ---
 
