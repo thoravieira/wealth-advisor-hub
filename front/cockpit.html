@@ -452,7 +452,8 @@
                           <button onClick="{{ d.sel }}" style="display:flex;align-items:center;gap:5px;border-radius:6px;padding:5px 10px;font:600 11px 'JetBrains Mono',monospace;border:{{ d.border }};background:{{ d.bg }};color:{{ d.fg }}"><span style="width:5px;height:5px;border-radius:50%;background:{{ d.dot }};flex-shrink:0"></span>{{ d.label }}</button>
                         </sc-for>
                       </div>
-                      <button onClick="{{ openCal }}" style="width:28px;height:28px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink-3)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button>
+                      <sc-if value="{{ carouselHasMore }}" hint-placeholder-val="{{ true }}"><span style="font:600 12px 'JetBrains Mono',monospace;color:var(--ink-3);padding:0 2px;cursor:default" title="More dates in calendar">···</span></sc-if>
+                      <button onClick="{{ openCal }}" style="width:28px;height:28px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink-3)" title="Open calendar"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button>
                     </div>
                     <div style="display:flex;gap:3px;background:var(--surface-3);border-radius:9px;padding:3px;flex-shrink:0">
                       <button onClick="{{ setConversations }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillConvBg }};color:{{ pillConvFg }}">{{ t.conversations }}</button>
@@ -472,26 +473,18 @@
                       </div>
                     </div>
                     </sc-if>
-                    <!-- waveform mock when no real audio -->
+                    <!-- disabled player when no real audio -->
                     <sc-if value="{{ convoNoAudio }}" hint-placeholder-val="{{ true }}">
                     <div>
                     <div style="display:flex;align-items:center;gap:14px">
-                      <div style="width:46px;height:46px;border-radius:50%;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer"><span style="font-size:15px;margin-left:3px">▶</span></div>
-                      <div style="flex:1;display:flex;align-items:center;gap:2px;height:46px;min-width:0;overflow:hidden">
-                        <sc-for list="{{ bars }}" as="b" hint-placeholder-count="70"><div style="width:3px;flex-shrink:0;border-radius:2px;height:{{ b.h }}px;background:{{ b.color }}"></div></sc-for>
+                      <div style="width:46px;height:46px;border-radius:50%;background:var(--surface-3);border:1px solid var(--border);color:var(--ink-muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:not-allowed;opacity:.5"><span style="font-size:15px;margin-left:3px">▶</span></div>
+                      <div style="flex:1;display:flex;align-items:center;gap:2px;height:46px;min-width:0;overflow:hidden;opacity:.25">
+                        <sc-for list="{{ bars }}" as="b" hint-placeholder-count="70"><div style="width:3px;flex-shrink:0;border-radius:2px;height:{{ b.h }}px;background:var(--ink-muted)"></div></sc-for>
                       </div>
-                      <span style="font:600 12.5px 'JetBrains Mono',monospace;color:var(--ink-2);flex-shrink:0">{{ convo.pos }}</span>
                     </div>
-                    <div style="display:flex;align-items:center;gap:12px;margin-top:13px;padding-top:13px;border-top:1px solid var(--border)">
-                      <div style="display:flex;align-items:flex-end;gap:2px;height:14px">
-                        <div style="width:3px;height:100%;background:var(--green);border-radius:2px;transform-origin:bottom;animation:eqbar .9s ease-in-out infinite"></div>
-                        <div style="width:3px;height:100%;background:var(--green);border-radius:2px;transform-origin:bottom;animation:eqbar .9s ease-in-out infinite;animation-delay:-.3s"></div>
-                        <div style="width:3px;height:100%;background:var(--green);border-radius:2px;transform-origin:bottom;animation:eqbar .9s ease-in-out infinite;animation-delay:-.6s"></div>
-                        <div style="width:3px;height:100%;background:var(--green);border-radius:2px;transform-origin:bottom;animation:eqbar .9s ease-in-out infinite;animation-delay:-.15s"></div>
-                      </div>
-                      <span style="font:600 11.5px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ t.reproducing }}</span>
-                      <span style="border:1px solid var(--border);border-radius:7px;padding:3px 9px;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">1.0×</span>
-                      <span style="margin-left:auto;font:500 11.5px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ t.autoTranscribed }}</span>
+                    <div style="display:flex;align-items:center;gap:8px;margin-top:11px;padding-top:11px;border-top:1px solid var(--border)">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                      <span style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3)">Audio not available — transcript below</span>
                     </div>
                     </div>
                     </sc-if>
@@ -1358,9 +1351,11 @@ class Component extends DCLogic {
 
     // carousel: one before + selected + one after
     const _cIdx  = Math.min(Math.max(S.convoIdx||S.convoDateIdx||0, 0), Math.max(clientConvoList.length-1, 0));
-    const _cSlot = Math.max(0, _cIdx-1);
-    const carouselDates = clientConvoList.slice(_cSlot, _cSlot+3).map((c,i) => {
-      const idx = _cSlot+i, isSel = idx===_cIdx;
+    // Always show first 3 (most recent). "..." appears when there are more than 3 and none of those is selected.
+    const _carouselItems = clientConvoList.slice(0, 3);
+    const carouselHasMore = clientConvoList.length > 3 || (_cIdx >= 3);
+    const carouselDates = _carouselItems.map((c,idx) => {
+      const isSel = idx===_cIdx;
       return {
         label: _MNS[c.month]+' '+c.day, dot:c.dot,
         border: isSel?'2px solid var(--ink)':'1px solid transparent',
@@ -1760,7 +1755,7 @@ class Component extends DCLogic {
       sc, riskSegs, allocList, lastContacts, convo,
       showConversations, showInsights, convoIsCall, convoIsMsg, convoHasAudio, convoNoAudio, convoAudioSrc,
       pillConvBg, pillConvFg, pillInsBg, pillInsFg,
-      carouselDates, clientRecs, recModeTextBg, recModeTextFg, recModeVoiceBg, recModeVoiceFg,
+      carouselDates, carouselHasMore, clientRecs, recModeTextBg, recModeTextFg, recModeVoiceBg, recModeVoiceFg,
       setConversations, setInsights, setRecText, setRecVoice,
       showClientOverview, showClientRecs, clientTabOvBg, clientTabOvFg, clientTabRecBg, clientTabRecFg, setClientOverview, setClientRecs,
       calIsOpen, calShowDays, calShowMonths, calShowYears, calHeaderLabel, calWeeks, calMonthItems, calYearItems, calDayLabels, calConvoItems,
