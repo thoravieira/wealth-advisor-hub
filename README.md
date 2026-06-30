@@ -1,4 +1,4 @@
-# sofIA
+# Wealth Advisor Hub
 
 A wealth advisor manages 45 clients. Each one expects to feel like the only client. Most don't.
 
@@ -32,13 +32,10 @@ This matters beyond convenience. In a live demo with bank executives across the 
 
 ```mermaid
 graph TB
-    subgraph Browser["Browser"]
-        UI["cockpit.html"]
-        SDK["@11labs/client"]
-    end
+    Browser(["Browser"])
 
     subgraph Compose["Docker Compose Stack"]
-        FRONT["React App"]
+        FRONT["Frontend\nReactJS"]
         BACK["Backend\nFastAPI"]
         PG[("PostgreSQL\nSessions · Memory")]
         AN[("DuckDB + Iceberg\nClient Lakehouse")]
@@ -52,8 +49,8 @@ graph TB
     end
 
     Browser -->|HTTP| FRONT
-    UI -->|fetch| BACK
-    SDK <-->|WebSocket audio| CONV
+    Browser <-->|WebSocket audio| CONV
+    FRONT -->|fetch| BACK
     BACK -->|signed token| CONV
     BACK -->|text-to-speech| TTS
     BACK -->|transcribe| STT
@@ -136,30 +133,6 @@ sequenceDiagram
     UI->>UI: Toast "Sent"
     EL-->>Advisor: "Sent. Next — $CLIENT_NAME..."
 ```
-
----
-
-## Roadmap
-
-Features planned for the next iteration, all built on ElevenLabs capabilities:
-
-**Real-time call intelligence**
-Sofia joins the advisor-client call as a silent observer via STT. As the conversation unfolds, she surfaces the client's portfolio on screen, flags suitability constraints live, and suggests the next talking point — without interrupting. The advisor always knows what to say next.
-
-**Advisor voice clone**
-Voice messages generated in the advisor's own voice using ElevenLabs Voice Clone. The client hears their advisor, not a generic TTS voice. Personalization that scales across the entire book without the advisor recording 40 individual messages.
-
-**Proactive outbound calls**
-When a market event triggers a priority alert, Sofia makes the outbound call to the client automatically via ElevenLabs Outbound Calling. The advisor reviews a call summary and approves follow-up actions after the fact.
-
-**Sentiment-aware follow-up**
-Sofia analyzes the emotional tone of client voice calls. A client who sounds anxious gets a reassuring message in measured language; one who sounds engaged gets a timely opportunity pitch. Right tone, right moment.
-
-**Multilingual book support**
-Sofia detects the client's preferred language from the first sentence and switches automatically. A Portuguese-speaking advisor with English-dominant clients handles both without configuration.
-
-**Sound design for client calls**
-Professional ambient audio layered into client calls via ElevenLabs Sound Design — warm, focused, distraction-free. Small detail, large impression in high-value relationships.
 
 ---
 
@@ -293,12 +266,30 @@ When all four containers show `healthy`, open the cockpit and tap the equalizer 
 
 | | |
 |---|---|
-| Agent ID | `agent_7501kwap3zrre9wr5h20vdqbtz7n` |
 | Voice | Sarah (`EXAVITQu4vr4xnSDxMaL`) |
 | LLM | Gemini 2.0 Flash |
 | STT | Scribe v2 |
 | Knowledge Base | FSI Advisory Compliance Guide v2.1 |
 | Client tools | navigate, show_opportunity, show_recommendation, generate_voice_message, send_whatsapp, get_client_data |
+
+---
+
+## Roadmap
+
+#### v2 — Voice Intelligence
+
+- [ ] **Real-time call intelligence** `ElevenLabs STT` — Sofia joins the advisor-client call as a silent observer. She surfaces the client's portfolio in real time, flags live suitability constraints, and suggests the next talking point — without interrupting the conversation.
+- [ ] **Advisor voice clone** `ElevenLabs Voice Clone` — Generate outreach messages in the advisor's own voice. The client hears their advisor, not a generic TTS. Personalization at book scale without the advisor recording 40 individual messages.
+
+#### v3 — Proactive Outreach
+
+- [ ] **Outbound AI calls** `ElevenLabs Outbound Calling` — When a market event triggers a priority alert, Sofia calls the client automatically. The advisor reviews a call summary and approves follow-up actions after the fact.
+- [ ] **Sentiment-aware follow-up** `ElevenLabs STT` — Detect the client's emotional tone from voice and adjust message style accordingly. An anxious client gets reassurance; an engaged one gets a timely opportunity pitch.
+
+#### v4 — Scale and Polish
+
+- [ ] **Multilingual book support** — Sofia auto-detects the client's preferred language from the first sentence and switches mid-conversation. A Portuguese-speaking advisor with English-dominant clients handles both without configuration.
+- [ ] **Sound design for client calls** `ElevenLabs Sound Effects` — Professional ambient audio layered into client-facing calls. Small detail, large impression in high-value relationships.
 
 ---
 
@@ -308,3 +299,10 @@ When all four containers show `healthy`, open the cockpit and tap the equalizer 
 - [Sofia interaction flow](docs/flows/SOFIA_FLOW.md)
 - [Cockpit navigation flows](docs/flows/COCKPIT_FLOWS.md)
 - [Design spec (SPEC-007)](docs/specs/SPEC-007-cockpit-v2.md)
+
+---
+
+## License
+
+MIT — free to use, modify, and distribute for any purpose including commercial.
+See [LICENSE](LICENSE) for full terms.
