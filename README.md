@@ -163,7 +163,7 @@ cp .env.example .env
 This creates the Sofia agent, uploads the FSI knowledge base, and writes the IDs back to `.env`:
 
 ```bash
-ELEVENLABS_API_KEY=sk_... python setup/create_agent.py
+python setup/create_agent.py
 ```
 
 ### 4. Start the full stack

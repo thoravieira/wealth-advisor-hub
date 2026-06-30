@@ -187,6 +187,23 @@ GET  /alerts
 
 **Created by:** `setup/create_agent.py` — idempotent, writes `ELEVENLABS_AGENT_ID` back to `.env`
 
+#### Guardrails (active)
+
+Three guardrail layers are enabled on the agent. Configured via `platform_settings.guardrails`:
+
+| Guardrail | Status | Behavior |
+|---|---|---|
+| **Focus** | ✓ enabled | Reinforces system prompt alignment throughout the conversation |
+| **Manipulation** (`prompt_injection`) | ✓ enabled | Detects and blocks prompt injection / instruction override attempts |
+| **Content** | ✓ enabled (blocking) | Screens all responses before delivery; redirects off-topic with a fixed message |
+
+Content thresholds (FSI professional context):
+
+| Category | Threshold | Trigger action |
+|---|---|---|
+| Sexual, Violence, Harassment, Self-harm | `low` | Retry with: *"I can't help with that. Let me refocus on your portfolio."* |
+| Profanity, Religion/politics, Medical/legal | `medium` | Same retry message |
+
 #### System prompt strategy
 
 Compact book snapshot (~2,400 chars) for 12 clients embedded in prompt — zero tool-call latency for 95% of questions. `get_client_data` is a silent fallback.
