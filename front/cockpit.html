@@ -505,24 +505,55 @@
           <div style="display:flex;gap:7px;margin-bottom:14px">
             <sc-for list="{{ convFilters }}" as="f" hint-placeholder-count="4"><button onClick="{{ f.set }}" style="border:1px solid {{ f.border }};background:{{ f.bg }};color:{{ f.color }};border-radius:8px;padding:6px 12px;font-size:12px;font-weight:{{ f.weight }}">{{ f.label }}</button></sc-for>
           </div>
-          <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden">
-            <div style="display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">
-              <span style="width:210px">{{ t.thClient }}</span><span style="width:120px">{{ t.thChannel }}</span><span style="width:90px">{{ t.thDate }}</span><span style="width:80px">{{ t.thDuration }}</span><span style="flex:1">{{ t.thSentiment }}</span><span>{{ t.thStatus }}</span>
-            </div>
-            <sc-for list="{{ conversations }}" as="v" hint-placeholder-count="8">
-              <button onClick="{{ v.open }}" style="text-align:left;width:100%;display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border)" style-hover="background:var(--surface-2)">
-                <div style="width:210px;display:flex;align-items:center;gap:11px"><div style="width:34px;height:34px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.ini }}</div><span style="font-size:13.5px;font-weight:600">{{ v.name }}</span></div>
-                <div style="width:120px;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2)"><span style="width:7px;height:7px;border-radius:2px;background:{{ v.chColor }}"></span>{{ v.channel }}</div>
-                <span style="width:90px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.date }}</span>
-                <span style="width:80px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.dur }}</span>
-                <div style="flex:1"><span style="display:inline-flex;align-items:center;gap:6px;font:600 11px 'JetBrains Mono',monospace;color:{{ v.sentColor }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ v.sentColor }}"></span>{{ v.sentLabel }}</span></div>
-                <div style="display:flex;align-items:center;gap:10px">
-                  <span style="font:500 10px 'JetBrains Mono',monospace;color:{{ v.trColor }}">{{ v.trLabel }}</span>
-                  <sc-if value="{{ v.play }}" hint-placeholder-val="{{ true }}"><div style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink)"><span style="font-size:10px;margin-left:2px">▶</span></div></sc-if>
+          <!-- VIP frame -->
+          <sc-if value="{{ hasVipConvs }}" hint-placeholder-val="{{ true }}">
+            <div style="margin-bottom:16px">
+              <div style="display:inline-flex;align-items:center;gap:6px;margin-bottom:9px;background:oklch(0.8 0.13 85 / .08);border:1px solid oklch(0.8 0.13 85 / .3);border-radius:7px;padding:4px 10px">
+                <span style="width:7px;height:7px;background:oklch(0.78 0.13 85);transform:rotate(45deg);display:inline-block;flex-shrink:0"></span>
+                <span style="font:700 10.5px 'JetBrains Mono',monospace;letter-spacing:.07em;color:oklch(0.72 0.13 85)">VIP</span>
+              </div>
+              <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden">
+                <div style="display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">
+                  <span style="width:210px">{{ t.thClient }}</span><span style="width:120px">{{ t.thChannel }}</span><span style="width:90px">{{ t.thDate }}</span><span style="width:80px">{{ t.thDuration }}</span><span style="flex:1">{{ t.thSentiment }}</span><span>{{ t.thStatus }}</span>
                 </div>
-              </button>
-            </sc-for>
-          </div>
+                <sc-for list="{{ conversationsVip }}" as="v" hint-placeholder-count="4">
+                  <button onClick="{{ v.open }}" style="text-align:left;width:100%;display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border)" style-hover="background:var(--surface-2)">
+                    <div style="width:210px;display:flex;align-items:center;gap:11px"><div style="width:34px;height:34px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.ini }}</div><span style="font-size:13.5px;font-weight:600">{{ v.name }}</span></div>
+                    <div style="width:120px;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2)"><span style="width:7px;height:7px;border-radius:2px;background:{{ v.chColor }}"></span>{{ v.channel }}</div>
+                    <span style="width:90px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.date }}</span>
+                    <span style="width:80px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.dur }}</span>
+                    <div style="flex:1"><span style="display:inline-flex;align-items:center;gap:6px;font:600 11px 'JetBrains Mono',monospace;color:{{ v.sentColor }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ v.sentColor }}"></span>{{ v.sentLabel }}</span></div>
+                    <div style="display:flex;align-items:center;gap:10px">
+                      <span style="font:500 10px 'JetBrains Mono',monospace;color:{{ v.trColor }}">{{ v.trLabel }}</span>
+                      <sc-if value="{{ v.play }}" hint-placeholder-val="{{ true }}"><div style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink)"><span style="font-size:10px;margin-left:2px">▶</span></div></sc-if>
+                    </div>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- Regular clients frame -->
+          <sc-if value="{{ hasRegularConvs }}" hint-placeholder-val="{{ true }}">
+            <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden">
+              <div style="display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">
+                <span style="width:210px">{{ t.thClient }}</span><span style="width:120px">{{ t.thChannel }}</span><span style="width:90px">{{ t.thDate }}</span><span style="width:80px">{{ t.thDuration }}</span><span style="flex:1">{{ t.thSentiment }}</span><span>{{ t.thStatus }}</span>
+              </div>
+              <sc-for list="{{ conversationsRegular }}" as="v" hint-placeholder-count="4">
+                <button onClick="{{ v.open }}" style="text-align:left;width:100%;display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border)" style-hover="background:var(--surface-2)">
+                  <div style="width:210px;display:flex;align-items:center;gap:11px"><div style="width:34px;height:34px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.ini }}</div><span style="font-size:13.5px;font-weight:600">{{ v.name }}</span></div>
+                  <div style="width:120px;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2)"><span style="width:7px;height:7px;border-radius:2px;background:{{ v.chColor }}"></span>{{ v.channel }}</div>
+                  <span style="width:90px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.date }}</span>
+                  <span style="width:80px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.dur }}</span>
+                  <div style="flex:1"><span style="display:inline-flex;align-items:center;gap:6px;font:600 11px 'JetBrains Mono',monospace;color:{{ v.sentColor }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ v.sentColor }}"></span>{{ v.sentLabel }}</span></div>
+                  <div style="display:flex;align-items:center;gap:10px">
+                    <span style="font:500 10px 'JetBrains Mono',monospace;color:{{ v.trColor }}">{{ v.trLabel }}</span>
+                    <sc-if value="{{ v.play }}" hint-placeholder-val="{{ true }}"><div style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink)"><span style="font-size:10px;margin-left:2px">▶</span></div></sc-if>
+                  </div>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
         </div>
       </sc-if>
 
@@ -1104,10 +1135,14 @@ class Component extends DCLogic {
     ];
     const setConvF = k => () => this.setState({ convFilter:k });
     const convFilters = [['all',D.convFilterAll],['call',D.convFilterCalls],['whatsapp',D.convFilterWa],['email',D.convFilterEmail]].map(([k,l]) => chip(S.convFilter===k, l, setConvF(k)));
-    const conversations = CONV.filter(v => S.convFilter==='all' || v.ch===S.convFilter).map(v => {
+    const _allConvs = CONV.filter(v => S.convFilter==='all' || v.ch===S.convFilter).map(v => {
       const c = byId[v.id];
-      return { name:c.name, ini:c.ini, channel:pick(chLbl[v.ch]), chColor:chColor[v.ch], date:pick(v.date), dur:v.dur, sentLabel:pick(sentLbl[v.sent]), sentColor:sentColor[v.sent], play:v.ch==='call', trLabel: v.tr ? pick(D.transcribedBadge) : '—', trColor: v.tr ? C.green : 'var(--ink-muted)', open:c.open };
+      return { name:c.name, ini:c.ini, vip:c.vip, channel:pick(chLbl[v.ch]), chColor:chColor[v.ch], date:pick(v.date), dur:v.dur, sentLabel:pick(sentLbl[v.sent]), sentColor:sentColor[v.sent], play:v.ch==='call', trLabel: v.tr ? pick(D.transcribedBadge) : '—', trColor: v.tr ? C.green : 'var(--ink-muted)', open:c.open };
     });
+    const conversationsVip     = _allConvs.filter(v => v.vip);
+    const conversationsRegular = _allConvs.filter(v => !v.vip);
+    const hasVipConvs     = conversationsVip.length > 0;
+    const hasRegularConvs = conversationsRegular.length > 0;
 
     // ---------- recommendations ----------
     const recStatusLbl = { pending:R('Pending','Pendente'), sent:R('Sent','Enviada'), accepted:R('Accepted','Aceita'), declined:R('Declined','Recusada') };
@@ -1225,7 +1260,7 @@ class Component extends DCLogic {
       pillTransBg:S.convoView==='transcript'?'var(--surface-3)':'transparent', pillTransFg:S.convoView==='transcript'?'var(--ink)':'var(--ink-3)',
       pillMsgBg:S.convoView==='messages'?'var(--surface-3)':'transparent', pillMsgFg:S.convoView==='messages'?'var(--ink)':'var(--ink-3)',
       bars, miniBars,
-      convFilters, conversations, recFilters, recommendations, alerts, stages, agg, aggClasses, offPolicy,
+      convFilters, conversationsVip, conversationsRegular, hasVipConvs, hasRegularConvs, recFilters, recommendations, alerts, stages, agg, aggClasses, offPolicy,
       toggleLang:() => this.setState(s => ({ lang:s.lang==='en'?'pt':'en' })),
       toggleMenu:() => this.setState(s => ({ menuOpen:!s.menuOpen })),
       toggleChat:() => this.setState(s => ({ chatOpen:!s.chatOpen })),
