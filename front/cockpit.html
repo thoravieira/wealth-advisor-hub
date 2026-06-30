@@ -515,16 +515,16 @@
           <!-- VIP frame -->
           <sc-if value="{{ hasVipConvs }}" hint-placeholder-val="{{ true }}">
             <div style="margin-bottom:14px">
-              <button onClick="{{ toggleVipConv }}" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 14px;background:var(--ink);border-radius:10px;margin-bottom:10px;cursor:pointer">
+              <button onClick="{{ toggleVipConv }}" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 14px;background:oklch(0.96 0.03 85);border:1px solid oklch(0.78 0.13 85 / .40);border-radius:10px;margin-bottom:10px;cursor:pointer">
                 <div style="display:flex;align-items:center;gap:7px">
-                  <span style="width:7px;height:7px;background:oklch(0.8 0.13 85);transform:rotate(45deg);display:inline-block;flex-shrink:0"></span>
-                  <span style="font:700 10.5px 'JetBrains Mono',monospace;letter-spacing:.07em;color:var(--bg)">VIP</span>
+                  <span style="width:7px;height:7px;background:oklch(0.72 0.13 85);transform:rotate(45deg);display:inline-block;flex-shrink:0"></span>
+                  <span style="font:700 10.5px 'JetBrains Mono',monospace;letter-spacing:.07em;color:oklch(0.52 0.13 85)">VIP</span>
                 </div>
-                <span style="font-size:11px;color:oklch(0.55 0.005 265)">{{ convVipChevron }}</span>
+                <span style="font-size:11px;color:oklch(0.72 0.13 85)">{{ convVipChevron }}</span>
               </button>
               <sc-if value="{{ convVipOpen }}" hint-placeholder-val="{{ true }}">
-                <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden">
-                  <div style="display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--ink);border-bottom:1px solid oklch(0.2 0.005 265);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:oklch(0.55 0.005 265)">
+                <div style="border:1px solid oklch(0.78 0.13 85 / .30);border-radius:14px;overflow:hidden">
+                  <div style="display:flex;align-items:center;gap:14px;padding:10px 16px;background:oklch(0.97 0.018 85);border-bottom:1px solid oklch(0.78 0.13 85 / .20);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">
                     <span style="width:210px">{{ t.thClient }}</span><span style="width:120px">{{ t.thChannel }}</span><span style="width:90px">{{ t.thDate }}</span><span style="width:80px">{{ t.thDuration }}</span><span style="flex:1">{{ t.thSentiment }}</span><span>{{ t.thStatus }}</span>
                   </div>
                   <sc-for list="{{ conversationsVip }}" as="v" hint-placeholder-count="4">
@@ -549,7 +549,7 @@
           <sc-if value="{{ hasRegularConvs }}" hint-placeholder-val="{{ true }}">
             <div>
               <button onClick="{{ toggleRegConv }}" style="display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 14px;background:var(--surface-2);border:1px solid var(--border);border-radius:10px;margin-bottom:10px;cursor:pointer">
-                <span style="font:600 11px 'JetBrains Mono',monospace;letter-spacing:.04em;color:var(--ink-2)">{{ t.clients }}</span>
+                <span style="font:600 11px 'JetBrains Mono',monospace;letter-spacing:.04em;color:var(--ink-2)">Regular</span>
                 <span style="font-size:11px;color:var(--ink-3)">{{ convRegChevron }}</span>
               </button>
               <sc-if value="{{ convRegOpen }}" hint-placeholder-val="{{ true }}">
