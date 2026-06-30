@@ -1,0 +1,55 @@
+-- PostgreSQL schema: agent memory and operational state
+-- Runs automatically on first container start via Docker entrypoint.
+
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- One row per Sofia voice session (each phone button tap)
+CREATE TABLE IF NOT EXISTS agent_sessions (
+    id              UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+    conversation_id TEXT,                          -- ElevenLabs conversation ID (set after WS connects)
+    client_id       TEXT,                          -- client in focus when session started (nullable)
+    advisor_id      TEXT        NOT NULL DEFAULT 'thiago',
+    status          TEXT        NOT NULL DEFAULT 'active'
+                                CHECK (status IN ('active', 'completed', 'interrupted')),
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    ended_at        TIMESTAMPTZ
+);
+
+-- Conversation turns during a session (expires with session, kept for in-session context)
+CREATE TABLE IF NOT EXISTS agent_memory_short (
+    id          SERIAL      PRIMARY KEY,
+    session_id  UUID        NOT NULL REFERENCES agent_sessions(id) ON DELETE CASCADE,
+    client_id   TEXT,
+    role        TEXT        NOT NULL CHECK (role IN ('user', 'assistant')),
+    content     TEXT        NOT NULL,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Persistent facts Sofia learns about clients across sessions
+CREATE TABLE IF NOT EXISTS agent_memory_long (
+    id             SERIAL      PRIMARY KEY,
+    client_id      TEXT        NOT NULL,
+    category       TEXT        NOT NULL,   -- preference | life_event | risk_signal | objective | note
+    fact           TEXT        NOT NULL,
+    confidence     FLOAT       NOT NULL DEFAULT 1.0 CHECK (confidence BETWEEN 0 AND 1),
+    source_session UUID        REFERENCES agent_sessions(id) ON DELETE SET NULL,
+    is_active      BOOLEAN     NOT NULL DEFAULT TRUE,
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Audit log of every advisor action (approved recommendation, sent message, etc.)
+CREATE TABLE IF NOT EXISTS advisor_actions (
+    id          SERIAL      PRIMARY KEY,
+    session_id  UUID        REFERENCES agent_sessions(id) ON DELETE SET NULL,
+    client_id   TEXT,
+    action_type TEXT        NOT NULL,   -- recommendation_approved | whatsapp_sent | voice_generated | navigate
+    payload     JSONB,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Indexes for common query patterns
+CREATE INDEX IF NOT EXISTS idx_memory_short_session ON agent_memory_short(session_id);
+CREATE INDEX IF NOT EXISTS idx_memory_long_client   ON agent_memory_long(client_id) WHERE is_active;
+CREATE INDEX IF NOT EXISTS idx_advisor_actions_client ON advisor_actions(client_id);
+CREATE INDEX IF NOT EXISTS idx_sessions_created     ON agent_sessions(created_at DESC);

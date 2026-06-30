@@ -70,14 +70,14 @@ def text_to_speech(req: TTSRequest):
 
 @app.post("/stt")
 async def speech_to_text(file: UploadFile):
-    """Transcribe an audio file using ElevenLabs STT (Scribe v1)."""
+    """Transcribe an audio file using ElevenLabs STT (Scribe v2)."""
     audio_bytes = await file.read()
 
     boundary = b"----FormBoundary"
     body = (
         b"--" + boundary + b"\r\n"
         b'Content-Disposition: form-data; name="model_id"\r\n\r\n'
-        b"scribe_v1\r\n"
+        b"scribe_v2\r\n"
         b"--" + boundary + b"\r\n"
         + f'Content-Disposition: form-data; name="file"; filename="{file.filename}"\r\n'.encode()
         + f"Content-Type: {file.content_type or 'audio/mpeg'}\r\n\r\n".encode()

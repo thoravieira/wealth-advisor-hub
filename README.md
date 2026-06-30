@@ -53,6 +53,44 @@ graph LR
 | Look up client data | `get_client_data({clientId})` reads live cockpit state |
 | Suggest next action | Built into system prompt, fires after every send |
 
+```mermaid
+sequenceDiagram
+    actor Advisor
+    participant UI as Cockpit UI
+    participant Backend
+    participant EL as ElevenLabs
+
+    Advisor->>UI: Tap phone button
+    UI->>Backend: GET /agent/token
+    Backend->>EL: GET signed_url
+    EL-->>UI: WebSocket URL
+    UI->>EL: Connect (WebSocket)
+    EL-->>Advisor: 🔊 "Good morning. Ricardo Tanaka needs action today..."
+
+    Advisor->>EL: "Pull up Ricardo"
+    EL->>UI: show_opportunity({ clientId: "ricardo" })
+    UI->>UI: Client detail opens
+
+    Advisor->>EL: "Draft a message for him"
+    EL->>UI: show_recommendation({ text: "Ricardo, seu portfólio..." })
+    UI->>UI: Editable approval card appears
+
+    Advisor->>UI: Edits text → clicks Generate voice
+    UI->>Backend: POST /tts
+    Backend->>EL: TTS request
+    EL-->>UI: MP3 audio
+    UI->>UI: Playable VOICE card in side panel
+
+    Advisor->>UI: Tap ▶ to preview
+    UI->>EL: setVolume(0)
+    UI->>UI: Audio plays → setVolume(1)
+
+    Advisor->>EL: "Send it"
+    EL->>UI: send_whatsapp({ clientId: "ricardo" })
+    UI->>UI: Toast "Sent ✓"
+    EL-->>Advisor: 🔊 "Sent. Next — Beatriz, suitability expires today..."
+```
+
 ---
 
 ## Setup
@@ -85,7 +123,7 @@ docker compose up --build
 
 | Service | URL |
 |---|---|
-| Cockpit | http://localhost:8080/Cockpit%20B.dc.html |
+| Cockpit | http://localhost:8080/cockpit.html |
 | Backend | http://localhost:8000 |
 | Health | http://localhost:8000/health |
 

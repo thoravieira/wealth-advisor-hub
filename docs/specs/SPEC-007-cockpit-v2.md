@@ -3,7 +3,7 @@
 **Status:** Implemented  
 **Author:** Thiago da Hora  
 **Date:** 2026-06-30  
-**Implementation:** `front/Cockpit B.dc.html` + `backend/main.py`
+**Implementation:** `front/cockpit.html` + `backend/main.py`
 
 ---
 
@@ -36,7 +36,7 @@ Existing tools (CRM, portfolio platforms) are reactive — the advisor queries t
 |---|---|---|
 | Sofia voice conversation | **Real** | ElevenLabs Conversational AI |
 | Voice message generation | **Real** | ElevenLabs TTS (Sarah voice) |
-| Speech-to-text | **Real** | ElevenLabs STT (Scribe v1) |
+| Speech-to-text | **Real** | ElevenLabs STT (Scribe v2) |
 | Cockpit navigation by voice | **Real** | Client-side tools + dc state |
 | Client data on screen | **Mock** | Hardcoded JS data |
 | Compliance knowledge base | **Real** | ElevenLabs KB (FSI Compliance Guide) |
@@ -49,7 +49,7 @@ Existing tools (CRM, portfolio platforms) are reactive — the advisor queries t
 
 ### 3.1 Frontend
 
-**File:** `front/Cockpit B.dc.html`  
+**File:** `front/cockpit.html`  
 **Engine:** `dc` template engine (reactive HTML, no VDOM)  
 **Pattern:** Single DCLogic class — `state` + `renderVals()` returns all computed values and handlers
 
@@ -134,7 +134,7 @@ POST /tts
 POST /stt
      Body: multipart/form-data, field "file" = audio file
      Response: { "transcript": string, "words": [...] }
-     Note: calls ElevenLabs POST /v1/speech-to-text with scribe_v1
+     Note: calls ElevenLabs POST /v1/speech-to-text with scribe_v2
 ```
 
 ### 3.3 ElevenLabs Agent
