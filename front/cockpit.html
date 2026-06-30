@@ -66,6 +66,9 @@
   .alert-carousel { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
   .alert-carousel::-webkit-scrollbar { height: 4px; }
   .alert-carousel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  .convo-scroll { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+  .convo-scroll::-webkit-scrollbar { width: 4px; }
+  .convo-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
   /* ── Animations ──────────────────────────────────── */
   @keyframes eqbar {
@@ -323,10 +326,6 @@
                 </div>
               </div>
             </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <button style="border:1px solid var(--border);background:var(--surface-2);border-radius:9px;padding:8px 14px;font-size:12.5px;font-weight:600">{{ t.scheduleCall }}</button>
-              <button style="background:var(--ink);color:var(--bg);border-radius:9px;padding:9px 15px;font-size:12.5px;font-weight:600">+ {{ t.newRec }}</button>
-            </div>
           </div>
 
           <div style="display:flex;gap:16px;align-items:flex-start">
@@ -373,121 +372,140 @@
               </sc-if>
             </div>
 
-            <!-- conversation + intel OR empty -->
+            <!-- f2: conversation (full width, 4 tabs) -->
             <div style="flex:1;min-width:0">
               <sc-if value="{{ sc.hasConvo }}" hint-placeholder-val="{{ true }}">
-                <div style="display:flex;gap:16px;align-items:flex-start">
-                  <!-- conversation -->
-                  <div style="flex:1;min-width:0">
-                    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px">
-                      <div>
-                        <div style="font-size:15px;font-weight:700">{{ t.lastConversation }}</div>
-                        <div style="font:500 12px 'JetBrains Mono',monospace;color:var(--ink-3);margin-top:2px">{{ convo.date }}</div>
-                      </div>
-                      <div style="display:flex;gap:4px;background:var(--surface-3);border-radius:9px;padding:3px">
-                        <button onClick="{{ setTranscript }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillTransBg }};color:{{ pillTransFg }}">{{ t.transcriptTab }}</button>
-                        <button onClick="{{ setMessages }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillMsgBg }};color:{{ pillMsgFg }}">{{ t.messagesTab }}</button>
-                      </div>
-                    </div>
-
-                    <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:13px;padding:15px 16px">
-                      <div style="display:flex;align-items:center;gap:14px">
-                        <div style="width:46px;height:46px;border-radius:50%;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer"><span style="font-size:15px;margin-left:3px">▶</span></div>
-                        <div style="flex:1;display:flex;align-items:center;gap:2px;height:46px;min-width:0;overflow:hidden">
-                          <sc-for list="{{ bars }}" as="b" hint-placeholder-count="70"><div style="width:3px;flex-shrink:0;border-radius:2px;height:{{ b.h }}px;background:{{ b.color }}"></div></sc-for>
-                        </div>
-                        <span style="font:600 12.5px 'JetBrains Mono',monospace;color:var(--ink-2);flex-shrink:0">{{ convo.pos }}</span>
-                      </div>
-                      <div style="display:flex;align-items:center;gap:12px;margin-top:13px;padding-top:13px;border-top:1px solid var(--border)">
-                        <div style="display:flex;align-items:flex-end;gap:2px;height:14px">
-                          <div style="width:3px;height:100%;background:var(--green);border-radius:2px;transform-origin:bottom;animation:eqbar .9s ease-in-out infinite"></div>
-                          <div style="width:3px;height:100%;background:var(--green);border-radius:2px;transform-origin:bottom;animation:eqbar .9s ease-in-out infinite;animation-delay:-.3s"></div>
-                          <div style="width:3px;height:100%;background:var(--green);border-radius:2px;transform-origin:bottom;animation:eqbar .9s ease-in-out infinite;animation-delay:-.6s"></div>
-                          <div style="width:3px;height:100%;background:var(--green);border-radius:2px;transform-origin:bottom;animation:eqbar .9s ease-in-out infinite;animation-delay:-.15s"></div>
-                        </div>
-                        <span style="font:600 11.5px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ t.reproducing }}</span>
-                        <span style="border:1px solid var(--border);border-radius:7px;padding:3px 9px;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">1.0×</span>
-                        <span style="margin-left:auto;font:500 11.5px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ t.autoTranscribed }}</span>
-                      </div>
-                    </div>
-
-                    <div style="margin-top:18px">
-                      <sc-if value="{{ showTranscript }}" hint-placeholder-val="{{ true }}">
-                        <div style="display:flex;flex-direction:column;gap:18px">
-                          <sc-for list="{{ convo.transcript }}" as="p" hint-placeholder-count="3">
-                            <div>
-                              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font:600 12px 'JetBrains Mono',monospace;color:{{ p.whoColor }}">{{ p.who }}</span><span style="font:500 11px 'JetBrains Mono',monospace;color:#C0C0C0">{{ p.time }}</span><sc-if value="{{ p.active }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:5px;margin-left:4px;font:500 10px 'JetBrains Mono',monospace;color:var(--green)"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:softpulse 1.4s infinite"></span>{{ t.playingNow }}</span></sc-if></div>
-                              <sc-if value="{{ p.active }}" hint-placeholder-val="{{ false }}"><div style="font-size:14.5px;line-height:1.85"><sc-for list="{{ p.words }}" as="x" hint-placeholder-count="16"><span style="background:{{ x.bg }};color:{{ x.color }};padding:{{ x.pad }};border-radius:4px">{{ x.w }} </span></sc-for></div></sc-if>
-                              <sc-if value="{{ p.inactive }}" hint-placeholder-val="{{ true }}"><div style="font-size:14.5px;line-height:1.65;color:var(--ink-2)">{{ p.text }}</div></sc-if>
-                            </div>
+                <div>
+                  <!-- header: title + date carousel (left) · 4 tabs (right) -->
+                  <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:13px">
+                    <div>
+                      <div style="font-size:15px;font-weight:700">{{ t.lastConversation }}</div>
+                      <div style="display:flex;align-items:center;gap:6px;margin-top:8px">
+                        <div style="display:flex;gap:3px;background:var(--surface-3);border-radius:9px;padding:3px">
+                          <sc-for list="{{ convDateItems }}" as="d" hint-placeholder-count="3">
+                            <button onClick="{{ d.sel }}" style="display:flex;align-items:center;gap:5px;border-radius:7px;padding:5px 10px;font:600 11px 'JetBrains Mono',monospace;background:{{ d.bg }};color:{{ d.fg }}"><span style="width:5px;height:5px;border-radius:50%;background:{{ d.dot }};flex-shrink:0"></span>{{ d.label }}</button>
                           </sc-for>
                         </div>
-                      </sc-if>
-                      <sc-if value="{{ showMessages }}" hint-placeholder-val="{{ false }}">
-                        <div style="display:flex;flex-direction:column">
-                          <sc-for list="{{ convo.messages }}" as="m" hint-placeholder-count="4">
-                            <div style="display:flex;justify-content:{{ m.justify }};margin-bottom:11px">
-                              <div style="max-width:74%;background:{{ m.bg }};color:{{ m.fg }};padding:10px 13px;border-radius:14px;font-size:13.5px;line-height:1.5">{{ m.t }}<div style="font:500 10px 'JetBrains Mono',monospace;opacity:.55;margin-top:5px;text-align:right">{{ m.time }}</div></div>
-                            </div>
-                          </sc-for>
-                        </div>
-                      </sc-if>
+                        <button style="width:28px;height:28px;border-radius:7px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink-3)"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button>
+                      </div>
+                    </div>
+                    <div style="display:flex;gap:3px;background:var(--surface-3);border-radius:9px;padding:3px;flex-shrink:0">
+                      <button onClick="{{ setTranscript }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillTransBg }};color:{{ pillTransFg }}">{{ t.transcriptTab }}</button>
+                      <button onClick="{{ setMessages }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillMsgBg }};color:{{ pillMsgFg }}">{{ t.messagesTab }}</button>
+                      <button onClick="{{ setInsights }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillInsBg }};color:{{ pillInsFg }}">✦ Insights</button>
+                      <button onClick="{{ setRecommendations }}" style="border-radius:7px;padding:6px 12px;font-size:12px;font-weight:600;background:{{ pillRecBg }};color:{{ pillRecFg }}">{{ t.recommendations }}</button>
                     </div>
                   </div>
 
-                  <!-- intel -->
-                  <div class="panel-intel" style="width:312px;flex-shrink:0;border:1px solid var(--border);border-radius:14px;background:var(--surface);overflow:hidden">
-                    <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)">
-                      <div style="width:9px;height:9px;border-radius:50%;background:var(--green);animation:softpulse 1.6s infinite"></div>
-                      <div style="flex:1"><div style="font-size:14px;font-weight:700">ElevenAgent</div><div style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ t.analyzedCall }}</div></div>
+                  <!-- audio player -->
+                  <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:13px;padding:15px 16px">
+                    <div style="display:flex;align-items:center;gap:14px">
+                      <div style="width:46px;height:46px;border-radius:50%;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer"><span style="font-size:15px;margin-left:3px">▶</span></div>
+                      <div style="flex:1;display:flex;align-items:center;gap:2px;height:46px;min-width:0;overflow:hidden">
+                        <sc-for list="{{ bars }}" as="b" hint-placeholder-count="70"><div style="width:3px;flex-shrink:0;border-radius:2px;height:{{ b.h }}px;background:{{ b.color }}"></div></sc-for>
+                      </div>
+                      <span style="font:600 12.5px 'JetBrains Mono',monospace;color:var(--ink-2);flex-shrink:0">{{ convo.pos }}</span>
                     </div>
-                    <div style="padding:15px 16px">
-                      <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 13px;font-size:12.5px;line-height:1.6;color:var(--ink-2)">{{ convo.summary }}</div>
+                    <div style="display:flex;align-items:center;gap:12px;margin-top:13px;padding-top:13px;border-top:1px solid var(--border)">
+                      <div style="display:flex;align-items:flex-end;gap:2px;height:14px">
+                        <div style="width:3px;height:100%;background:var(--green);border-radius:2px;transform-origin:bottom;animation:eqbar .9s ease-in-out infinite"></div>
+                        <div style="width:3px;height:100%;background:var(--green);border-radius:2px;transform-origin:bottom;animation:eqbar .9s ease-in-out infinite;animation-delay:-.3s"></div>
+                        <div style="width:3px;height:100%;background:var(--green);border-radius:2px;transform-origin:bottom;animation:eqbar .9s ease-in-out infinite;animation-delay:-.6s"></div>
+                        <div style="width:3px;height:100%;background:var(--green);border-radius:2px;transform-origin:bottom;animation:eqbar .9s ease-in-out infinite;animation-delay:-.15s"></div>
+                      </div>
+                      <span style="font:600 11.5px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ t.reproducing }}</span>
+                      <span style="border:1px solid var(--border);border-radius:7px;padding:3px 9px;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">1.0×</span>
+                      <span style="margin-left:auto;font:500 11.5px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ t.autoTranscribed }}</span>
+                    </div>
+                  </div>
 
-                      <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-top:16px">{{ t.objectivesLabel }}</div>
-                      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"><sc-for list="{{ convo.objectives }}" as="o" hint-placeholder-count="2"><span style="background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:5px 9px;font-size:11.5px;color:var(--ink-2)">{{ o }}</span></sc-for></div>
+                  <!-- scrollable tab content -->
+                  <div class="convo-scroll" style="margin-top:18px;max-height:420px;overflow-y:auto;padding-right:6px">
 
-                      <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-top:16px">{{ t.appetiteLabel }}</div>
-                      <div style="font-size:12px;color:var(--ink-2);margin-top:6px;line-height:1.5">{{ convo.appetite }}</div>
+                    <sc-if value="{{ showTranscript }}" hint-placeholder-val="{{ true }}">
+                      <div style="display:flex;flex-direction:column;gap:18px">
+                        <sc-for list="{{ convo.transcript }}" as="p" hint-placeholder-count="3">
+                          <div>
+                            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font:600 12px 'JetBrains Mono',monospace;color:{{ p.whoColor }}">{{ p.who }}</span><span style="font:500 11px 'JetBrains Mono',monospace;color:#C0C0C0">{{ p.time }}</span><sc-if value="{{ p.active }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:5px;margin-left:4px;font:500 10px 'JetBrains Mono',monospace;color:var(--green)"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:softpulse 1.4s infinite"></span>{{ t.playingNow }}</span></sc-if></div>
+                            <sc-if value="{{ p.active }}" hint-placeholder-val="{{ false }}"><div style="font-size:14.5px;line-height:1.85"><sc-for list="{{ p.words }}" as="x" hint-placeholder-count="16"><span style="background:{{ x.bg }};color:{{ x.color }};padding:{{ x.pad }};border-radius:4px">{{ x.w }} </span></sc-for></div></sc-if>
+                            <sc-if value="{{ p.inactive }}" hint-placeholder-val="{{ true }}"><div style="font-size:14.5px;line-height:1.65;color:var(--ink-2)">{{ p.text }}</div></sc-if>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
 
-                      <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-top:16px">{{ t.productsLabel }}</div>
-                      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px"><sc-for list="{{ convo.products }}" as="p" hint-placeholder-count="3"><span style="background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:5px 9px;font-size:11.5px;color:var(--ink-2)">{{ p }}</span></sc-for></div>
+                    <sc-if value="{{ showMessages }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column">
+                        <sc-for list="{{ convo.messages }}" as="m" hint-placeholder-count="4">
+                          <div style="display:flex;justify-content:{{ m.justify }};margin-bottom:11px">
+                            <div style="max-width:74%;background:{{ m.bg }};color:{{ m.fg }};padding:10px 13px;border-radius:14px;font-size:13.5px;line-height:1.5">{{ m.t }}<div style="font:500 10px 'JetBrains Mono',monospace;opacity:.55;margin-top:5px;text-align:right">{{ m.time }}</div></div>
+                          </div>
+                        </sc-for>
+                      </div>
+                    </sc-if>
 
-                      <sc-if value="{{ convo.hasLifeEvent }}" hint-placeholder-val="{{ false }}">
-                        <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-top:16px">{{ t.lifeEventLabel }}</div>
-                        <div style="display:flex;align-items:center;gap:9px;margin-top:8px;background:oklch(0.97 0.02 95);border:1px solid oklch(0.9 0.05 95);border-radius:9px;padding:9px 11px">
-                          <div style="width:7px;height:7px;border-radius:50%;background:oklch(0.66 0.11 65)"></div>
-                          <span style="font-size:12px;font-weight:600;color:var(--amber)">{{ convo.lifeEvent }}</span>
+                    <sc-if value="{{ showInsights }}" hint-placeholder-val="{{ false }}">
+                      <div style="display:flex;flex-direction:column;gap:16px">
+                        <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px 13px;font-size:12.5px;line-height:1.6;color:var(--ink-2)">{{ convo.summary }}</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                          <div>
+                            <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-bottom:8px">{{ t.objectivesLabel }}</div>
+                            <div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ convo.objectives }}" as="o" hint-placeholder-count="2"><span style="background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:5px 9px;font-size:11.5px;color:var(--ink-2)">{{ o }}</span></sc-for></div>
+                          </div>
+                          <div>
+                            <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-bottom:8px">{{ t.appetiteLabel }}</div>
+                            <div style="font-size:12px;color:var(--ink-2);line-height:1.5">{{ convo.appetite }}</div>
+                          </div>
                         </div>
-                      </sc-if>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+                          <div>
+                            <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-bottom:8px">{{ t.productsLabel }}</div>
+                            <div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ convo.products }}" as="p" hint-placeholder-count="3"><span style="background:var(--surface-2);border:1px solid var(--border);border-radius:7px;padding:5px 9px;font-size:11.5px;color:var(--ink-2)">{{ p }}</span></sc-for></div>
+                          </div>
+                          <sc-if value="{{ convo.hasLifeEvent }}" hint-placeholder-val="{{ false }}">
+                            <div>
+                              <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-bottom:8px">{{ t.lifeEventLabel }}</div>
+                              <div style="display:flex;align-items:center;gap:9px;background:oklch(0.97 0.02 95);border:1px solid oklch(0.9 0.05 95);border-radius:9px;padding:9px 11px"><div style="width:7px;height:7px;border-radius:50%;background:oklch(0.66 0.11 65)"></div><span style="font-size:12px;font-weight:600;color:var(--amber)">{{ convo.lifeEvent }}</span></div>
+                            </div>
+                          </sc-if>
+                        </div>
+                        <div>
+                          <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-bottom:8px">{{ t.sentimentLabel }}</div>
+                          <div style="display:flex;align-items:center;gap:10px"><div style="flex:1;height:6px;background:var(--surface-3);border-radius:4px;overflow:hidden"><div style="height:100%;width:{{ convo.sentLevel }};background:{{ convo.sentColor }}"></div></div><span style="font:600 11.5px 'JetBrains Mono',monospace;color:{{ convo.sentColor }}">{{ convo.sentLabel }}</span></div>
+                        </div>
+                        <div>
+                          <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-bottom:8px">{{ t.nextActionsLabel }}</div>
+                          <div style="display:flex;flex-direction:column;gap:8px"><sc-for list="{{ convo.nextActions }}" as="a" hint-placeholder-count="3"><div style="display:flex;align-items:flex-start;gap:9px"><div style="width:15px;height:15px;border:1.5px solid var(--border-2);border-radius:5px;flex-shrink:0;margin-top:1px"></div><span style="font-size:12px;color:var(--ink-2);line-height:1.4">{{ a }}</span></div></sc-for></div>
+                        </div>
+                      </div>
+                    </sc-if>
 
-                      <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-top:16px">{{ t.sentimentLabel }}</div>
-                      <div style="display:flex;align-items:center;gap:10px;margin-top:8px"><div style="flex:1;height:6px;background:var(--surface-3);border-radius:4px;overflow:hidden"><div style="height:100%;width:{{ convo.sentLevel }};background:{{ convo.sentColor }}"></div></div><span style="font:600 11.5px 'JetBrains Mono',monospace;color:{{ convo.sentColor }}">{{ convo.sentLabel }}</span></div>
-
-                      <div style="font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3);margin-top:16px">{{ t.nextActionsLabel }}</div>
-                      <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px"><sc-for list="{{ convo.nextActions }}" as="a" hint-placeholder-count="3"><div style="display:flex;align-items:flex-start;gap:9px"><div style="width:15px;height:15px;border:1.5px solid var(--border-2);border-radius:5px;flex-shrink:0;margin-top:1px"></div><span style="font-size:12px;color:var(--ink-2);line-height:1.4">{{ a }}</span></div></sc-for></div>
-
-                      <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">
-                        <div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:700">{{ t.suggestedMsgs }}</span><span style="font:500 10px 'JetBrains Mono',monospace;color:var(--bg);background:var(--ink);border-radius:5px;padding:2px 7px">{{ t.voiceTag }}</span></div>
-                        <div style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3);margin-top:4px">{{ t.genByEleven }}</div>
-                        <div style="margin-top:11px;display:flex;flex-direction:column;gap:10px">
-                          <sc-for list="{{ convo.tts }}" as="s" hint-placeholder-count="2">
-                            <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:12px">
-                              <div style="font-size:12px;line-height:1.55;color:var(--ink)">{{ s.text }}</div>
-                              <div style="display:flex;align-items:center;gap:9px;margin-top:10px">
-                                <div style="width:28px;height:28px;border-radius:50%;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:pointer"><span style="font-size:9px;margin-left:2px">▶</span></div>
-                                <div style="flex:1;display:flex;align-items:center;gap:1.5px;height:18px;overflow:hidden"><sc-for list="{{ miniBars }}" as="mb" hint-placeholder-count="22"><div style="width:2px;flex-shrink:0;border-radius:1px;height:{{ mb.h }}px;background:var(--surface-3)"></div></sc-for></div>
-                                <span style="font:600 10px 'JetBrains Mono',monospace;color:var(--ink-3);flex-shrink:0">{{ s.dur }}</span>
-                              </div>
-                              <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-                                <span style="font:500 10.5px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ s.voice }}</span>
-                                <button style="background:var(--ink);color:var(--bg);border-radius:8px;padding:5px 13px;font-size:11px;font-weight:600">{{ t.send }}</button>
+                    <sc-if value="{{ showRecommendations }}" hint-placeholder-val="{{ false }}">
+                      <div>
+                        <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px">
+                          <sc-for list="{{ clientRecs }}" as="r" hint-placeholder-count="3">
+                            <div style="border:1px solid var(--border);border-radius:12px;padding:14px 16px;background:var(--surface-2)">
+                              <div style="font-size:13.5px;line-height:1.55;color:var(--ink)">{{ r.text }}</div>
+                              <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+                                <span style="font:500 10.5px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ r.voice }}</span>
+                                <span style="font:600 10px 'JetBrains Mono',monospace;color:var(--ink-muted)">{{ r.dur }}</span>
                               </div>
                             </div>
                           </sc-for>
                         </div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 16px;border:1px solid var(--border);border-radius:12px;background:var(--surface)">
+                          <div style="display:flex;align-items:center;gap:10px">
+                            <span style="font:500 11.5px 'JetBrains Mono',monospace;color:var(--ink-3)">{{ t.sendAs }}</span>
+                            <div style="display:flex;gap:3px;background:var(--surface-3);border-radius:8px;padding:3px">
+                              <button onClick="{{ setRecText }}" style="border-radius:6px;padding:5px 12px;font:600 11px 'JetBrains Mono',monospace;background:{{ recModeTextBg }};color:{{ recModeTextFg }}">{{ t.sendText }}</button>
+                              <button onClick="{{ setRecVoice }}" style="border-radius:6px;padding:5px 12px;font:600 11px 'JetBrains Mono',monospace;background:{{ recModeVoiceBg }};color:{{ recModeVoiceFg }}">{{ t.sendVoice }}</button>
+                            </div>
+                          </div>
+                          <button style="background:var(--ink);color:var(--bg);border-radius:9px;padding:9px 18px;font-size:13px;font-weight:600">{{ t.sendToClient }}</button>
+                        </div>
                       </div>
-                    </div>
+                    </sc-if>
+
                   </div>
                 </div>
               </sc-if>
@@ -792,7 +810,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1440,&quot;height&quot;:900}}">
 class Component extends DCLogic {
-  state = { lang:'en', menuOpen:true, chatOpen:false, route:'overview', prevRoute:'overview', clientId:'ricardo', convoView:'transcript', clientFilter:'all', convFilter:'all', recFilter:'all', query:'', agentStatus:'idle', agentTranscript:[], voicePreviews:[], playingVoice:null, approvalCard:null, approvalClientId:null, toastMsg:null, analyticsClients:{}, memoryFacts:{}, convVipOpen:true, convRegOpen:true };
+  state = { lang:'en', menuOpen:true, chatOpen:false, route:'overview', prevRoute:'overview', clientId:'ricardo', convoView:'transcript', clientFilter:'all', convFilter:'all', recFilter:'all', query:'', agentStatus:'idle', agentTranscript:[], voicePreviews:[], playingVoice:null, approvalCard:null, approvalClientId:null, toastMsg:null, analyticsClients:{}, memoryFacts:{}, convVipOpen:true, convRegOpen:true, convoDateIdx:0, recMode:'text' };
 
   async _initData() {
     try {
@@ -900,6 +918,7 @@ class Component extends DCLogic {
       convTitle:R('Conversations','Conversas'), convSub:R('Every recorded interaction, transcribed by ElevenLabs','Cada interação gravada, transcrita pelo ElevenLabs'),
       thClient:R('Client','Cliente'), thChannel:R('Channel','Canal'), thDate:R('Date','Data'), thDuration:R('Length','Duração'), thSentiment:R('Sentiment','Sentimento'), thStatus:R('Status','Status'),
       convFilterAll:R('All','Todas'), convFilterCalls:R('Calls','Ligações'), convFilterWa:R('WhatsApp','WhatsApp'), convFilterEmail:R('E-mail','E-mail'), transcribedBadge:R('Transcribed','Transcrita'),
+      sendAs:R('Send as','Enviar como'), sendText:R('Text','Texto'), sendVoice:R('Voice','Voz'), sendToClient:R('Send to client','Enviar para cliente'),
       recTitle:R('Recommendations','Recomendações'), recSub:R('Suggested actions per client and their status','Ações sugeridas por cliente e seu status'),
       recFilterAll:R('All','Todas'), recFilterPending:R('Pending','Pendentes'), recFilterSent:R('Sent','Enviadas'), recFilterAccepted:R('Accepted','Aceitas'), openLabel:R('Open','Abrir'),
       alertTitle:R('Alerts','Alertas'), alertSub:R('Risk, suitability and behavior signals across your book','Sinais de risco, suitability e comportamento na sua carteira'), review:R('Review','Revisar'),
@@ -1151,6 +1170,38 @@ class Component extends DCLogic {
       };
     }
 
+    // date carousel (uses lastContacts dates + channel colors)
+    const _dcDates = [pick(R('Jun 14','14 jun')), pick(R('Jun 9','9 jun')), pick(R('Jun 2','2 jun'))];
+    const _dcDots  = ['var(--ink-2)', C.green, C.blue];
+    const convDateItems = _dcDates.map((label, i) => ({
+      label, dot:_dcDots[i],
+      bg:S.convoDateIdx===i?'var(--surface-3)':'transparent',
+      fg:S.convoDateIdx===i?'var(--ink)':'var(--ink-3)',
+      sel:() => this.setState({ convoDateIdx:i })
+    }));
+
+    // client detail tabs (Insights + Recommendations)
+    const showInsights = S.convoView==='insights';
+    const showRecommendations = S.convoView==='recommendations';
+    const pillInsBg  = S.convoView==='insights'?'var(--surface-3)':'transparent';
+    const pillInsFg  = S.convoView==='insights'?'var(--ink)':'var(--ink-3)';
+    const pillRecBg  = S.convoView==='recommendations'?'var(--surface-3)':'transparent';
+    const pillRecFg  = S.convoView==='recommendations'?'var(--ink)':'var(--ink-3)';
+    const setInsights       = () => this.setState({ convoView:'insights' });
+    const setRecommendations = () => this.setState({ convoView:'recommendations' });
+
+    // recommendation cards for client detail tab
+    const _fallbackRec = { text:pick(R('Following our last conversation, I wanted to check in and share some ideas. Would you have a few minutes this week to go over them?','Após nossa última conversa, queria dar um retorno e compartilhar algumas ideias. Você teria alguns minutos esta semana para revisar?')), voice:'Bella · PT-BR', dur:'0:18' };
+    const clientRecs = convo ? [...convo.tts, ...Array(Math.max(0,3-convo.tts.length)).fill(_fallbackRec)].slice(0,3) : [];
+
+    // send mode radio
+    const recModeTextBg  = S.recMode==='text' ?'var(--ink)':'var(--surface-2)';
+    const recModeTextFg  = S.recMode==='text' ?'var(--bg)' :'var(--ink-2)';
+    const recModeVoiceBg = S.recMode==='voice'?'var(--ink)':'var(--surface-2)';
+    const recModeVoiceFg = S.recMode==='voice'?'var(--bg)' :'var(--ink-2)';
+    const setRecText  = () => this.setState({ recMode:'text' });
+    const setRecVoice = () => this.setState({ recMode:'voice' });
+
     // waveforms
     const bars = Array.from({ length:70 }, (_,i) => { let h = 5 + Math.round(22*Math.abs(Math.sin(i*0.7)+0.35*Math.cos(i*0.27))); h = Math.max(4, Math.min(34, h)); return { h, color: i<28 ? 'var(--ink)' : 'var(--surface-3)' }; });
     const miniBars = Array.from({ length:26 }, (_,i) => ({ h: 3 + Math.round(10*Math.abs(Math.sin(i*0.9))) }));
@@ -1300,9 +1351,12 @@ class Component extends DCLogic {
       statTiles, groups, priorities, bookStats, activity,
       clientFilters, filteredClients, clientsCount, query:S.query,
       sc, riskSegs, allocList, lastContacts, convo,
-      showTranscript:S.convoView==='transcript', showMessages:S.convoView==='messages',
+      showTranscript:S.convoView==='transcript', showMessages:S.convoView==='messages', showInsights, showRecommendations,
       pillTransBg:S.convoView==='transcript'?'var(--surface-3)':'transparent', pillTransFg:S.convoView==='transcript'?'var(--ink)':'var(--ink-3)',
       pillMsgBg:S.convoView==='messages'?'var(--surface-3)':'transparent', pillMsgFg:S.convoView==='messages'?'var(--ink)':'var(--ink-3)',
+      pillInsBg, pillInsFg, pillRecBg, pillRecFg,
+      convDateItems, clientRecs, recModeTextBg, recModeTextFg, recModeVoiceBg, recModeVoiceFg,
+      setInsights, setRecommendations, setRecText, setRecVoice,
       bars, miniBars,
       convFilters, conversationsVip, conversationsRegular, hasVipConvs, hasRegularConvs, convVipOpen:S.convVipOpen, convRegOpen:S.convRegOpen, convVipChevron, convRegChevron, toggleVipConv, toggleRegConv, recFilters, recommendations, alertCols, stages, agg, aggClasses, offPolicy,
       toggleLang:() => this.setState(s => ({ lang:s.lang==='en'?'pt':'en' })),
