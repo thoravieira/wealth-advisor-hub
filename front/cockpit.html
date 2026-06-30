@@ -1304,7 +1304,7 @@ class Component extends DCLogic {
       pillTransBg:S.convoView==='transcript'?'var(--surface-3)':'transparent', pillTransFg:S.convoView==='transcript'?'var(--ink)':'var(--ink-3)',
       pillMsgBg:S.convoView==='messages'?'var(--surface-3)':'transparent', pillMsgFg:S.convoView==='messages'?'var(--ink)':'var(--ink-3)',
       bars, miniBars,
-      convFilters, conversationsVip, conversationsRegular, hasVipConvs, hasRegularConvs, convVipChevron, convRegChevron, toggleVipConv, toggleRegConv, recFilters, recommendations, alertCols, stages, agg, aggClasses, offPolicy,
+      convFilters, conversationsVip, conversationsRegular, hasVipConvs, hasRegularConvs, convVipOpen:S.convVipOpen, convRegOpen:S.convRegOpen, convVipChevron, convRegChevron, toggleVipConv, toggleRegConv, recFilters, recommendations, alertCols, stages, agg, aggClasses, offPolicy,
       toggleLang:() => this.setState(s => ({ lang:s.lang==='en'?'pt':'en' })),
       toggleMenu:() => this.setState(s => ({ menuOpen:!s.menuOpen })),
       toggleChat:() => this.setState(s => ({ chatOpen:!s.chatOpen })),
