@@ -985,6 +985,7 @@ class Component extends DCLogic {
   }
 
   _convosInFlight = new Set();
+  _detailInFlight = null;
 
   async _fetchConversations(clientId) {
     if (this._convosInFlight.has(clientId)) return;
@@ -1000,12 +1001,15 @@ class Component extends DCLogic {
   }
 
   async _fetchConvoDetail(convId) {
+    if (!convId || this._detailInFlight === convId) return;
+    this._detailInFlight = convId;
     try {
       const r = await fetch(`http://localhost:8001/conversations/${convId}`);
       if (!r.ok) return;
       const data = await r.json();
       this.setState({ activeConvoDetail: data });
     } catch(e) { console.warn('fetchConvoDetail failed:', e.message); }
+    finally { if (this._detailInFlight === convId) this._detailInFlight = null; }
   }
 
   async _addVoicePreview(text, clientId) {
@@ -1351,11 +1355,12 @@ class Component extends DCLogic {
 
     // carousel: one before + selected + one after
     const _cIdx  = Math.min(Math.max(S.convoIdx||S.convoDateIdx||0, 0), Math.max(clientConvoList.length-1, 0));
-    // Always show first 3 (most recent). "..." appears when there are more than 3 and none of those is selected.
-    const _carouselItems = clientConvoList.slice(0, 3);
-    const carouselHasMore = clientConvoList.length > 3 || (_cIdx >= 3);
-    const carouselDates = _carouselItems.map((c,idx) => {
-      const isSel = idx===_cIdx;
+    // Default: show 3 most recent. When calendar selects older date (idx >= 3), slide window to center on it.
+    const _carouselStart = _cIdx <= 1 ? 0 : Math.min(_cIdx - 1, Math.max(0, clientConvoList.length - 3));
+    const _carouselWindow = clientConvoList.slice(_carouselStart, _carouselStart + 3);
+    const carouselHasMore = clientConvoList.length > 3;
+    const carouselDates = _carouselWindow.map((c, wi) => {
+      const idx = _carouselStart + wi, isSel = idx === _cIdx;
       return {
         label: _MNS[c.month]+' '+c.day, dot:c.dot,
         border: isSel?'2px solid var(--ink)':'1px solid transparent',
@@ -1368,6 +1373,10 @@ class Component extends DCLogic {
     const _selectedApiConv = clientConvoList[_cIdx] || null;
     const _acd = S.activeConvoDetail;
     const _acdMatches = _acd && _selectedApiConv && _acd.conv_id === _selectedApiConv.convId;
+    // Auto-fetch detail whenever the selected conv has no matching detail loaded
+    if (_selectedApiConv?.convId && !_acdMatches) {
+      setTimeout(() => this._fetchConvoDetail(_selectedApiConv.convId), 0);
+    }
     let convo = null;
     if (_acdMatches) {
       const isCallConv = _selectedApiConv.channel === 'call';
