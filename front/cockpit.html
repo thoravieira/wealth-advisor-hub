@@ -461,21 +461,18 @@
                     </div>
                   </div>
 
-                  <!-- audio player: only for call conversations -->
-                  <sc-if value="{{ convoIsCall }}" hint-placeholder-val="{{ true }}">
+                  <!-- audio player: call WITH real audio -->
+                  <sc-if value="{{ convoIsCallWithAudio }}" hint-placeholder-val="{{ false }}">
                   <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:13px;padding:15px 16px">
-                    <!-- real audio player when MP3 available -->
-                    <sc-if value="{{ convoHasAudio }}" hint-placeholder-val="{{ false }}">
-                    <div>
-                      <audio id="conv-audio" src="{{ convoAudioSrc }}" style="width:100%;border-radius:8px;accent-color:var(--ink)" controls preload="metadata"></audio>
-                      <div style="display:flex;align-items:center;gap:12px;margin-top:11px;padding-top:11px;border-top:1px solid var(--border)">
-                        <span style="font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ t.autoTranscribed }}</span>
-                      </div>
+                    <audio id="conv-audio" src="{{ convoAudioSrc }}" style="width:100%;border-radius:8px;accent-color:var(--ink)" controls preload="metadata"></audio>
+                    <div style="display:flex;align-items:center;gap:12px;margin-top:11px;padding-top:11px;border-top:1px solid var(--border)">
+                      <span style="font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ t.autoTranscribed }}</span>
                     </div>
-                    </sc-if>
-                    <!-- disabled player when no real audio -->
-                    <sc-if value="{{ convoNoAudio }}" hint-placeholder-val="{{ true }}">
-                    <div>
+                  </div>
+                  </sc-if>
+                  <!-- audio player: call WITHOUT audio (disabled) -->
+                  <sc-if value="{{ convoIsCallNoAudio }}" hint-placeholder-val="{{ true }}">
+                  <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:13px;padding:15px 16px">
                     <div style="display:flex;align-items:center;gap:14px">
                       <div style="width:46px;height:46px;border-radius:50%;background:var(--surface-3);border:1px solid var(--border);color:var(--ink-muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:not-allowed;opacity:.5"><span style="font-size:15px;margin-left:3px">▶</span></div>
                       <div style="flex:1;display:flex;align-items:center;gap:2px;height:46px;min-width:0;overflow:hidden;opacity:.25">
@@ -486,8 +483,6 @@
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                       <span style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3)">Audio not available — transcript below</span>
                     </div>
-                    </div>
-                    </sc-if>
                   </div>
                   </sc-if>
 
@@ -506,11 +501,26 @@
                           </sc-for>
                         </div>
                       </sc-if>
-                      <sc-if value="{{ convoIsMsg }}" hint-placeholder-val="{{ false }}">
+                      <!-- WhatsApp: chat bubbles -->
+                      <sc-if value="{{ convoIsWA }}" hint-placeholder-val="{{ false }}">
                         <div style="display:flex;flex-direction:column">
                           <sc-for list="{{ convo.messages }}" as="m" hint-placeholder-count="4">
                             <div style="display:flex;justify-content:{{ m.justify }};margin-bottom:11px">
                               <div style="max-width:74%;background:{{ m.bg }};color:{{ m.fg }};padding:10px 13px;border-radius:14px;font-size:13.5px;line-height:1.5">{{ m.t }}<div style="font:500 10px 'JetBrains Mono',monospace;opacity:.55;margin-top:5px;text-align:right">{{ m.time }}</div></div>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <!-- Email: thread view -->
+                      <sc-if value="{{ convoIsEmail }}" hint-placeholder-val="{{ false }}">
+                        <div style="display:flex;flex-direction:column;gap:10px">
+                          <sc-for list="{{ convo.emailMessages }}" as="em" hint-placeholder-count="3">
+                            <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">
+                              <div style="padding:8px 12px;background:var(--surface-2);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px">
+                                <div style="width:26px;height:26px;border-radius:50%;background:{{ em.avatarBg }};color:{{ em.avatarFg }};display:flex;align-items:center;justify-content:center;flex-shrink:0;font:700 10px/1 'JetBrains Mono',monospace">{{ em.initials }}</div>
+                                <span style="font:600 12px 'JetBrains Mono',monospace;color:var(--ink)">{{ em.senderName }}</span>
+                              </div>
+                              <div style="padding:12px 13px;font-size:13.5px;line-height:1.65;color:var(--ink-2)">{{ em.t }}</div>
                             </div>
                           </sc-for>
                         </div>
@@ -1394,13 +1404,21 @@ class Component extends DCLogic {
         return { t: txt, time:'—', justify: t.speaker==='client'?'flex-start':'flex-end', bg: t.speaker==='client'?'var(--surface-3)':'var(--ink)', fg: t.speaker==='client'?'var(--ink)':'var(--bg)' };
       });
       const sumText = L === 'pt' ? (_acd.summary_pt || _acd.summary_en || '') : (_acd.summary_en || _acd.summary_pt || '');
+      const emailMsgs = !isCallConv ? _turns.map(t => {
+        const txt = L === 'pt' ? (t.text_pt || t.text_en || '') : (t.text_en || t.text_pt || '');
+        const isAdv = t.speaker === 'advisor';
+        const sName = isAdv ? pick(R('Advisor','Assessora')) : sc0.name;
+        const initials = sName.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+        return { t: txt, senderName: sName, initials, avatarBg: isAdv ? 'var(--ink)' : 'var(--surface-3)', avatarFg: isAdv ? 'var(--bg)' : 'var(--ink)' };
+      }) : [];
       convo = {
         pos: isCallConv ? '— / —' : '—', isCall: isCallConv,
+        channel: _selectedApiConv.channel || (isCallConv ? 'call' : 'whatsapp'),
         hasAudio: !!_selectedApiConv.hasAudio,
         audioSrc: _selectedApiConv.audioFile ? `http://localhost:8001/audio/${_selectedApiConv.audioFile}` : null,
         date: _selectedApiConv.label, sentLevel:'50%', sentLabel: pick(R('Neutral','Neutro')), sentColor:'var(--ink-3)',
         summary: sumText, appetite:'', objectives:[], products:[], hasLifeEvent:false, lifeEvent:'', nextActions:[],
-        transcript: tr, messages: msgs, tts: []
+        transcript: tr, messages: msgs, emailMessages: emailMsgs, tts: []
       };
       if (cv) {
         convo.sentLevel = cv.sentLevel+'%'; convo.sentLabel = pick(sentLbl[cv.sentKey]); convo.sentColor = sentColor[cv.sentKey];
@@ -1513,11 +1531,13 @@ class Component extends DCLogic {
     const pillInsFg = S.convoView==='insights'?'var(--ink)':'var(--ink-3)';
     const pillConvBg = showConversations?'var(--surface-3)':'transparent';
     const pillConvFg = showConversations?'var(--ink)':'var(--ink-3)';
-    const convoIsCall    = !!(convo && convo.isCall);
-    const convoIsMsg     = !!(convo && !convo.isCall);
-    const convoHasAudio  = !!(convo && convo.hasAudio && convo.audioSrc);
-    const convoAudioSrc  = convoHasAudio ? convo.audioSrc : '';
-    const convoNoAudio   = convoIsCall && !convoHasAudio;
+    const convoIsCall          = !!(convo && convo.isCall);
+    const convoHasAudio        = !!(convo && convo.hasAudio && convo.audioSrc);
+    const convoAudioSrc        = convoHasAudio ? convo.audioSrc : '';
+    const convoIsCallWithAudio = convoIsCall && convoHasAudio;
+    const convoIsCallNoAudio   = convoIsCall && !convoHasAudio;
+    const convoIsEmail         = !!(convo && !convo.isCall && convo.channel === 'email');
+    const convoIsWA            = !!(convo && !convo.isCall && convo.channel !== 'email');
     const setInsights = () => this.setState({ convoView:'insights' });
     const setConversations = () => this.setState({ convoView:'transcript' });
 
@@ -1762,7 +1782,8 @@ class Component extends DCLogic {
       statTiles, groups, priorities, bookStats, activity,
       clientFilters, filteredClients, clientsCount, query:S.query,
       sc, riskSegs, allocList, lastContacts, convo,
-      showConversations, showInsights, convoIsCall, convoIsMsg, convoHasAudio, convoNoAudio, convoAudioSrc,
+      showConversations, showInsights, convoIsCall, convoHasAudio, convoAudioSrc,
+      convoIsCallWithAudio, convoIsCallNoAudio, convoIsEmail, convoIsWA,
       pillConvBg, pillConvFg, pillInsBg, pillInsFg,
       carouselDates, carouselHasMore, clientRecs, recModeTextBg, recModeTextFg, recModeVoiceBg, recModeVoiceFg,
       setConversations, setInsights, setRecText, setRecVoice,
