@@ -51,7 +51,7 @@ Existing tools (CRM, portfolio platforms) are reactive — the advisor queries t
 
 ### 3.1 Frontend — `front/cockpit.html`
 
-Single HTML file (~1,200 lines). Served via nginx container. No build step.
+Single HTML file (~2,000 lines). Served via nginx container. No build step.
 
 **Engine:** `dc` template engine (reactive HTML, no VDOM)  
 **Pattern:** Single `DCLogic` class — `state` + `renderVals()` returns all computed values and handlers
@@ -60,16 +60,20 @@ Single HTML file (~1,200 lines). Served via nginx container. No build step.
 
 ```javascript
 state = {
-  lang: 'en',              // 'en' | 'pt'
+  lang: 'en',              // 'en' only (PT-BR deferred to SPEC-002)
   menuOpen: true,          // sidebar collapsed?
   chatOpen: false,         // Sofia side panel open?
-  route: 'overview',       // current view
+  route: 'overview',       // 'overview' | 'clients' | 'client' | 'alerts' | 'opportunities' | 'allocation'
   prevRoute: 'overview',   // for back button
-  clientId: 'ricardo',     // selected client
-  convoView: 'transcript', // 'transcript' | 'messages'
+  clientId: 'ricardo',     // selected client ID
+  clientTab: 'overview',   // left panel tab: 'overview' | 'recs'
+  convoView: 'transcript', // right panel tab: 'transcript' | 'messages' | 'insights'
+  convoIdx: 0,             // selected conversation index within carousel
+  convoDateIdx: 0,         // carousel position (sliding window)
   clientFilter: 'all',
   convFilter: 'all',
   recFilter: 'all',
+  recMode: 'text',         // recommendation compose mode: 'text' | 'voice'
   query: '',
   agentStatus: 'idle',     // 'idle' | 'connecting' | 'connected'
   agentTranscript: [],     // [{ who: 'AI'|'YOU', text }]
@@ -78,8 +82,20 @@ state = {
   approvalCard: null,
   approvalClientId: null,
   toastMsg: null,
-  analyticsClients: {},    // keyed by client_id; populated by _initData() on first render
-  memoryFacts: {}          // keyed by client_id; populated by _fetchMemory() when client detail opens
+  // calendar picker
+  calOpen: false,
+  calYear: 2026, calMonth: 5, calView: 'days', calSel: null,
+  // analytics data (populated on first render / client open)
+  analyticsClients: {},    // keyed by client_id
+  memoryFacts: {},         // keyed by client_id
+  clientConvos: {},        // keyed by client_id; conversation list from analytics
+  activeConvoDetail: null, // full conversation detail with turns
+  // audio player state (updated by timeupdate events)
+  audioPlaying: false,
+  audioProgress: 0,        // 0–100
+  audioCurrentTime: '0:00',
+  audioDuration: '—:——',
+  audioTurnIdx: null,      // index of currently playing transcript turn
 }
 ```
 
@@ -218,12 +234,17 @@ Style: Never say "let me check" or "please wait".
 
 | Tool | Latency | Side effect |
 |---|---|---|
-| `navigate` | ~0ms | setState({route}) |
-| `show_opportunity` | ~0ms | setState({route:'client', clientId}) |
+| `navigate` | ~0ms | setState({route}) — routes: overview, clients, alerts, opportunities, allocation |
+| `open_client` | ~0ms | setState({route:'client', clientId}) — accepts clientId or clientName |
+| `open_client_tab` | ~0ms | setState({clientTab}) — 'overview' or 'recs' |
+| `open_conversation_tab` | ~0ms | setState({convoView}) — 'transcript', 'messages', 'insights' |
+| `list_clients` | <1ms | Reads `_clientsById` JS map silently — returns JSON array |
+| `get_client_data` | <1ms | Reads `_clientsById` JS map silently — returns JSON object |
+| `show_opportunity` | ~0ms | Legacy alias for open_client |
 | `show_recommendation` | ~0ms | setState({approvalCard}), sets textarea via DOM |
+| `edit_recommendation` | ~0ms | Re-opens approval card for editing |
 | `generate_voice_message` | 300–800ms | POST /tts → VOICE card in side panel |
 | `send_whatsapp` | ~0ms | Clears approval card, shows toast |
-| `get_client_data` | <1ms | Reads `_clientsById` JS map silently |
 
 ---
 

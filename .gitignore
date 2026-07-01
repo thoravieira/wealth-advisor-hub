@@ -1,12 +1,17 @@
+# Secrets
 .env
 .budget.json
-# Claude
+
+# Claude Code internals
 .claude/
+.impeccable/
+PRODUCT.md
+
 # Python
 __pycache__/
 *.pyc
 *.pyo
 .pytest_cache/
-# Impeccable skill
-.impeccable/
-PRODUCT.md
+
+# Node
+node_modules/

@@ -35,10 +35,10 @@ graph TB
     Browser(["Browser"])
 
     subgraph Compose["Docker Compose Stack"]
-        FRONT["Frontend\nReactJS"]
-        BACK["Backend\nFastAPI"]
-        PG[("PostgreSQL\nSessions · Memory")]
-        AN[("DuckDB + Iceberg\nClient Lakehouse")]
+        FRONT["front · :8080\nnginx + cockpit.html\ndc template engine"]
+        BACK["backend · :8000\nFastAPI"]
+        PG[("postgres · :5432\nPostgreSQL 16\nSessions · Memory")]
+        AN["analytics · :8001\nDuckDB + FastAPI\nClient Lakehouse"]
     end
 
     subgraph EL["ElevenLabs Cloud"]
@@ -50,7 +50,7 @@ graph TB
 
     Browser -->|HTTP| FRONT
     Browser <-->|WebSocket audio| CONV
-    FRONT -->|fetch| BACK
+    FRONT -->|REST| BACK
     BACK -->|signed token| CONV
     BACK -->|text-to-speech| TTS
     BACK -->|transcribe| STT
@@ -59,7 +59,7 @@ graph TB
     CONV --- KB
 ```
 
-**Stack:** React · FastAPI · PostgreSQL · DuckDB + Iceberg · ElevenLabs (Conversational AI, TTS Scribe v2 STT)
+**Stack:** Plain HTML + dc engine · FastAPI · PostgreSQL · DuckDB · ElevenLabs (Conversational AI, TTS, STT Scribe v2)
 
 | Container | Purpose |
 |---|---|
@@ -74,12 +74,16 @@ graph TB
 
 | Action | How |
 |---|---|
-| Navigate the cockpit | `navigate({route})` updates the dashboard view |
-| Open a client panel | `show_opportunity({clientId})` routes to client detail |
-| Draft a recommendation | `show_recommendation({text})` opens an editable approval card |
+| Navigate the cockpit | `navigate({route})` — routes: overview, clients, alerts, opportunities, allocation |
+| Open a client by name or ID | `open_client({clientId or clientName})` routes to client detail |
+| Switch client sub-tab | `open_client_tab({tab})` — overview or recommendations |
+| Switch conversation tab | `open_conversation_tab({tab})` — transcript, summary, messages |
+| List the full book | `list_clients()` returns all clients with AUM |
+| Read live client data | `get_client_data({clientId})` reads cockpit state silently |
+| Draft a recommendation | `show_recommendation({clientId, text})` opens editable approval card |
+| Edit a recommendation | `edit_recommendation({text})` re-opens approval card for editing |
 | Generate a voice preview | `generate_voice_message({text})` calls `/tts`, saves playable card |
-| Send via WhatsApp | `send_whatsapp({clientId})` confirms delivery |
-| Read live data | `get_client_data({clientId})` reads cockpit state silently |
+| Send via WhatsApp | `send_whatsapp({clientId})` confirms delivery (mock) |
 | Suggest next priority | Built into system prompt, fires after every send |
 
 ---
@@ -111,7 +115,7 @@ sequenceDiagram
     EL-->>Advisor: "$CLIENT_NAME needs action today..."
 
     Advisor->>EL: "Pull up $CLIENT_NAME"
-    EL->>UI: show_opportunity({ clientId })
+    EL->>UI: open_client({ clientName })
     UI->>Back: GET /memory/long/$CLIENT_ID
     Back->>PG: SELECT agent_memory_long
     PG-->>UI: Learned facts about client
@@ -189,7 +193,7 @@ When all four containers show `healthy`, open the cockpit and tap the equalizer 
 ```
 .
 ├── front/
-│   ├── cockpit.html           # single-file cockpit (dc template engine)
+│   ├── cockpit.html           # single-file cockpit (~2,000 lines, dc template engine)
 │   ├── support.js             # dc runtime
 │   ├── index.html             # redirect to cockpit.html
 │   └── Dockerfile             # nginx
@@ -200,8 +204,10 @@ When all four containers show `healthy`, open the cockpit and tap the equalizer 
 │   └── Dockerfile
 │
 ├── analytics/
-│   ├── main.py                # DuckDB FastAPI: clients, recommendations, alerts
+│   ├── main.py                # DuckDB FastAPI: clients, recommendations, alerts, conversations
 │   ├── seed.py                # 12 demo clients
+│   ├── seed_conversations.py  # conversation turns + audio metadata
+│   ├── audio/                 # MP3 files for real call recordings
 │   ├── requirements.txt
 │   └── Dockerfile
 │
@@ -212,13 +218,18 @@ When all four containers show `healthy`, open the cockpit and tap the equalizer 
 │   ├── create_agent.py        # idempotent ElevenLabs agent + KB setup
 │   └── compliance_guide.txt   # FSI knowledge base content
 │
+├── scripts/
+│   └── generate_audio.py      # generates demo MP3s via ElevenLabs TTS
+│
 ├── tests/
 │   ├── conftest.py
-│   ├── test_01_backend_current.py    # 21 tests: health, TTS, STT, agent token
-│   ├── test_02_frontend_current.py   # 11 tests: pages load, old filenames gone
-│   ├── test_03_postgres.py           #  6 tests: schema, memory API
-│   ├── test_04_analytics.py          # 32 tests: clients, recommendations, alerts
-│   └── test_05_backend_pg_integration.py  # 13 tests: postgres integration, proxies
+│   ├── test_01_backend_current.py         # backend: health, TTS, STT, agent token
+│   ├── test_02_frontend_current.py        # frontend: pages load, cockpit renders
+│   ├── test_03_postgres.py                # postgres: schema, memory API
+│   ├── test_04_analytics.py               # analytics: clients, recommendations, alerts
+│   ├── test_05_backend_pg_integration.py  # postgres integration, proxies
+│   ├── test_06_data_integration.py        # cross-service data alignment
+│   └── test_07_conversations.py           # conversations + audio endpoints
 │
 ├── docs/
 │   ├── ARCHITECTURE.md
@@ -226,7 +237,8 @@ When all four containers show `healthy`, open the cockpit and tap the equalizer 
 │   │   ├── SOFIA_FLOW.md
 │   │   └── COCKPIT_FLOWS.md
 │   └── specs/
-│       └── SPEC-007-cockpit-v2.md
+│       ├── SPEC-007-cockpit-v2.md
+│       └── SPEC-008-conversations-and-audio.md
 │
 ├── .env.example
 ├── docker-compose.yml
@@ -259,6 +271,9 @@ When all four containers show `healthy`, open the cockpit and tap the equalizer 
 | `PATCH` | `/recommendations/{id}` | Update status (approved/sent) |
 | `GET/POST` | `/voice-messages` | TTS message history |
 | `GET` | `/alerts` | Risk and compliance alerts |
+| `GET` | `/conversations` | All conversations (filter by `?client_id=`) |
+| `GET` | `/conversations/{id}` | Single conversation with transcript turns |
+| `GET` | `/audio/{filename}` | Stream MP3 audio file |
 
 ---
 
@@ -270,7 +285,7 @@ When all four containers show `healthy`, open the cockpit and tap the equalizer 
 | LLM | Gemini 2.0 Flash |
 | STT | Scribe v2 |
 | Knowledge Base | FSI Advisory Compliance Guide v2.1 |
-| Client tools | navigate, show_opportunity, show_recommendation, generate_voice_message, send_whatsapp, get_client_data |
+| Client tools | navigate, open_client, open_client_tab, open_conversation_tab, list_clients, get_client_data, show_opportunity, show_recommendation, edit_recommendation, generate_voice_message, send_whatsapp |
 
 ---
 

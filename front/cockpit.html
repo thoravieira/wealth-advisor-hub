@@ -159,7 +159,7 @@
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="flex-shrink:0"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
         <span style="font-size:13.5px;font-weight:{{ nav.overview.weight }};white-space:nowrap;display:{{ lblDisplay }}">{{ t.overview }}</span>
       </button>
-      <button onClick="{{ goObj.conversations }}" style="width:100%;display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;background:{{ nav.conversations.bg }};color:{{ nav.conversations.color }};justify-content:{{ navJustify }}">
+      <button onClick="{{ goObj.clients }}" style="width:100%;display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;background:{{ nav.clients.bg }};color:{{ nav.clients.color }};justify-content:{{ navJustify }}">
         <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="flex-shrink:0"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a5 5 0 015-5h4a5 5 0 015 5v2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 3.13a4 4 0 010 7.75" stroke-linecap="round"/><path d="M21 21v-2a4 4 0 00-3-3.85" stroke-linecap="round" stroke-linejoin="round"/></svg>
         <span style="font-size:13.5px;font-weight:{{ nav.conversations.weight }};white-space:nowrap;display:{{ lblDisplay }}">{{ t.clients }}</span>
       </button>
@@ -202,24 +202,10 @@
         <div style="display:flex;align-items:center;gap:9px"><div style="width:18px;height:18px;border:1.5px solid var(--border-2);border-radius:5px"></div><span style="font-size:14px;font-weight:600">{{ headerTitle }}</span></div>
       </div>
       <div style="display:flex;align-items:center;gap:10px">
-        <div onClick="{{ openSearch }}" style="display:flex;align-items:center;gap:8px;width:220px;height:34px;padding:0 12px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2);color:var(--ink-3);font-size:12.5px;cursor:text"><span style="font-size:14px">⌕</span><span>{{ t.search }}</span></div>
-        <button onClick="{{ toggleLang }}" title="{{ t.langTip }}" style="height:34px;display:flex;align-items:center;gap:7px;padding:0 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2)">
-          <sc-if value="{{ isEN }}" hint-placeholder-val="{{ true }}">
-            <svg width="22" height="15" viewBox="0 0 28 20" style="border-radius:2px;display:block">
-              <rect width="28" height="20" fill="#fff"/>
-              <rect width="28" height="2.86" y="0" fill="#B22234"/><rect width="28" height="2.86" y="5.71" fill="#B22234"/><rect width="28" height="2.86" y="11.43" fill="#B22234"/><rect width="28" height="2.86" y="17.14" fill="#B22234"/>
-              <rect width="12" height="11.43" fill="#3C3B6E"/>
-            </svg>
-          </sc-if>
-          <sc-if value="{{ isPT }}" hint-placeholder-val="{{ false }}">
-            <svg width="22" height="15" viewBox="0 0 28 20" style="border-radius:2px;display:block">
-              <rect width="28" height="20" fill="#009C3B"/>
-              <polygon points="14,2 26,10 14,18 2,10" fill="#FFDF00"/>
-              <circle cx="14" cy="10" r="4.4" fill="#002776"/>
-            </svg>
-          </sc-if>
-          <span style="font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ langCode }}</span>
-        </button>
+        <div style="display:flex;align-items:center;gap:6px;padding:5px 10px;border:1px solid var(--border);border-radius:9px;background:var(--surface-2)">
+          <span style="font:600 11px 'JetBrains Mono',monospace;color:var(--ink-3)">EN</span>
+          <span style="font:700 9px 'JetBrains Mono',monospace;background:var(--amber);color:#fff;border-radius:4px;padding:1px 6px;letter-spacing:.04em">dev.</span>
+        </div>
       </div>
     </header>
 
@@ -339,9 +325,9 @@
             </div>
           </div>
 
-          <div style="display:flex;gap:16px;align-items:flex-start">
+          <div style="display:flex;gap:16px;align-items:stretch">
             <!-- profile panel -->
-            <div style="width:300px;flex-shrink:0;border:1px solid var(--border);border-radius:14px;padding:18px">
+            <div style="width:300px;flex-shrink:0;border:1px solid var(--border);border-radius:14px;padding:18px;overflow-y:auto;max-height:700px">
               <!-- sub-nav -->
               <div style="display:flex;gap:2px;background:var(--surface-2);border:1px solid var(--border);border-radius:9px;padding:3px;margin-bottom:18px">
                 <button onClick="{{ setClientOverview }}" style="flex:1;border-radius:7px;padding:6px 8px;font:600 10.5px 'JetBrains Mono',monospace;background:{{ clientTabOvBg }};color:{{ clientTabOvFg }};text-align:center;letter-spacing:.01em">{{ t.overview }}</button>
@@ -441,11 +427,11 @@
             </div>
 
             <!-- f2: conversation (full width, 3 tabs) -->
-            <div style="flex:1;min-width:0">
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden">
               <sc-if value="{{ sc.hasConvo }}" hint-placeholder-val="{{ true }}">
-                <div>
+                <div style="display:flex;flex-direction:column;flex:1;overflow:hidden">
                   <!-- header: date carousel (left) · 4 tabs (right) -->
-                  <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:13px">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:13px;flex-shrink:0">
                     <div style="display:flex;align-items:center;gap:6px">
                       <div style="display:flex;gap:3px;background:var(--surface-3);border-radius:9px;padding:3px">
                         <sc-for list="{{ carouselDates }}" as="d" hint-placeholder-count="3">
@@ -461,42 +447,60 @@
                     </div>
                   </div>
 
-                  <!-- audio player: call WITH real audio -->
+                  <!-- audio player: call WITH real audio — custom player -->
                   <sc-if value="{{ convoIsCallWithAudio }}" hint-placeholder-val="{{ false }}">
-                  <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:13px;padding:15px 16px">
-                    <audio id="conv-audio" src="{{ convoAudioSrc }}" style="width:100%;border-radius:8px;accent-color:var(--ink)" controls preload="metadata"></audio>
-                    <div style="display:flex;align-items:center;gap:12px;margin-top:11px;padding-top:11px;border-top:1px solid var(--border)">
-                      <span style="font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ t.autoTranscribed }}</span>
+                  <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:13px;padding:13px 15px;margin-bottom:14px;flex-shrink:0">
+                    <audio id="conv-audio" src="{{ convoAudioSrc }}" preload="metadata" style="display:none"></audio>
+                    <div style="display:flex;align-items:center;gap:13px">
+                      <!-- play/pause button -->
+                      <button onClick="{{ toggleAudio }}" style="width:38px;height:38px;border-radius:50%;background:var(--ink);color:var(--bg);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:opacity 120ms">
+                        <sc-if value="{{ audioPlaying }}" hint-placeholder-val="{{ false }}">
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><rect x="1.5" y="1" width="3.5" height="10" rx="1"/><rect x="7" y="1" width="3.5" height="10" rx="1"/></svg>
+                        </sc-if>
+                        <sc-if value="{{ !audioPlaying }}" hint-placeholder-val="{{ true }}">
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"><polygon points="2,0.5 12,6 2,11.5"/></svg>
+                        </sc-if>
+                      </button>
+                      <!-- waveform scrubber -->
+                      <div onClick="{{ seekAudio }}" style="flex:1;display:flex;align-items:center;gap:2px;height:38px;cursor:pointer;padding:0 2px">
+                        <sc-for list="{{ audioBars }}" as="ab" hint-placeholder-count="55">
+                          <div style="width:3px;flex-shrink:0;border-radius:2px;height:{{ ab.h }}px;background:{{ ab.color }}"></div>
+                        </sc-for>
+                      </div>
+                      <!-- time -->
+                      <span style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3);flex-shrink:0;white-space:nowrap;min-width:72px;text-align:right">{{ audioCurrentTime }} / {{ audioDuration }}</span>
                     </div>
                   </div>
                   </sc-if>
                   <!-- audio player: call WITHOUT audio (disabled) -->
                   <sc-if value="{{ convoIsCallNoAudio }}" hint-placeholder-val="{{ true }}">
-                  <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:13px;padding:15px 16px">
-                    <div style="display:flex;align-items:center;gap:14px">
-                      <div style="width:46px;height:46px;border-radius:50%;background:var(--surface-3);border:1px solid var(--border);color:var(--ink-muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:not-allowed;opacity:.5"><span style="font-size:15px;margin-left:3px">▶</span></div>
-                      <div style="flex:1;display:flex;align-items:center;gap:2px;height:46px;min-width:0;overflow:hidden;opacity:.25">
-                        <sc-for list="{{ bars }}" as="b" hint-placeholder-count="70"><div style="width:3px;flex-shrink:0;border-radius:2px;height:{{ b.h }}px;background:var(--ink-muted)"></div></sc-for>
+                  <div style="background:var(--surface-2);border:1px solid var(--border);border-radius:13px;padding:13px 15px;margin-bottom:14px;flex-shrink:0">
+                    <div style="display:flex;align-items:center;gap:13px">
+                      <div style="width:38px;height:38px;border-radius:50%;background:var(--surface-3);border:1px solid var(--border);color:var(--ink-muted);display:flex;align-items:center;justify-content:center;flex-shrink:0;cursor:not-allowed;opacity:.5">
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" style="margin-left:1px"><polygon points="2,0.5 12,6 2,11.5"/></svg>
                       </div>
-                    </div>
-                    <div style="display:flex;align-items:center;gap:8px;margin-top:11px;padding-top:11px;border-top:1px solid var(--border)">
-                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--ink-3)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                      <span style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-3)">Audio not available — transcript below</span>
+                      <div style="flex:1;display:flex;align-items:center;gap:2px;height:38px;min-width:0;overflow:hidden;opacity:.2">
+                        <sc-for list="{{ bars }}" as="b" hint-placeholder-count="55"><div style="width:3px;flex-shrink:0;border-radius:2px;height:{{ b.h }}px;background:var(--ink-muted)"></div></sc-for>
+                      </div>
+                      <span style="font:500 11px 'JetBrains Mono',monospace;color:var(--ink-muted);flex-shrink:0;opacity:.4">—:—— / —:——</span>
                     </div>
                   </div>
                   </sc-if>
 
                   <!-- scrollable tab content -->
-                  <div class="convo-scroll" style="margin-top:18px;max-height:420px;overflow-y:auto;padding-right:6px">
+                  <div class="convo-scroll" style="flex:1;overflow-y:auto;padding-right:6px;min-height:0">
 
                     <sc-if value="{{ showConversations }}" hint-placeholder-val="{{ true }}">
                       <sc-if value="{{ convoIsCall }}" hint-placeholder-val="{{ true }}">
-                        <div style="display:flex;flex-direction:column;gap:18px">
+                        <div style="display:flex;flex-direction:column;gap:4px">
                           <sc-for list="{{ convo.transcript }}" as="p" hint-placeholder-count="3">
-                            <div>
-                              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><span style="font:600 12px 'JetBrains Mono',monospace;color:{{ p.whoColor }}">{{ p.who }}</span><span style="font:500 11px 'JetBrains Mono',monospace;color:#C0C0C0">{{ p.time }}</span><sc-if value="{{ p.active }}" hint-placeholder-val="{{ false }}"><span style="display:flex;align-items:center;gap:5px;margin-left:4px;font:500 10px 'JetBrains Mono',monospace;color:var(--green)"><span style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:softpulse 1.4s infinite"></span>{{ t.playingNow }}</span></sc-if></div>
-                              <sc-if value="{{ p.active }}" hint-placeholder-val="{{ false }}"><div style="font-size:14.5px;line-height:1.85"><sc-for list="{{ p.words }}" as="x" hint-placeholder-count="16"><span style="background:{{ x.bg }};color:{{ x.color }};padding:{{ x.pad }};border-radius:4px">{{ x.w }} </span></sc-for></div></sc-if>
-                              <sc-if value="{{ p.inactive }}" hint-placeholder-val="{{ true }}"><div style="font-size:14.5px;line-height:1.65;color:var(--ink-2)">{{ p.text }}</div></sc-if>
+                            <div style="padding:7px 9px;border-radius:8px;background:{{ p.activeBg }}">
+                              <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px">
+                                <sc-if value="{{ p.active }}" hint-placeholder-val="{{ false }}"><span style="width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;animation:softpulse 1.4s infinite"></span></sc-if>
+                                <span style="font:600 11px 'JetBrains Mono',monospace;color:{{ p.whoColor }}">{{ p.who }}</span>
+                                <span style="font:500 10px 'JetBrains Mono',monospace;color:var(--ink-muted)">{{ p.time }}</span>
+                              </div>
+                              <div style="font-size:13.5px;line-height:1.65;color:{{ p.textColor }}">{{ p.text }}</div>
                             </div>
                           </sc-for>
                         </div>
@@ -602,7 +606,7 @@
                 <div style="border:1px solid oklch(0.78 0.13 85 / .30);border-radius:14px;overflow:hidden">
                   <div style="display:flex;align-items:flex-end;gap:14px;padding:8px 16px 0;background:oklch(0.97 0.018 85)">
                     <span style="width:178px"></span><span style="width:95px"></span><span style="width:65px"></span><span style="width:95px"></span>
-                    <div style="flex:1;border-top:1px solid oklch(0.78 0.13 85 / .35);padding-top:5px"><span style="font:700 9px 'JetBrains Mono',monospace;letter-spacing:.07em;color:oklch(0.6 0.08 85)">{{ t.thLastContact }}</span></div>
+                    <div style="flex:1;border-top:1px solid oklch(0.78 0.13 85 / .35);padding-top:5px;text-align:center"><span style="font:700 9px 'JetBrains Mono',monospace;letter-spacing:.07em;color:oklch(0.6 0.08 85)">{{ t.thLastContact }}</span></div>
                   </div>
                   <div style="display:flex;align-items:center;gap:14px;padding:5px 16px 8px;background:oklch(0.97 0.018 85);border-bottom:1px solid oklch(0.78 0.13 85 / .20);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">
                     <span style="width:178px">{{ t.thClient }}</span><span style="width:95px">{{ t.thAUM }}</span><span style="width:65px">{{ t.thPerf }}</span><span style="width:95px">{{ t.thRisk }}</span><span style="width:85px">{{ t.thChannel }}</span><span style="width:75px">{{ t.thDate }}</span><span style="width:65px">{{ t.thDuration }}</span><span style="flex:1">{{ t.thSentiment }}</span><span>{{ t.thStatus }}</span>
@@ -639,7 +643,7 @@
                 <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden">
                   <div style="display:flex;align-items:flex-end;gap:14px;padding:8px 16px 0;background:var(--surface)">
                     <span style="width:178px"></span><span style="width:95px"></span><span style="width:65px"></span><span style="width:95px"></span>
-                    <div style="flex:1;border-top:1px solid var(--border);padding-top:5px"><span style="font:700 9px 'JetBrains Mono',monospace;letter-spacing:.07em;color:var(--ink-muted)">{{ t.thLastContact }}</span></div>
+                    <div style="flex:1;border-top:1px solid var(--border);padding-top:5px;text-align:center"><span style="font:700 9px 'JetBrains Mono',monospace;letter-spacing:.07em;color:var(--ink-muted)">{{ t.thLastContact }}</span></div>
                   </div>
                   <div style="display:flex;align-items:center;gap:14px;padding:5px 16px 8px;background:var(--surface);border-bottom:1px solid var(--border);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">
                     <span style="width:178px">{{ t.thClient }}</span><span style="width:95px">{{ t.thAUM }}</span><span style="width:65px">{{ t.thPerf }}</span><span style="width:95px">{{ t.thRisk }}</span><span style="width:85px">{{ t.thChannel }}</span><span style="width:75px">{{ t.thDate }}</span><span style="width:65px">{{ t.thDuration }}</span><span style="flex:1">{{ t.thSentiment }}</span><span>{{ t.thStatus }}</span>
@@ -1390,7 +1394,7 @@ class Component extends DCLogic {
         label: _MNS[c.month]+' '+c.day, dot:c.dot,
         border: isSel?'2px solid var(--ink)':'1px solid transparent',
         bg:'transparent', fg:isSel?'var(--ink)':'var(--ink-3)',
-        sel:()=>{ this.setState({ convoIdx:idx, convoDateIdx:idx, activeConvoDetail:null }); if(c.convId) setTimeout(()=>this._fetchConvoDetail(c.convId),0); }
+        sel:()=>{ this.setState({ convoIdx:idx, convoDateIdx:idx, activeConvoDetail:null, audioTurnIdx:null }); if(c.convId) setTimeout(()=>this._fetchConvoDetail(c.convId),0); }
       };
     });
 
@@ -1409,13 +1413,34 @@ class Component extends DCLogic {
     if (_acdMatches) {
       const isCallConv = _selectedApiConv.channel === 'call';
       const _turns = _acd.turns || [];
+      // Audio player: attach listeners once per audio src
+      if (isCallConv && !!_selectedApiConv.audioFile) {
+        setTimeout(() => {
+          const el = document.getElementById('conv-audio');
+          if (el && el.dataset.bound !== _selectedApiConv.audioFile) {
+            el.dataset.bound = _selectedApiConv.audioFile;
+            const n = _turns.length;
+            const fmt = s => { if (!isFinite(s) || s < 0) return '0:00'; const m=Math.floor(s/60),sec=Math.floor(s%60); return `${m}:${String(sec).padStart(2,'0')}`; };
+            el.addEventListener('loadedmetadata', () => { this.setState({ audioDuration: fmt(el.duration), audioProgress: 0 }); });
+            el.addEventListener('timeupdate', () => {
+              const dur = el.duration || 0;
+              const frac = dur > 0 ? el.currentTime / dur : 0;
+              const idx = n > 0 ? Math.min(Math.floor(frac * n), n - 1) : null;
+              this.setState({ audioProgress: Math.round(frac * 100), audioCurrentTime: fmt(el.currentTime), audioTurnIdx: !el.paused ? idx : null });
+            });
+            el.addEventListener('play',  () => this.setState({ audioPlaying: true }));
+            el.addEventListener('pause', () => this.setState({ audioPlaying: false, audioTurnIdx: null }));
+            el.addEventListener('ended', () => this.setState({ audioPlaying: false, audioProgress: 0, audioCurrentTime: '0:00', audioTurnIdx: null }));
+          }
+        }, 0);
+      }
+      const _ati = S.audioTurnIdx ?? null;
       const tr = _turns.map((t, i) => {
         const txt = L === 'pt' ? (t.text_pt || t.text_en || '') : (t.text_en || t.text_pt || '');
         const isAdv = t.speaker === 'advisor';
-        const isActive = i === Math.max(0, _turns.length - 3);
-        const o = { who: isAdv ? pick(R('You (advisor)','Você (assessora)')) : sc0.name, whoColor: isAdv ? 'var(--ink)' : 'var(--ink-3)', time: `${String(Math.floor(i*22/60)).padStart(2,'0')}:${String((i*22)%60).padStart(2,'0')}`, active: isActive, inactive: !isActive, text: txt };
-        if (isActive && txt) { const toks = txt.split(' '); const curIdx = Math.max(1, Math.floor(toks.length*0.42)); o.words = toks.map((w,wi) => ({ w, bg:wi===curIdx?'var(--ink)':'transparent', color:wi<curIdx?'var(--ink-2)':(wi===curIdx?'var(--bg)':'var(--ink-muted)'), pad:wi===curIdx?'2px 5px':'0' })); }
-        return o;
+        const isActive = _ati !== null && i === _ati;
+        const _dur = _acd.duration_s || 120; const _ts = Math.round(i * _dur / Math.max(1, _turns.length));
+        return { who: isAdv ? pick(R('You (advisor)','Você (assessora)')) : sc0.name, whoColor: isAdv ? 'var(--ink)' : 'var(--ink-3)', time: `${String(Math.floor(_ts/60)).padStart(2,'0')}:${String(_ts%60).padStart(2,'0')}`, active: isActive, inactive: !isActive, activeBg: isActive ? 'var(--surface-3)' : 'transparent', textColor: isActive ? 'var(--ink)' : 'var(--ink-2)', text: txt };
       });
       const msgs = _turns.map(t => {
         const txt = L === 'pt' ? (t.text_pt || t.text_en || '') : (t.text_en || t.text_pt || '');
@@ -1774,6 +1799,7 @@ class Component extends DCLogic {
     const nav = {}, goObj = {};
     keys.forEach(k => { nav[k] = navS(k); goObj[k] = () => this.setState({ route:k, query:'' }); });
     goObj.clients = () => this.setState({ route:'clients', query:'' });
+    nav.clients = navS('clients');
 
     const backRouteMap = { overview:t.backToOverview, clients:t.backToClients, conversations:t.backToConversations, opportunities:t.backToOpportunities, alerts:t.backToAlerts };
     const goBack = () => this.setState({ route:S.prevRoute, query:'' });
@@ -1813,6 +1839,13 @@ class Component extends DCLogic {
       calIsOpen, calShowDays, calShowMonths, calShowYears, calHeaderLabel, calWeeks, calMonthItems, calYearItems, calDayLabels, calConvoItems,
       openCal, closeCal, calStopProp, calOk, calPrev, calNext, calHeaderClick, calCancelLabel,
       bars, miniBars,
+      audioBars: (() => { const prog = (S.audioProgress ?? 0) / 100; return Array.from({length:55},(_,i)=>{ const frac=i/55; const h=Math.round(5+22*Math.abs(Math.sin(i*0.47+0.6))); return { h:Math.max(3,Math.min(28,h)), color: frac<=prog?'var(--ink)':'var(--border)' }; }); })(),
+      audioCurrentTime: S.audioCurrentTime || '0:00',
+      audioDuration: S.audioDuration || '—:——',
+      audioPlaying: !!S.audioPlaying,
+      audioProgress: S.audioProgress ?? 0,
+      toggleAudio: () => { const el=document.getElementById('conv-audio'); if (!el) return; if (el.paused) el.play().catch(()=>{}); else el.pause(); },
+      seekAudio: e => { const el=document.getElementById('conv-audio'); if (!el||!el.duration) return; const r=e.currentTarget.getBoundingClientRect(); const frac=Math.max(0,Math.min(1,(e.clientX-r.left)/r.width)); el.currentTime=frac*el.duration; },
       convFilters, conversationsVip, conversationsRegular, hasVipConvs, hasRegularConvs, convVipOpen:S.convVipOpen, convRegOpen:S.convRegOpen, convVipChevron, convRegChevron, toggleVipConv, toggleRegConv, recFilters, recommendations, alertCols, stages, agg, aggClasses, offPolicy,
       showAllocAllocation, showAllocOffpolicy, showAllocCompliance, allocTabAllocBg, allocTabAllocFg, allocTabOppBg, allocTabOppFg, setAllocAllocation, setAllocOffpolicy,
       toggleLang:() => this.setState(s => ({ lang:s.lang==='en'?'pt':'en' })),
@@ -1840,12 +1873,38 @@ class Component extends DCLogic {
             signedUrl: signed_url,
             clientTools: {
               navigate: async ({ route }) => {
-                self.setState({ route });
-                return 'done';
+                // Map legacy route names for robustness
+                const rmap = { conversations:'clients', 'clients':'clients', overview:'overview', alerts:'alerts', opportunities:'opportunities', allocation:'allocation' };
+                self.setState({ route: rmap[route] || route });
+                return 'navigated to ' + route;
+              },
+              open_client: async ({ clientId, clientName }) => {
+                // Accept either id or name. Find by id first, then by partial name match.
+                const byId = window._cockpit?._clientsById || {};
+                let id = clientId;
+                if (!id && clientName) {
+                  const lc = clientName.toLowerCase();
+                  id = Object.keys(byId).find(k => byId[k]?.name?.toLowerCase().includes(lc));
+                }
+                if (!id) return JSON.stringify({ error: 'client not found' });
+                self.setState({ route:'client', clientId: id, prevRoute: self.state.route });
+                return 'opened client ' + id;
+              },
+              open_client_tab: async ({ tab }) => {
+                // tab: 'overview' | 'recommendations'
+                if (tab === 'overview' || tab === 'overview_tab') self.setState({ clientTab:'overview' });
+                else if (tab === 'recommendations' || tab === 'recs') self.setState({ clientTab:'recs' });
+                return 'switched to tab ' + tab;
+              },
+              open_conversation_tab: async ({ tab }) => {
+                // tab: 'transcript' | 'summary' | 'messages' | 'insights'
+                const tmap = { transcript:'conversations', summary:'insights', messages:'conversations', insights:'insights' };
+                self.setState({ convoView: tmap[tab] || tab });
+                return 'switched conversation tab to ' + tab;
               },
               show_opportunity: async ({ clientId }) => {
                 self.setState({ route:'client', clientId, prevRoute: self.state.route });
-                return 'done';
+                return 'opened client ' + clientId;
               },
               show_recommendation: async ({ clientId, text }) => {
                 self.setState({ approvalCard:text, approvalClientId:clientId });
@@ -1853,26 +1912,45 @@ class Component extends DCLogic {
                   const ta = document.getElementById('voice-edit-ta');
                   if (ta) { ta.value = text; ta.focus(); }
                 }, 60);
-                return 'done';
+                return 'recommendation shown';
+              },
+              edit_recommendation: async ({ recommendationId, text }) => {
+                if (text) {
+                  self.setState({ approvalCard: text, approvalClientId: self.state.clientId });
+                  setTimeout(() => {
+                    const ta = document.getElementById('voice-edit-ta');
+                    if (ta) { ta.value = text; ta.focus(); }
+                  }, 60);
+                }
+                return 'editing recommendation';
               },
               generate_voice_message: async ({ clientId, text }) => {
                 self._addVoicePreview(text, clientId);
-                return 'done';
+                return 'voice message generated';
               },
               send_whatsapp: async ({ clientId }) => {
                 self.setState({ approvalCard:null, approvalClientId:null, toastMsg:'Sent via WhatsApp ✓' });
                 setTimeout(() => self.setState({ toastMsg:null }), 3500);
-                return 'done';
+                return 'sent via whatsapp';
               },
-              get_client_data: async ({ clientId }) => {
-                const c = window._cockpit?._clientsById?.[clientId];
+              get_client_data: async ({ clientId, clientName }) => {
+                const byId = window._cockpit?._clientsById || {};
+                let c = byId[clientId];
+                if (!c && clientName) {
+                  const lc = clientName.toLowerCase();
+                  c = Object.values(byId).find(x => x?.name?.toLowerCase().includes(lc));
+                }
                 if (!c) return JSON.stringify({ error: 'not found' });
                 return JSON.stringify({
-                  name: c.name, vip: c.vip, aum: c.patr,
+                  id: c.id, name: c.name, vip: c.vip, aum: c.patr,
                   riskProfile: c.perfilLabel, status: c.statusLabel,
-                  allocation: { equities: c.al[0]+'%', fixedIncome: c.al[1]+'%', funds: c.al[2]+'%', cash: c.al[3]+'%' },
+                  allocation: { equities: c.al?.[0]+'%', fixedIncome: c.al?.[1]+'%', funds: c.al?.[2]+'%', cash: c.al?.[3]+'%' },
                   mtd: c.delta, note: c.note, clientSince: c.since
                 });
+              },
+              list_clients: async () => {
+                const byId = window._cockpit?._clientsById || {};
+                return JSON.stringify(Object.values(byId).map(c => ({ id:c.id, name:c.name, vip:c.vip, aum:c.patr })));
               }
             },
             onMessage: ({ source, message }) => {

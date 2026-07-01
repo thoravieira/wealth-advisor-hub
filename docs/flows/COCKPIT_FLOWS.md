@@ -11,7 +11,7 @@ flowchart TD
     START([Open cockpit]) --> OV[Overview\nAction center]
 
     OV -->|Click client card| CD[Client Detail]
-    OV -->|Sidebar: Conversations| CO[Conversations]
+    OV -->|Sidebar: Clients| CO[Clients]
     OV -->|Sidebar: Alerts| AL[Alerts]
     OV -->|Sidebar: Opportunities| OP[Opportunities]
     OV -->|Sidebar: Allocation| AC[Allocation]
@@ -85,16 +85,16 @@ flowchart TD
 
 ---
 
-## Screen: Conversations
+## Screen: Clients
 
-**Purpose:** Full log of recorded client interactions, transcribed by ElevenLabs.
+**Purpose:** Full log of clients with last contact date, AUM, performance, and risk — filterable by channel.
 
 ```mermaid
 flowchart LR
-    CO[Conversations] --> F[Filters: All · Calls · WhatsApp · Email]
-    CO --> T[Table: client · channel · date · duration · sentiment · status]
+    CO[Clients] --> F[Filters: All · Calls · WhatsApp · Email]
+    CO --> T[Table: client · AUM · perf · risk · last contact · channel · date · sentiment]
     T --> ROW[Click row]
-    ROW --> CD[Client Detail\nprevRoute = conversations]
+    ROW --> CD[Client Detail\nprevRoute = clients]
 ```
 
 Sofia session control is via the EQ button (bottom-right), consistent with every other screen.
@@ -169,15 +169,15 @@ flowchart TD
 
 ---
 
-## Language Toggle
+## Language
 
-All UI strings exist in English and Portuguese. Toggle in the sidebar header switches instantly — no reload, no API call. Sofia's conversation remains in English (agent language setting).
+The UI is English-only in the current build. A `dev.` badge in the header signals demo mode. Full multilingual support (EN/PT-BR) is tracked as a roadmap item in SPEC-002.
 
 ---
 
 ## Feature Matrix by Screen
 
-| Feature | Overview | Conversations | Client Detail | Alerts | Opportunities | Allocation |
+| Feature | Overview | Clients | Client Detail | Alerts | Opportunities | Allocation |
 |---|---|---|---|---|---|---|
 | Sofia voice call | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Navigate here via Sofia | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
@@ -185,4 +185,4 @@ All UI strings exist in English and Portuguese. Toggle in the sidebar header swi
 | Open client detail | ✓ | ✓ | — | ✓ | ✓ | ✓ |
 | Approval card overlay | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Voice preview player | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Language toggle | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Custom audio player | — | — | ✓ (call convos) | — | — | — |

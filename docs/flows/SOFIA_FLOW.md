@@ -28,8 +28,8 @@ sequenceDiagram
 
     Note over Advisor,Sofia: Navigation Tool
 
-    Advisor->>Sofia: "Show me the alerts"
-    Sofia->>UI: navigate({ route: "alerts" })
+    Advisor->>Sofia: "Show me the clients"
+    Sofia->>UI: navigate({ route: "clients" })
     UI->>UI: setState({ route: "alerts" })
     Note right of UI: Dashboard switches to Alerts view
     Sofia-->>Advisor: 🔊 "Here are today's alerts..."
@@ -37,7 +37,7 @@ sequenceDiagram
     Note over Advisor,Sofia: Client Detail Tool
 
     Advisor->>Sofia: "Pull up Ricardo's profile"
-    Sofia->>UI: show_opportunity({ clientId: "ricardo" })
+    Sofia->>UI: open_client({ clientName: "Ricardo" })
     UI->>UI: setState({ route: "client", clientId: "ricardo" })
     Note right of UI: Ricardo Tanaka detail panel opens
     Sofia-->>Advisor: 🔊 "Ricardo's at 71% equity, above his threshold..."
@@ -113,12 +113,17 @@ stateDiagram-v2
 
 | Tool | Trigger | UI effect | Returns |
 |---|---|---|---|
-| `navigate` | "Show me X" | Route changes, view switches | `"done"` |
-| `show_opportunity` | "Pull up [client]" | Client detail panel opens | `"done"` |
-| `show_recommendation` | Sofia drafts a message | Approval card with editable textarea | `"done"` |
-| `generate_voice_message` | Agent-initiated TTS | Calls `/tts`, saves playable VOICE card | `"done"` |
-| `send_whatsapp` | After advisor approves | Toast "Sent via WhatsApp ✓", clears card | `"done"` |
+| `navigate` | "Go to X" | Route changes — overview, clients, alerts, opportunities, allocation | `"navigated to X"` |
+| `open_client` | "Pull up [client]" | Client detail panel opens (by name or ID) | `"opened client X"` |
+| `open_client_tab` | "Switch to recommendations" | Left panel tab switches — overview or recommendations | `"switched to tab X"` |
+| `open_conversation_tab` | "Show transcript" | Right panel tab switches — transcript, summary, messages | `"switched tab to X"` |
+| `list_clients` | "Who are your clients?" | Silent read | JSON array of {id, name, aum} |
 | `get_client_data` | Any specific data question | Reads `_clientsById` JS map silently | JSON client object |
+| `show_opportunity` | Legacy alias for open_client | Client detail panel opens | `"opened client X"` |
+| `show_recommendation` | Sofia drafts a message | Approval card with editable textarea | `"recommendation shown"` |
+| `edit_recommendation` | "Edit the message" | Approval card opens with current text for editing | `"editing recommendation"` |
+| `generate_voice_message` | Agent-initiated TTS | Calls `/tts`, saves playable VOICE card | `"voice message generated"` |
+| `send_whatsapp` | After advisor approves | Toast "Sent via WhatsApp ✓", clears card | `"sent via whatsapp"` |
 
 ---
 
