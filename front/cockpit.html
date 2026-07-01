@@ -1873,9 +1873,21 @@ class Component extends DCLogic {
             signedUrl: signed_url,
             clientTools: {
               navigate: async ({ route }) => {
-                // Map legacy route names for robustness
-                const rmap = { conversations:'clients', 'clients':'clients', overview:'overview', alerts:'alerts', opportunities:'opportunities', allocation:'allocation' };
-                self.setState({ route: rmap[route] || route });
+                const topLevel = { conversations:'clients', clients:'clients', overview:'overview', alerts:'alerts', opportunities:'opportunities', allocation:'allocation' };
+                if (topLevel[route]) {
+                  self.setState({ route: topLevel[route] });
+                  return 'navigated to ' + topLevel[route];
+                }
+                // If route looks like a client id or name, fall through to open_client logic
+                const byId = window._cockpit?._clientsById || {};
+                const lc = route.toLowerCase();
+                const id = Object.keys(byId).find(k => k === lc || byId[k]?.name?.toLowerCase().includes(lc));
+                if (id) {
+                  self.setState({ route:'client', clientId: id, prevRoute: self.state.route });
+                  if (!self.state.clientConvos?.[id]) window._cockpit?._fetchConversations?.(id);
+                  return 'opened client ' + id;
+                }
+                self.setState({ route });
                 return 'navigated to ' + route;
               },
               open_client: async ({ clientId, clientName }) => {
@@ -1884,10 +1896,13 @@ class Component extends DCLogic {
                 let id = clientId;
                 if (!id && clientName) {
                   const lc = clientName.toLowerCase();
-                  id = Object.keys(byId).find(k => byId[k]?.name?.toLowerCase().includes(lc));
+                  id = Object.keys(byId).find(k => k === lc || byId[k]?.name?.toLowerCase().includes(lc));
                 }
+                // Fallback: if clientId was given directly, use it even if not in byId yet
+                if (!id && clientId) id = clientId;
                 if (!id) return JSON.stringify({ error: 'client not found' });
                 self.setState({ route:'client', clientId: id, prevRoute: self.state.route });
+                if (!self.state.clientConvos?.[id]) window._cockpit?._fetchConversations?.(id);
                 return 'opened client ' + id;
               },
               open_client_tab: async ({ tab }) => {
