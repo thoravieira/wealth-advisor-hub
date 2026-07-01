@@ -160,8 +160,8 @@
         <span style="font-size:13.5px;font-weight:{{ nav.overview.weight }};white-space:nowrap;display:{{ lblDisplay }}">{{ t.overview }}</span>
       </button>
       <button onClick="{{ goObj.conversations }}" style="width:100%;display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:8px;background:{{ nav.conversations.bg }};color:{{ nav.conversations.color }};justify-content:{{ navJustify }}">
-        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="flex-shrink:0"><path d="M4 5h16v11H9l-5 4z" stroke-linejoin="round"/></svg>
-        <span style="font-size:13.5px;font-weight:{{ nav.conversations.weight }};white-space:nowrap;display:{{ lblDisplay }}">{{ t.conversations }}</span>
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" style="flex-shrink:0"><circle cx="9" cy="7" r="3"/><path d="M3 21v-2a5 5 0 015-5h4a5 5 0 015 5v2" stroke-linecap="round" stroke-linejoin="round"/><path d="M16 3.13a4 4 0 010 7.75" stroke-linecap="round"/><path d="M21 21v-2a4 4 0 00-3-3.85" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span style="font-size:13.5px;font-weight:{{ nav.conversations.weight }};white-space:nowrap;display:{{ lblDisplay }}">{{ t.clients }}</span>
       </button>
 
       <div style="font:500 10.5px 'JetBrains Mono',monospace;letter-spacing:.04em;color:var(--ink-muted);padding:14px 10px 6px;display:{{ lblDisplay }};white-space:nowrap">{{ t.secIntel }}</div>
@@ -583,7 +583,7 @@
       <!-- ===== CONVERSATIONS ===== -->
       <sc-if value="{{ isConversations }}" hint-placeholder-val="{{ false }}">
         <div>
-          <div style="margin-bottom:16px"><div style="font-size:22px;font-weight:700;letter-spacing:-.015em">{{ t.convTitle }}</div><div style="font-size:13px;color:var(--ink-3);margin-top:3px">{{ t.convSub }}</div></div>
+          <div style="margin-bottom:16px"><div style="font-size:22px;font-weight:700;letter-spacing:-.015em">{{ t.clients }}</div><div style="font-size:13px;color:var(--ink-3);margin-top:3px">{{ t.convSub }}</div></div>
 
           <div style="display:flex;gap:7px;margin-bottom:14px">
             <sc-for list="{{ convFilters }}" as="f" hint-placeholder-count="4"><button onClick="{{ f.set }}" style="border:1px solid {{ f.border }};background:{{ f.bg }};color:{{ f.color }};border-radius:8px;padding:6px 12px;font-size:12px;font-weight:{{ f.weight }}">{{ f.label }}</button></sc-for>
@@ -600,17 +600,24 @@
               </button>
               <sc-if value="{{ convVipOpen }}" hint-placeholder-val="{{ true }}">
                 <div style="border:1px solid oklch(0.78 0.13 85 / .30);border-radius:14px;overflow:hidden">
-                  <div style="display:flex;align-items:center;gap:14px;padding:10px 16px;background:oklch(0.97 0.018 85);border-bottom:1px solid oklch(0.78 0.13 85 / .20);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">
-                    <span style="width:210px">{{ t.thClient }}</span><span style="width:120px">{{ t.thChannel }}</span><span style="width:90px">{{ t.thDate }}</span><span style="width:80px">{{ t.thDuration }}</span><span style="flex:1">{{ t.thSentiment }}</span><span>{{ t.thStatus }}</span>
+                  <div style="display:flex;align-items:flex-end;gap:14px;padding:8px 16px 0;background:oklch(0.97 0.018 85)">
+                    <span style="width:178px"></span><span style="width:95px"></span><span style="width:65px"></span><span style="width:95px"></span>
+                    <div style="flex:1;border-top:1px solid oklch(0.78 0.13 85 / .35);padding-top:5px"><span style="font:700 9px 'JetBrains Mono',monospace;letter-spacing:.07em;color:oklch(0.6 0.08 85)">{{ t.thLastContact }}</span></div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:14px;padding:5px 16px 8px;background:oklch(0.97 0.018 85);border-bottom:1px solid oklch(0.78 0.13 85 / .20);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">
+                    <span style="width:178px">{{ t.thClient }}</span><span style="width:95px">{{ t.thAUM }}</span><span style="width:65px">{{ t.thPerf }}</span><span style="width:95px">{{ t.thRisk }}</span><span style="width:85px">{{ t.thChannel }}</span><span style="width:75px">{{ t.thDate }}</span><span style="width:65px">{{ t.thDuration }}</span><span style="flex:1">{{ t.thSentiment }}</span><span>{{ t.thStatus }}</span>
                   </div>
                   <sc-for list="{{ conversationsVip }}" as="v" hint-placeholder-count="4">
-                    <button onClick="{{ v.open }}" style="text-align:left;width:100%;display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border)" style-hover="background:var(--surface-2)">
-                      <div style="width:210px;display:flex;align-items:center;gap:11px"><div style="width:34px;height:34px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.ini }}</div><span style="font-size:13.5px;font-weight:600">{{ v.name }}</span></div>
-                      <div style="width:120px;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2)"><span style="width:7px;height:7px;border-radius:2px;background:{{ v.chColor }}"></span>{{ v.channel }}</div>
-                      <span style="width:90px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.date }}</span>
-                      <span style="width:80px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.dur }}</span>
+                    <button onClick="{{ v.open }}" style="text-align:left;width:100%;display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid oklch(0.78 0.13 85 / .15)" style-hover="background:oklch(0.95 0.025 85)">
+                      <div style="width:178px;display:flex;align-items:center;gap:11px;min-width:0"><div style="width:34px;height:34px;border-radius:50%;background:oklch(0.88 0.06 85);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:oklch(0.52 0.13 85);flex-shrink:0">{{ v.ini }}</div><span style="font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.name }}</span></div>
+                      <span style="width:95px;font:600 12px 'JetBrains Mono',monospace;color:var(--ink);flex-shrink:0">{{ v.aum }}</span>
+                      <span style="width:65px;font:600 12px 'JetBrains Mono',monospace;color:{{ v.perfColor }};flex-shrink:0">{{ v.perf }}</span>
+                      <span style="width:95px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--ink-2);flex-shrink:0">{{ v.risk }}</span>
+                      <div style="width:85px;display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-2);flex-shrink:0"><span style="width:7px;height:7px;border-radius:2px;background:{{ v.chColor }};flex-shrink:0"></span>{{ v.channel }}</div>
+                      <span style="width:75px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2);flex-shrink:0">{{ v.date }}</span>
+                      <span style="width:65px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2);flex-shrink:0">{{ v.dur }}</span>
                       <div style="flex:1"><span style="display:inline-flex;align-items:center;gap:6px;font:600 11px 'JetBrains Mono',monospace;color:{{ v.sentColor }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ v.sentColor }}"></span>{{ v.sentLabel }}</span></div>
-                      <div style="display:flex;align-items:center;gap:10px">
+                      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
                         <span style="font:500 10px 'JetBrains Mono',monospace;color:{{ v.trColor }}">{{ v.trLabel }}</span>
                         <sc-if value="{{ v.play }}" hint-placeholder-val="{{ true }}"><div style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink)"><span style="font-size:10px;margin-left:2px">▶</span></div></sc-if>
                       </div>
@@ -630,17 +637,24 @@
               </button>
               <sc-if value="{{ convRegOpen }}" hint-placeholder-val="{{ true }}">
                 <div style="border:1px solid var(--border);border-radius:14px;overflow:hidden">
-                  <div style="display:flex;align-items:center;gap:14px;padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">
-                    <span style="width:210px">{{ t.thClient }}</span><span style="width:120px">{{ t.thChannel }}</span><span style="width:90px">{{ t.thDate }}</span><span style="width:80px">{{ t.thDuration }}</span><span style="flex:1">{{ t.thSentiment }}</span><span>{{ t.thStatus }}</span>
+                  <div style="display:flex;align-items:flex-end;gap:14px;padding:8px 16px 0;background:var(--surface)">
+                    <span style="width:178px"></span><span style="width:95px"></span><span style="width:65px"></span><span style="width:95px"></span>
+                    <div style="flex:1;border-top:1px solid var(--border);padding-top:5px"><span style="font:700 9px 'JetBrains Mono',monospace;letter-spacing:.07em;color:var(--ink-muted)">{{ t.thLastContact }}</span></div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:14px;padding:5px 16px 8px;background:var(--surface);border-bottom:1px solid var(--border);font:500 11px 'JetBrains Mono',monospace;letter-spacing:.02em;color:var(--ink-3)">
+                    <span style="width:178px">{{ t.thClient }}</span><span style="width:95px">{{ t.thAUM }}</span><span style="width:65px">{{ t.thPerf }}</span><span style="width:95px">{{ t.thRisk }}</span><span style="width:85px">{{ t.thChannel }}</span><span style="width:75px">{{ t.thDate }}</span><span style="width:65px">{{ t.thDuration }}</span><span style="flex:1">{{ t.thSentiment }}</span><span>{{ t.thStatus }}</span>
                   </div>
                   <sc-for list="{{ conversationsRegular }}" as="v" hint-placeholder-count="4">
                     <button onClick="{{ v.open }}" style="text-align:left;width:100%;display:flex;align-items:center;gap:14px;padding:13px 16px;border-bottom:1px solid var(--border)" style-hover="background:var(--surface-2)">
-                      <div style="width:210px;display:flex;align-items:center;gap:11px"><div style="width:34px;height:34px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.ini }}</div><span style="font-size:13.5px;font-weight:600">{{ v.name }}</span></div>
-                      <div style="width:120px;display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2)"><span style="width:7px;height:7px;border-radius:2px;background:{{ v.chColor }}"></span>{{ v.channel }}</div>
-                      <span style="width:90px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.date }}</span>
-                      <span style="width:80px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2)">{{ v.dur }}</span>
+                      <div style="width:178px;display:flex;align-items:center;gap:11px;min-width:0"><div style="width:34px;height:34px;border-radius:50%;background:var(--surface-3);display:flex;align-items:center;justify-content:center;font:600 11px 'JetBrains Mono',monospace;color:var(--ink-2);flex-shrink:0">{{ v.ini }}</div><span style="font-size:13.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ v.name }}</span></div>
+                      <span style="width:95px;font:600 12px 'JetBrains Mono',monospace;color:var(--ink);flex-shrink:0">{{ v.aum }}</span>
+                      <span style="width:65px;font:600 12px 'JetBrains Mono',monospace;color:{{ v.perfColor }};flex-shrink:0">{{ v.perf }}</span>
+                      <span style="width:95px;font:500 11.5px 'JetBrains Mono',monospace;color:var(--ink-2);flex-shrink:0">{{ v.risk }}</span>
+                      <div style="width:85px;display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-2);flex-shrink:0"><span style="width:7px;height:7px;border-radius:2px;background:{{ v.chColor }};flex-shrink:0"></span>{{ v.channel }}</div>
+                      <span style="width:75px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2);flex-shrink:0">{{ v.date }}</span>
+                      <span style="width:65px;font:500 12px 'JetBrains Mono',monospace;color:var(--ink-2);flex-shrink:0">{{ v.dur }}</span>
                       <div style="flex:1"><span style="display:inline-flex;align-items:center;gap:6px;font:600 11px 'JetBrains Mono',monospace;color:{{ v.sentColor }}"><span style="width:6px;height:6px;border-radius:50%;background:{{ v.sentColor }}"></span>{{ v.sentLabel }}</span></div>
-                      <div style="display:flex;align-items:center;gap:10px">
+                      <div style="display:flex;align-items:center;gap:10px;flex-shrink:0">
                         <span style="font:500 10px 'JetBrains Mono',monospace;color:{{ v.trColor }}">{{ v.trLabel }}</span>
                         <sc-if value="{{ v.play }}" hint-placeholder-val="{{ true }}"><div style="width:30px;height:30px;border-radius:50%;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--ink)"><span style="font-size:10px;margin-left:2px">▶</span></div></sc-if>
                       </div>
@@ -1104,8 +1118,9 @@ class Component extends DCLogic {
       analyzedCall:R('analyzed this call','analisou esta conversa'), objectivesLabel:R('Financial objectives','Objetivos financeiros'), appetiteLabel:R('Risk appetite','Apetite de risco'), productsLabel:R('Products / assets cited','Produtos / ativos citados'), lifeEventLabel:R('Life event detected','Evento de vida detectado'), sentimentLabel:R('Sentiment','Sentimento'), nextActionsLabel:R('Suggested next actions','Próximas ações sugeridas'),
       suggestedMsgs:R('Suggested messages','Mensagens sugeridas'), voiceTag:R('voice · TTS','voz · TTS'), genByEleven:R('generated by ElevenLabs — listen & send','geradas pelo ElevenLabs — ouça e envie'), send:R('Send','Enviar'),
       noConvoTitle:R('No recorded conversations yet','Nenhuma conversa gravada ainda'), noConvoSub:R('Once a call is recorded, ElevenAgent transcribes it and extracts objectives, risk and next actions here.','Quando uma ligação for gravada, o ElevenAgent transcreve e extrai objetivos, risco e próximas ações aqui.'), requestCall:R('Request a call','Solicitar ligação'),
-      convTitle:R('Conversations','Conversas'), convSub:R('Every recorded interaction, transcribed by ElevenLabs','Cada interação gravada, transcrita pelo ElevenLabs'),
-      thClient:R('Client','Cliente'), thChannel:R('Channel','Canal'), thDate:R('Date','Data'), thDuration:R('Length','Duração'), thSentiment:R('Sentiment','Sentimento'), thStatus:R('Status','Status'),
+      convSub:R('All clients · AUM, performance and last contact','Todos os clientes · patrimônio, performance e último contato'),
+      thClient:R('Client','Cliente'), thAUM:R('AUM','Patrimônio'), thPerf:R('Perf.','Perf.'), thRisk:R('Risk','Perfil'), thLastContact:R('LAST CONTACT','ÚLTIMO CONTATO'),
+      thChannel:R('Channel','Canal'), thDate:R('Date','Data'), thDuration:R('Length','Duração'), thSentiment:R('Sentiment','Sentimento'), thStatus:R('Status','Status'),
       convFilterAll:R('All','Todas'), convFilterCalls:R('Calls','Ligações'), convFilterWa:R('WhatsApp','WhatsApp'), convFilterEmail:R('E-mail','E-mail'), transcribedBadge:R('Transcribed','Transcrita'),
       sendAs:R('Send as','Enviar como'), sendText:R('Text','Texto'), sendVoice:R('Voice','Voz'), sendToClient:R('Send to client','Enviar para cliente'),
       recTitle:R('Recommendations','Recomendações'), recSub:R('Suggested actions per client and their status','Ações sugeridas por cliente e seu status'),
@@ -1633,7 +1648,7 @@ class Component extends DCLogic {
     const convFilters = [['all',D.convFilterAll],['call',D.convFilterCalls],['whatsapp',D.convFilterWa],['email',D.convFilterEmail]].map(([k,l]) => chip(S.convFilter===k, l, setConvF(k)));
     const _allConvs = CONV.filter(v => S.convFilter==='all' || v.ch===S.convFilter).map(v => {
       const c = byId[v.id];
-      return { name:c.name, ini:c.ini, vip:c.vip, channel:pick(chLbl[v.ch]), chColor:chColor[v.ch], date:pick(v.date), dur:v.dur, sentLabel:pick(sentLbl[v.sent]), sentColor:sentColor[v.sent], play:v.ch==='call', trLabel: v.tr ? pick(D.transcribedBadge) : '—', trColor: v.tr ? C.green : 'var(--ink-muted)', open:c.open };
+      return { name:c.name, ini:c.ini, vip:c.vip, aum:c.patr, perf:c.delta, perfColor:c.deltaColor, risk:c.perfilLabel, channel:pick(chLbl[v.ch]), chColor:chColor[v.ch], date:pick(v.date), dur:v.dur, sentLabel:pick(sentLbl[v.sent]), sentColor:sentColor[v.sent], play:v.ch==='call', trLabel: v.tr ? pick(D.transcribedBadge) : '—', trColor: v.tr ? C.green : 'var(--ink-muted)', open:c.open };
     });
     const conversationsVip     = _allConvs.filter(v => v.vip);
     const conversationsRegular = _allConvs.filter(v => !v.vip);
