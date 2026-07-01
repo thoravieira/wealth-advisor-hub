@@ -110,7 +110,7 @@ class TestRecommendations:
     def test_post_recommendation_persists(self, analytics):
         payload = {
             "client_id": "ricardo",
-            "text": "Ricardo, considerando a alta exposição em renda variável...",
+            "text": "Ricardo, considering your high equity exposure...",
             "status": "draft",
             "channel": "whatsapp",
         }
@@ -123,7 +123,7 @@ class TestRecommendations:
         # Create a recommendation
         payload = {
             "client_id": "beatriz",
-            "text": "Beatriz, sua suitability expira em 7 dias.",
+            "text": "Beatriz, your suitability document expires in 7 days.",
             "status": "draft",
             "channel": "whatsapp",
         }
@@ -149,7 +149,7 @@ class TestVoiceMessages:
     def test_post_voice_message_persists(self, analytics):
         payload = {
             "client_id": "ricardo",
-            "text": "Ricardo, precisamos conversar sobre seu portfólio.",
+            "text": "Ricardo, we need to talk about your portfolio.",
             "status": "generated",
             "channel": "whatsapp",
         }
