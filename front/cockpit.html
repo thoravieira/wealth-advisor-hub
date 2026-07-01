@@ -1906,10 +1906,34 @@ class Component extends DCLogic {
                 return 'opened client ' + id;
               },
               open_client_tab: async ({ tab }) => {
-                // tab: 'overview' | 'recommendations'
                 if (tab === 'overview' || tab === 'overview_tab') self.setState({ clientTab:'overview' });
-                else if (tab === 'recommendations' || tab === 'recs') self.setState({ clientTab:'recs' });
+                else if (tab === 'recommendations' || tab === 'recs') self.setState({ clientTab:'recommendations' });
                 return 'switched to tab ' + tab;
+              },
+              show_client_recommendation: async ({ clientId, index }) => {
+                const id = clientId || self.state.clientId;
+                const idx = (index != null && index >= 0) ? index : 0;
+                self.setState({ clientTab:'recommendations', selectedRec: idx, route:'client', clientId: id });
+                const byId = window._cockpit?._clientsById || {};
+                const name = byId[id]?.name || 'the client';
+                const alloc = byId[id]?.al || [];
+                const equity = alloc[0] ?? 71;
+                // Build the rec text for the first (rebalancing) recommendation
+                const recText = `${name}, your portfolio is up 2.3% this month, outperforming the benchmark by 0.8 points. Given your equity exposure at ${equity}% — above your 55% target — I'd like to propose a partial rebalancing toward fixed income to reduce concentration risk while locking in recent gains. Can we schedule 20 minutes this week?`;
+                // Store it so send_whatsapp knows what to send
+                self._pendingRecText = recText;
+                self._pendingRecClientId = id;
+                return JSON.stringify({ highlighted: true, rec_index: idx, client: name, rec_text: recText });
+              },
+              send_highlighted_recommendation: async () => {
+                const text = self._pendingRecText;
+                const id   = self._pendingRecClientId || self.state.clientId;
+                if (!text) return JSON.stringify({ error: 'no recommendation highlighted' });
+                self._addVoicePreview(text, id);
+                self.setState({ toastMsg:'Audio message sent to client ✓' });
+                setTimeout(() => self.setState({ toastMsg:null }), 3500);
+                self._pendingRecText = null;
+                return 'audio recommendation sent';
               },
               open_conversation_tab: async ({ tab }) => {
                 // tab: 'transcript' | 'summary' | 'messages' | 'insights'

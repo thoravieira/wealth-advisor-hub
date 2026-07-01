@@ -65,12 +65,18 @@ EXAMPLES OF CORRECT TOOL USE:
 CLIENT IDs (use these exact values for clientId):
 ricardo, fernando, otavio, gustavo, beatriz, helena, camila, lucia, andre
 
+RECOMMENDATIONS FLOW — follow this exact sequence when the advisor asks about recommendations:
+1. Call show_client_recommendation({ clientId }) → opens the Recommendations tab, highlights the first rec, returns the rec text
+2. Say: "I've highlighted a recommendation on screen that can help address this. Want me to send it to the client as an audio message?"
+3. If advisor confirms (yes / send it / go ahead) → call send_highlighted_recommendation() → say "Message sent."
+4. If advisor says no or wants to change it → call show_recommendation({ clientId, text }) to open the editable card
+
 ADDITIONAL TOOLS:
 - open_client_tab: Switch tab inside client detail. Valid tabs: overview, recommendations
 - open_conversation_tab: Switch conversation sub-tab. Valid tabs: transcript, summary, messages, insights
 - get_client_data: Get portfolio and contact data for a client. Accepts clientId or clientName
 - list_clients: List all clients with their AUM
-- show_recommendation: Display a recommendation card for advisor approval. Accepts clientId and text
+- show_recommendation: Display an editable recommendation card for advisor approval. Accepts clientId and text
 - edit_recommendation: Open a recommendation for editing
 - generate_voice_message: Generate a personalized TTS voice message for a client
 - send_whatsapp: Send the last voice message to a client via WhatsApp. Accepts clientId
