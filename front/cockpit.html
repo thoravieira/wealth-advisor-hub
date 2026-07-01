@@ -1381,6 +1381,9 @@ class Component extends DCLogic {
 
     // convo object: API data merged with static CONVO
     const _selectedApiConv = clientConvoList[_cIdx] || null;
+    // Audio is known from conversations list — no need to wait for detail fetch
+    const _apiHasAudio = !!(_fetchedConvos.length > 0 && _selectedApiConv?.hasAudio && _selectedApiConv?.audioFile);
+    const _apiAudioSrc = _apiHasAudio ? `http://localhost:8001/audio/${_selectedApiConv.audioFile}` : null;
     const _acd = S.activeConvoDetail;
     const _acdMatches = _acd && _selectedApiConv && _acd.conv_id === _selectedApiConv.convId;
     // Auto-fetch detail whenever the selected conv has no matching detail loaded
@@ -1531,13 +1534,17 @@ class Component extends DCLogic {
     const pillInsFg = S.convoView==='insights'?'var(--ink)':'var(--ink-3)';
     const pillConvBg = showConversations?'var(--surface-3)':'transparent';
     const pillConvFg = showConversations?'var(--ink)':'var(--ink-3)';
-    const convoIsCall          = !!(convo && convo.isCall);
-    const convoHasAudio        = !!(convo && convo.hasAudio && convo.audioSrc);
-    const convoAudioSrc        = convoHasAudio ? convo.audioSrc : '';
+    // For is-call: use selected API conv channel when available (more reliable than convo obj)
+    const convoIsCall          = _selectedApiConv ? _selectedApiConv.channel === 'call' : !!(convo && convo.isCall);
+    // Audio: prioritize direct API list data (_apiHasAudio) — available as soon as conversations load,
+    // no need to wait for detail fetch (_acdMatches). Fallback to convo obj for static data.
+    const convoHasAudio        = _apiHasAudio || !!(convo && convo.hasAudio && convo.audioSrc);
+    const convoAudioSrc        = _apiHasAudio ? _apiAudioSrc : (convo?.audioSrc || '');
     const convoIsCallWithAudio = convoIsCall && convoHasAudio;
     const convoIsCallNoAudio   = convoIsCall && !convoHasAudio;
-    const convoIsEmail         = !!(convo && !convo.isCall && convo.channel === 'email');
-    const convoIsWA            = !!(convo && !convo.isCall && convo.channel !== 'email');
+    const _msgChannel = _selectedApiConv ? _selectedApiConv.channel : (convo?.channel || 'whatsapp');
+    const convoIsEmail         = !convoIsCall && _msgChannel === 'email';
+    const convoIsWA            = !convoIsCall && _msgChannel !== 'email';
     const setInsights = () => this.setState({ convoView:'insights' });
     const setConversations = () => this.setState({ convoView:'transcript' });
 
